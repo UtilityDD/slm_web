@@ -33,28 +33,55 @@ async function claimDeviceSession(userId) {
     }
 }
 
-function LoginLogo() {
-    return (
-        <div className="flex select-none items-center justify-center gap-2.5 sm:gap-3">
-            <img
-                src="/icon-192.png"
-                alt=""
-                width={40}
-                height={40}
-                className="h-9 w-9 shrink-0 rounded-[0.65rem] object-cover shadow-sm ring-1 ring-slate-900/10 sm:h-10 sm:w-10 sm:rounded-xl"
-                decoding="async"
-            />
-            <span className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
-                SmartLineMan
-            </span>
-        </div>
-    );
-}
+const copy = {
+    en: {
+        backHome: 'Home',
+        brand: 'SmartLineMan',
+        setPinTitle: 'Set your PIN',
+        phone: 'Phone number',
+        phoneHint: 'Mobile number',
+        pin: '6-digit PIN',
+        pinHint: '6-digit PIN',
+        newPin: 'New PIN',
+        confirmPin: 'Confirm PIN',
+        showPin: 'Show PIN',
+        hidePin: 'Hide PIN',
+        signIn: 'Sign in',
+        signingIn: 'Signing in…',
+        remember: 'Remember me',
+        secureAccount: 'Continue',
+        saving: 'Saving…',
+        connectionTitle: 'You’re offline',
+        retry: 'Try again',
+        storiesCta: 'করুণ কাহিনী',
+    },
+    bn: {
+        backHome: 'হোম',
+        brand: 'SmartLineMan',
+        setPinTitle: 'পিন সেট করুন',
+        phone: 'ফোন নম্বর',
+        phoneHint: 'মোবাইল নম্বর',
+        pin: '৬-অঙ্কের পিন',
+        pinHint: '৬-অঙ্কের পিন',
+        newPin: 'নতুন পিন',
+        confirmPin: 'পিন নিশ্চিত করুন',
+        showPin: 'পিন দেখান',
+        hidePin: 'পিন লুকান',
+        signIn: 'সাইন ইন',
+        signingIn: 'সাইন ইন হচ্ছে…',
+        remember: 'মনে রাখুন',
+        secureAccount: 'চলুন',
+        saving: 'সংরক্ষণ হচ্ছে…',
+        connectionTitle: 'ইন্টারনেট নেই',
+        retry: 'আবার চেষ্টা',
+        storiesCta: 'করুণ কাহিনী',
+    },
+};
 
 /** Per-slide object-position — faces sit high in these square crops; wide hero strips top/bottom by default. */
 const HERO_IMAGE_FOCUS = EMOTIONAL_IMAGE_FOCUS;
 
-function HeroImageCrossfade({ images, activeIndex }) {
+function FilmCrossfade({ images, activeIndex }) {
     // Prefetch only the active slide and the next one — keep login light.
     useEffect(() => {
         const toPrefetch = [
@@ -68,19 +95,18 @@ function HeroImageCrossfade({ images, activeIndex }) {
     }, [images, activeIndex]);
 
     return (
-        <div className="relative h-40 w-full overflow-hidden bg-slate-800 sm:h-44">
+        <div className="login-film__plane" aria-hidden="true">
             {images.map((src, i) => (
                 <img
                     key={src}
                     src={src}
                     alt=""
-                    aria-hidden={i !== activeIndex}
                     decoding="async"
                     loading={i === activeIndex || i === (activeIndex + 1) % images.length ? 'eager' : 'lazy'}
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
-                        i === activeIndex ? 'z-[1] opacity-100' : 'z-0 opacity-0'
+                    className={`login-film__img ${
+                        i === activeIndex ? 'login-film__img--active' : ''
                     }`}
-                    style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 20%' }}
+                    style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 18%' }}
                 />
             ))}
         </div>
@@ -92,43 +118,74 @@ function LoginPageShell({
     emotionalImages,
     children,
     footer,
-    animate = 'animate-fadeIn',
+    animate = 'login-rise',
     onOpenAwarenessStories,
     onGoHome,
     language = 'en',
+    title,
+    showFilm = true,
 }) {
-    return (
-        <div className="landing-modern relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#fffdf7] px-4 py-6 text-slate-900 touch-manipulation safe-area-inset-bottom native-keyboard-pad">
-            <div className={`relative z-10 w-full max-w-sm shrink-0 space-y-4 pt-2 ${animate}`}>
-                {onGoHome && (
-                    <button
-                        type="button"
-                        onClick={onGoHome}
-                        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-2 text-sm font-bold text-slate-700 touch-manipulation transition-colors hover:bg-orange-50 hover:text-orange-600 active:scale-95"
-                        aria-label="Back to home"
-                    >
-                        <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Home
-                    </button>
-                )}
+    const t = copy[language] || copy.en;
+    const bn = language === 'bn';
+    const hasFilm = Boolean(showFilm && onOpenAwarenessStories && emotionalImages?.length);
 
-                {onOpenAwarenessStories && (
+    return (
+        <div
+            className={`login-modern relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden text-slate-900 touch-manipulation safe-area-inset-bottom native-keyboard-pad ${hasFilm ? 'login-modern--film' : ''} ${bn ? 'lang-bn' : ''}`}
+        >
+            {hasFilm ? (
+                <section className="login-film" aria-label={t.storiesCta}>
                     <button
                         type="button"
                         onClick={onOpenAwarenessStories}
-                        className="relative block w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 text-left shadow-sm touch-manipulation transition-all active:scale-[0.99]"
-                        aria-label="Open awareness stories — Korun Kahini"
+                        className="login-film__hit touch-manipulation"
+                        aria-label={t.storiesCta}
                     >
-                        <HeroImageCrossfade images={emotionalImages} activeIndex={emotionalImageIndex} />
-                        <span className="pointer-events-none absolute bottom-2 right-2 z-20 rounded-full border border-white/20 bg-slate-900/80 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm backdrop-blur-sm sm:text-xs">
-                            করুণ কাহিনী →
-                        </span>
+                        <FilmCrossfade images={emotionalImages} activeIndex={emotionalImageIndex} />
                     </button>
-                )}
+                    <div className="login-film__fade" aria-hidden="true" />
+                </section>
+            ) : (
+                <div className="login-ambient" aria-hidden="true">
+                    <span className="login-ambient__orb login-ambient__orb--a" />
+                    <span className="login-ambient__orb login-ambient__orb--b" />
+                </div>
+            )}
 
-                {children}
+            <header className={`login-chrome ${hasFilm ? 'login-chrome--over-film' : ''}`}>
+                {onGoHome ? (
+                    <button
+                        type="button"
+                        onClick={onGoHome}
+                        className="login-back inline-flex h-10 w-10 items-center justify-center rounded-xl touch-manipulation transition-colors active:scale-95"
+                        aria-label={t.backHome}
+                    >
+                        <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                ) : (
+                    <span />
+                )}
+            </header>
+
+            <div className={`login-stage relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col px-5 pb-3 sm:px-6 ${animate}`}>
+                <div className="login-main">
+                    <div className="login-brand-block text-center">
+                        <p className="login-brand">
+                            {t.brand}
+                            <span className="login-brand__tld">.in</span>
+                        </p>
+                        {title && (
+                            <h1 className={`login-title mt-1.5 ${bn ? 'font-bengali' : ''}`}>{title}</h1>
+                        )}
+                    </div>
+
+                    <div className="login-panel">
+                        {children}
+                    </div>
+                </div>
+
                 {footer}
             </div>
         </div>
@@ -149,8 +206,12 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
     const [mustChangePassword, setMustChangePassword] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
     const [emotionalImageIndex, setEmotionalImageIndex] = useState(0);
     const [connectionError, setConnectionError] = useState(false);
+
+    const t = copy[language] || copy.en;
+    const bn = language === 'bn';
 
     const shellProps = {
         ...loginShellNav(setCurrentView),
@@ -166,16 +227,21 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
     ];
 
     useEffect(() => {
-        // Prefill the last-used credentials (always remembered now that the
-        // "Stay signed in" checkbox has been removed).
         const savedPhone = storageUtils.getItem('slm_remembered_phone');
         const savedPin = storageUtils.getItem('slm_remembered_pin');
+        const savedRemember = storageUtils.getItem('slm_remember_me');
 
         if (savedPhone) {
             setPhone(savedPhone);
         }
         if (savedPin) {
             setPassword(savedPin);
+        }
+        // Prefer explicit preference; otherwise on if credentials were stored.
+        if (savedRemember === '0') {
+            setRememberMe(false);
+        } else if (savedRemember === '1' || savedPhone || savedPin) {
+            setRememberMe(true);
         }
 
         const imageInterval = setInterval(() => {
@@ -184,6 +250,18 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
 
         return () => clearInterval(imageInterval);
     }, []);
+
+    const persistRememberPreference = (shouldRemember, nextPhone, nextPin) => {
+        if (shouldRemember) {
+            storageUtils.setItem('slm_remember_me', '1');
+            storageUtils.setItem('slm_remembered_phone', nextPhone);
+            storageUtils.setItem('slm_remembered_pin', nextPin);
+        } else {
+            storageUtils.setItem('slm_remember_me', '0');
+            storageUtils.removeItem('slm_remembered_phone');
+            storageUtils.removeItem('slm_remembered_pin');
+        }
+    };
 
     // Login matches landing: always light Material cream, restore saved theme on exit.
     useEffect(() => {
@@ -266,9 +344,7 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
                 setCurrentUser(user);
                 showNotification('Please set a new password to continue', 'info');
             } else {
-                // Remember credentials for prefill on next visit
-                storageUtils.setItem('slm_remembered_phone', phone);
-                storageUtils.setItem('slm_remembered_pin', password);
+                persistRememberPreference(rememberMe, phone, password);
 
                 // Store session
                 storageUtils.setItem('session_token', user.session_token);
@@ -323,9 +399,7 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
 
             if (error) throw error;
 
-            // Remember credentials for prefill on next visit
-            storageUtils.setItem('slm_remembered_phone', phone);
-            storageUtils.setItem('slm_remembered_pin', newPassword);
+            persistRememberPreference(rememberMe, phone, newPassword);
 
             // Store session and auto-login
             storageUtils.setItem('session_token', currentUser.session_token);
@@ -353,64 +427,69 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
         }
     };
 
+    const supportFooter = (
+        <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="login-support flex items-center justify-center py-2 text-center text-[11px] font-semibold text-slate-400 transition-colors hover:text-orange-600"
+        >
+            {SUPPORT_EMAIL}
+        </a>
+    );
+
     if (mustChangePassword) {
         return (
             <LoginPageShell
                 emotionalImageIndex={emotionalImageIndex}
                 emotionalImages={emotionalImages}
-                animate="animate-slideUp"
+                animate="login-rise login-rise--fast"
+                title={t.setPinTitle}
+                footer={supportFooter}
+                showFilm={false}
                 {...shellProps}
             >
-                <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
-                    <div className="mb-8 text-center">
-                        <span className="mb-4 inline-block rounded-full border border-orange-200/80 bg-orange-50 px-3 py-1 text-[10px] font-bold text-orange-700">Safety First</span>
-                        <h1 className="mb-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Set Your PIN</h1>
-                        <p className="text-sm font-semibold text-slate-600">Protect your progress & identity</p>
+                <form onSubmit={handleChangePassword} className="login-form space-y-3">
+                    <div className="login-field">
+                        <label className={`login-label ${bn ? 'font-bengali' : ''}`}>{t.newPin}</label>
+                        <input
+                            type="password"
+                            required
+                            maxLength="6"
+                            inputMode="numeric"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value.replace(/\D/g, ''))}
+                            className="login-input login-input--pin"
+                            placeholder="••••••"
+                            autoFocus
+                        />
                     </div>
 
-                    <form onSubmit={handleChangePassword} className="space-y-4">
-                        <div className="space-y-1.5">
-                            <label className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">New 6-Digit PIN</label>
-                            <input
-                                type="password"
-                                required
-                                maxLength="6"
-                                inputMode="numeric"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value.replace(/\D/g, ''))}
-                                className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-center text-2xl font-bold tracking-[1em] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
-                                placeholder="••••••"
-                            />
-                        </div>
+                    <div className="login-field">
+                        <label className={`login-label ${bn ? 'font-bengali' : ''}`}>{t.confirmPin}</label>
+                        <input
+                            type="password"
+                            required
+                            maxLength="6"
+                            inputMode="numeric"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, ''))}
+                            className="login-input login-input--pin"
+                            placeholder="••••••"
+                        />
+                    </div>
 
-                        <div className="space-y-1.5">
-                            <label className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">Confirm PIN</label>
-                            <input
-                                type="password"
-                                required
-                                maxLength="6"
-                                inputMode="numeric"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, ''))}
-                                className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-center text-2xl font-bold tracking-[1em] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
-                                placeholder="••••••"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading || newPassword.length !== 6 || newPassword !== confirmPassword}
-                            className="mt-2 min-h-[52px] w-full rounded-full bg-orange-500 px-6 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:opacity-50"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                                    Saving...
-                                </span>
-                            ) : 'Secure Account & Log In'}
-                        </button>
-                    </form>
-                </div>
+                    <button
+                        type="submit"
+                        disabled={loading || newPassword.length !== 6 || newPassword !== confirmPassword}
+                        className={`login-cta ${bn ? 'font-bengali' : ''}`}
+                    >
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <span className="login-cta__spin" />
+                                {t.saving}
+                            </span>
+                        ) : t.secureAccount}
+                    </button>
+                </form>
             </LoginPageShell>
         );
     }
@@ -420,23 +499,21 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
             <LoginPageShell
                 emotionalImageIndex={emotionalImageIndex}
                 emotionalImages={emotionalImages}
-                animate="animate-slideUp"
+                animate="login-rise login-rise--fast"
+                title={t.connectionTitle}
+                footer={supportFooter}
+                showFilm={false}
                 {...shellProps}
             >
-                <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-sm sm:p-10">
-                    <div className="mb-6 inline-flex rounded-2xl border border-orange-100 bg-orange-50 p-4 shadow-sm">
+                <div className="login-offline text-center">
+                    <div className="login-offline__art mx-auto mb-3 inline-flex">
                         <DotLottiePlayer
                             src={noInternetLottie}
                             autoplay
                             loop
-                            className="h-36 w-36 sm:h-40 sm:w-40"
+                            className="h-28 w-28"
                         />
                     </div>
-
-                    <h2 className="mb-3 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Connection Error</h2>
-                    <p className="mb-8 px-2 text-sm font-semibold text-slate-600 sm:text-base">
-                        Oops! It seems you are offline or having trouble connecting to our servers.
-                    </p>
 
                     <button
                         type="button"
@@ -444,106 +521,104 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
                             setConnectionError(false);
                             setLoading(false);
                         }}
-                        className="flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full bg-orange-500 px-6 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98]"
+                        className={`login-cta ${bn ? 'font-bengali' : ''}`}
                     >
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Retry Login
+                        <span className="flex items-center justify-center gap-2">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            {t.retry}
+                        </span>
                     </button>
                 </div>
             </LoginPageShell>
         );
     }
 
-    // LOGIN — compact sheet, awareness stories open only via explicit control
     return (
         <LoginPageShell
             emotionalImageIndex={emotionalImageIndex}
             emotionalImages={emotionalImages}
+            footer={supportFooter}
             {...shellProps}
-            footer={(
-                <a
-                    href={`mailto:${SUPPORT_EMAIL}`}
-                    className="flex min-h-[44px] items-center justify-center py-2 text-center text-xs font-semibold text-slate-500 transition-colors hover:text-orange-600"
-                >
-                    {SUPPORT_EMAIL}
-                </a>
-            )}
         >
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-7">
-                <div className="mb-6 text-center">
-                    <LoginLogo />
+            <form onSubmit={handleLogin} className="login-form space-y-3">
+                <div className="login-field">
+                    <label htmlFor="login-phone" className="sr-only">
+                        {t.phone}
+                    </label>
+                    <input
+                        id="login-phone"
+                        type="tel"
+                        name="phone"
+                        autoComplete="username"
+                        required
+                        value={phone}
+                        onChange={handlePhoneChange}
+                        className="login-input"
+                        placeholder={t.phoneHint}
+                        autoFocus
+                    />
                 </div>
 
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-1.5">
-                        <label htmlFor="login-phone" className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                            Phone
-                        </label>
+                <div className="login-field">
+                    <label htmlFor="login-pin" className="sr-only">
+                        {t.pin}
+                    </label>
+                    <div className="relative">
                         <input
-                            id="login-phone"
-                            type="tel"
-                            name="phone"
-                            autoComplete="username"
+                            id="login-pin"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            autoComplete="current-password"
                             required
-                            value={phone}
-                            onChange={handlePhoneChange}
-                            className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-center text-base text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
-                            placeholder="01XXXXXXXXX"
-                            autoFocus
+                            maxLength="6"
+                            inputMode="numeric"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
+                            className="login-input login-input--pin pr-12"
+                            placeholder={t.pinHint}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-orange-50 hover:text-slate-900"
+                            aria-label={showPassword ? t.hidePin : t.showPin}
+                        >
+                            {showPassword ? (
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                            ) : (
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            )}
+                        </button>
                     </div>
+                </div>
 
-                    <div className="space-y-1.5">
-                        <label htmlFor="login-pin" className="block text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                            6-digit PIN
-                        </label>
-                        <div className="relative">
-                            <input
-                                id="login-pin"
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                autoComplete="current-password"
-                                required
-                                maxLength="6"
-                                inputMode="numeric"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value.replace(/\D/g, ''))}
-                                className="w-full rounded-2xl border border-slate-200/80 bg-slate-50 py-3 pl-4 pr-12 text-center text-lg font-bold tracking-[0.5em] text-slate-900 outline-none transition focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200"
-                                placeholder="••••••"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-1 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-orange-50 hover:text-slate-900"
-                                aria-label={showPassword ? 'Hide PIN' : 'Show PIN'}
-                            >
-                                {showPassword ? (
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
-                                ) : (
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                )}
-                            </button>
-                        </div>
-                    </div>
+                <label className={`login-remember ${bn ? 'font-bengali' : ''}`}>
+                    <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="login-remember__box"
+                    />
+                    <span>{t.remember}</span>
+                </label>
 
-                    <button
-                        type="submit"
-                        disabled={loading || phone.length !== 10 || password.length !== 6}
-                        className="min-h-[52px] w-full rounded-full bg-orange-500 px-4 py-3 text-[15px] font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:opacity-50"
-                    >
-                        {loading ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                                Signing in…
-                            </span>
-                        ) : (
-                            'Sign in'
-                        )}
-                    </button>
-                </form>
-            </div>
+                <button
+                    type="submit"
+                    disabled={loading || phone.length !== 10 || password.length !== 6}
+                    className={`login-cta ${bn ? 'font-bengali' : ''}`}
+                >
+                    {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <span className="login-cta__spin" />
+                            {t.signingIn}
+                        </span>
+                    ) : (
+                        t.signIn
+                    )}
+                </button>
+            </form>
         </LoginPageShell>
     );
 }
