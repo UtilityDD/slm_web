@@ -1206,6 +1206,8 @@ export default function Training({
     const [faqActiveGroup, setFaqActiveGroup] = useState('all');
     const [faqActiveTag, setFaqActiveTag] = useState('');
     const [isFaqTagsExpanded, setIsFaqTagsExpanded] = useState(false);
+    /** FAQ opened via ?tab=faq (Home/More) — no Training back chevron; use bottom nav / system Back. */
+    const [faqExitUsesHistory, setFaqExitUsesHistory] = useState(false);
     const [fetchError, setFetchError] = useState(false);
     const [readingPoints, setReadingPoints] = useState(0);
     const { expanded: radioGlobalExpanded } = useLifeSkillRadio();
@@ -2612,7 +2614,11 @@ export default function Training({
 
 
     const handleChapterClick = async (chapter, targetLessonNum = null, options = {}) => {
-        const { autoStartReading = false } = options;
+        const { autoStartReading = false, faqExitUsesHistory: faqExitFromHistory = false } = options;
+
+        if (chapter?.number === 10) {
+            setFaqExitUsesHistory(!!faqExitFromHistory);
+        }
 
         const focusPending = user?.id ? peekGateUnlockPending(user.id) : null;
         if (focusPending?.lessonId) {
@@ -2934,7 +2940,7 @@ export default function Training({
             if (!faq) return;
 
             window.history.replaceState(null, '', '#/training');
-            handleChapterClick(faq);
+            handleChapterClick(faq, null, { faqExitUsesHistory: true });
         };
 
         openTabIfRequested();
@@ -4534,16 +4540,18 @@ export default function Training({
                         <div className="animate-fade-in mx-auto max-w-3xl pb-[calc(5.5rem+3.25rem+env(safe-area-inset-bottom,0px))] md:pb-10">
                             <header className="sticky top-0 z-40 -mx-4 space-y-2.5 border-b border-slate-200/80 bg-[#fffdf7]/95 px-4 pb-3 pt-1 backdrop-blur-sm sm:-mx-6 sm:px-6">
                                 <div className="flex items-center gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setSelectedChapter(null)}
-                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
-                                        aria-label={language === 'en' ? 'Back to Training' : 'প্রশিক্ষণে ফিরে যান'}
-                                    >
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </button>
+                                    {!faqExitUsesHistory ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedChapter(null)}
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
+                                            aria-label={language === 'en' ? 'Back to Training' : 'প্রশিক্ষণে ফিরে যান'}
+                                        >
+                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                    ) : null}
                                     <div className="min-w-0 flex-1">
                                         <h2 className={`truncate text-lg font-black tracking-tight text-slate-900 sm:text-xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'en' ? FAQ_PAGE_TITLE.en : FAQ_PAGE_TITLE.bn}

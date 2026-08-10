@@ -1529,9 +1529,9 @@ export default function SmartLinemanUI() {
             />
           );
         case 'video-guide':
-          return <VideoGuide language={language} setCurrentView={setCurrentView} />;
+          return <VideoGuide language={language} />;
         case 'aro-janun':
-          return <AroJanun language={language} setCurrentView={setCurrentView} />;
+          return <AroJanun language={language} />;
         case 'weather-alert-demo':
           return <WeatherAlertDemo language={language} setCurrentView={setCurrentView} />;
         /* case 'safety-hero':
@@ -1720,20 +1720,20 @@ export default function SmartLinemanUI() {
                     <NativeSheetHandle />
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
 
-                    <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 sm:p-7 sm:pt-7 text-left">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 shadow-sm" aria-hidden="true">
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div className="flex items-start gap-3 px-5 pb-5 pt-2 sm:p-6 sm:pt-6 text-left">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 shadow-sm" aria-hidden="true">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
                         </svg>
                       </span>
                       <div className="min-w-0 flex-1">
-                        <h2 id="session-ended-title" className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                          {language === 'en' ? 'Signed out' : 'সাইন আউট হয়েছে'}
+                        <h2 id="session-ended-title" className={`text-base sm:text-lg font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                          {language === 'en' ? 'Logged in elsewhere' : 'অন্য ডিভাইসে লগইন'}
                         </h2>
                         <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                           {language === 'en'
-                            ? 'Your account was just signed in on another device. For your security, only one device can stay signed in at a time.'
-                            : 'আপনার অ্যাকাউন্টটি এইমাত্র অন্য একটি ডিভাইসে সাইন ইন করা হয়েছে। নিরাপত্তার জন্য একসাথে কেবল একটি ডিভাইসে সাইন ইন থাকা যায়।'}
+                            ? 'This account signed in on another device. You were signed out here.'
+                            : 'এই অ্যাকাউন্ট অন্য ডিভাইসে লগইন হয়েছে। এখান থেকে সাইন আউট করা হয়েছে।'}
                         </p>
                       </div>
                     </div>
@@ -1744,7 +1744,7 @@ export default function SmartLinemanUI() {
                         onClick={() => setShowSessionEndedModal(false)}
                         className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
                       >
-                        {language === 'en' ? 'OK' : 'ঠিক আছে'}
+                        {language === 'en' ? 'Sign in' : 'আবার লগইন'}
                       </button>
                     </div>
                   </div>

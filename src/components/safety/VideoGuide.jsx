@@ -16,12 +16,6 @@ const SearchIcon = ({ className }) => (
     </svg>
 );
 
-const ChevronLeftIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m15 18-6-6 6-6" />
-    </svg>
-);
-
 const VideoIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <path d="m22 8-6 4 6 4V8Z" />
@@ -29,7 +23,7 @@ const VideoIcon = ({ className }) => (
     </svg>
 );
 
-export default function VideoGuide({ language, setCurrentView }) {
+export default function VideoGuide({ language }) {
     const [videos, setVideos] = useState([]);
     const [filteredVideos, setFilteredVideos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -131,14 +125,6 @@ export default function VideoGuide({ language, setCurrentView }) {
                         {!isSearchExpanded ? (
                             <>
                                 <div className="flex min-w-0 items-center gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setCurrentView('training')}
-                                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
-                                        aria-label={t.back}
-                                    >
-                                        <ChevronLeftIcon className="h-5 w-5" />
-                                    </button>
                                     <h1 className={`truncate text-lg font-black tracking-tight text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {t.title}
                                     </h1>
