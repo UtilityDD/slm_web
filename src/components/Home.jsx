@@ -14,6 +14,8 @@ import {
   HOURLY_POINTS_PER_PACK,
 } from '../utils/hourlyMakeup';
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
+import { resolveHomeLearningTopic } from '../utils/homeLearningTopic';
+import HomePrimaryActionCards from './HomePrimaryActionCards';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
@@ -23,16 +25,23 @@ const LAST_TIP_INDEX_KEY = 'slm_home_tip_last_index';
 const HOME_TIP_ROTATE_MS = 32000;
 /** Match CSS exit duration before swapping content. */
 const HOME_TIP_EXIT_MS = 320;
-/** Current IST hourly quiz window, e.g. "2PM-3PM" (English digits always). */
+/** Current IST hourly quiz start hour, e.g. "2PM" (English digits always). */
 function formatIstHourLabel() {
   const now = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
   const hour24 = now.getUTCHours();
   const start12 = hour24 % 12 || 12;
-  const end24 = (hour24 + 1) % 24;
-  const end12 = end24 % 12 || 12;
   const startAmPm = hour24 < 12 ? 'AM' : 'PM';
-  const endAmPm = end24 < 12 ? 'AM' : 'PM';
-  return `${start12}${startAmPm}-${end12}${endAmPm}`;
+  return `${start12}${startAmPm}`;
+}
+
+/** Minutes left until the next IST clock hour (at least 1 while still in this hour). */
+function minutesUntilNextIstHour() {
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  const msIntoHour =
+    ((ist.getUTCMinutes() * 60 + ist.getUTCSeconds()) * 1000) + ist.getUTCMilliseconds();
+  const msLeft = 60 * 60 * 1000 - msIntoHour;
+  if (msLeft <= 0) return 1;
+  return Math.max(1, Math.ceil(msLeft / 60000));
 }
 
 function normalizeHomeTip(tip, bn) {
@@ -106,11 +115,13 @@ export default function Home({
   const [tipRules, setTipRules] = useState([]);
   const tipIndexRef = useRef(-1);
   const tipSwapTimerRef = useRef(null);
-  const [isHourlyPending, setIsHourlyPending] = useState(false);
+  const [isHourlyPending, setIsHourlyPending] = useState(true);
+  const [hourlyChecked, setHourlyChecked] = useState(false);
   const [hourlyMaxPoints, setHourlyMaxPoints] = useState(HOURLY_POINTS_PER_PACK);
   const [hourlyClockTick, setHourlyClockTick] = useState(0);
   const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
   const [userRank, setUserRank] = useState(null);
+  const [learningTopic, setLearningTopic] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -277,6 +288,7 @@ export default function Home({
   useEffect(() => {
     if (!user?.id) {
       setIsHourlyPending(false);
+      setHourlyChecked(false);
       setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
       return undefined;
     }
@@ -312,6 +324,7 @@ export default function Home({
 
         const pending = (liveRows || []).length === 0;
         setIsHourlyPending(pending);
+        setHourlyChecked(true);
 
         if (!pending) {
           setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
@@ -397,6 +410,33 @@ export default function Home({
     return mergeCoreLessonProgressIds(profileOrProp, lessonBonusAttempts);
   }, [completedLessonsProp, userProfile?.completed_lessons, lessonBonusAttempts]);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const topic = await resolveHomeLearningTopic({
+          completedLessons: coreLessons,
+          language,
+          userId: user?.id || null,
+        });
+        if (!cancelled) setLearningTopic(topic);
+      } catch (err) {
+        console.warn('Home learning topic resolve failed:', err);
+        if (!cancelled) {
+          setLearningTopic({
+            mode: 'fallback',
+            title: null,
+            target: 'training',
+            lessonId: null,
+          });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [coreLessons, language, user?.id]);
+
   const lessonCount = coreLessons.length;
   const progressPct = Math.min(100, Math.round((lessonCount / APPROX_CORE_LESSON_TOTAL) * 100));
   const trainingLevel = userProfile?.training_level || 1;
@@ -410,14 +450,18 @@ export default function Home({
         : 'Friend';
 
   const hasStarted = lessonCount > 0;
-  const trainingLabel = hasStarted
-    ? bn
-      ? 'শিখতে থাকুন'
-      : 'Continue Training'
-    : bn
-      ? 'শিখা শুরু করুন'
-      : 'Start Training';
-  const trainingHint = hasStarted
+  const allCoreDone = learningTopic?.mode === 'daily';
+  const trainingLabel =
+    hasStarted || allCoreDone
+      ? bn
+        ? 'শিখতে থাকুন'
+        : 'Continue Training'
+      : bn
+        ? 'শিখা শুরু করুন'
+        : 'Start Training';
+  const topicTitle = String(learningTopic?.title || '').trim();
+  const topicPrefix = bn ? 'আজকের বিষয়:' : "Today's topic:";
+  const trainingHintFallback = hasStarted
     ? bn
       ? `${lessonCount} পাঠ · Lv ${trainingLevel}`
       : `${lessonCount} lessons · Lv ${trainingLevel}`
@@ -425,12 +469,31 @@ export default function Home({
       ? '৯০ দিনের নিরাপত্তা পাঠ'
       : '90-day safety path';
 
+  const openLearningCard = () => {
+    if (navigator.vibrate) navigator.vibrate(5);
+    const target = learningTopic?.target || 'training';
+    if (target === 'life-skill') {
+      window.location.hash = '/training?tab=supplementary';
+      return;
+    }
+    if (target === 'aro-janun') {
+      setCurrentView('aro-janun');
+      return;
+    }
+    setCurrentView('training');
+  };
+
   const scoreValue = Math.max(0, Number(userProfile?.points ?? userRank?.score ?? 0) || 0);
   const scoreDisplay = scoreValue.toLocaleString('en-IN');
   const rankDisplay = userRank?.rank != null ? `#${userRank.rank}` : null;
+  const hourlyDone = hourlyChecked && !isHourlyPending;
   const hourlyHourLabel = useMemo(() => {
     void hourlyClockTick;
     return formatIstHourLabel();
+  }, [hourlyClockTick]);
+  const hourlyWaitMinutes = useMemo(() => {
+    void hourlyClockTick;
+    return minutesUntilNextIstHour();
   }, [hourlyClockTick]);
 
   const go = (view) => {
@@ -694,80 +757,19 @@ export default function Home({
           </div>
         )}
 
-        {/* Primary: hourly quiz — Material filled CTA */}
-        <button
-          type="button"
-          onClick={() => go('competitions')}
-          className="home-hourly-cta ripple mb-2.5 sm:mb-3"
-        >
-          <span className="home-hourly-cta__icon" aria-hidden>
-            <svg className="home-hourly-cta__clock" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="10.25" stroke="currentColor" strokeWidth="2.5" />
-              <path d="M16 9.75v6.5l4.25 2.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="16" cy="16" r="1.5" fill="currentColor" />
-            </svg>
-            {isHourlyPending && (
-              <span className="home-hourly-cta__live">
-                <span className="home-hourly-cta__live-ping" />
-                <span className="home-hourly-cta__live-dot" />
-              </span>
-            )}
-          </span>
-
-          <span className="home-hourly-cta__copy">
-            <span className="home-hourly-cta__eyebrow">
-              {hourlyHourLabel}
-            </span>
-            <span className={`home-hourly-cta__title ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
-            </span>
-          </span>
-
-          <span className="home-hourly-cta__trail">
-            {isHourlyPending ? (
-              <span className="home-hourly-cta__points">
-                {formatMakeupMaxPoints(hourlyMaxPoints)}
-              </span>
-            ) : (
-              <span className={`home-hourly-cta__play ${bn ? 'font-bengali' : ''}`}>
-                {bn ? 'খেলুন' : 'Play'}
-              </span>
-            )}
-
-            <span className="home-hourly-cta__chevron" aria-hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </span>
-        </button>
-
-        {/* Secondary: training */}
-        <button
-          type="button"
-          onClick={() => go('training')}
-          className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-slate-200/90 bg-white px-4 py-3 text-left shadow-sm transition-all hover:border-orange-200 hover:bg-orange-50/40 active:scale-[0.99] sm:mb-5 sm:py-3.5"
-        >
-          <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-orange-100 bg-orange-50 text-orange-700 sm:h-10 sm:w-10"
-            aria-hidden
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className={`block font-black text-slate-900 ${bn ? 'font-bengali text-base sm:text-lg' : 'text-sm'}`}>
-              {trainingLabel}
-            </span>
-            <span className={`mt-0.5 block font-semibold text-slate-500 ${bn ? 'font-bengali text-sm' : 'text-[11px]'}`}>
-              {trainingHint}
-            </span>
-          </span>
-          <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        <HomePrimaryActionCards
+          bn={bn}
+          hourlyDone={hourlyDone}
+          hourLabel={hourlyHourLabel}
+          pointsLabel={formatMakeupMaxPoints(hourlyMaxPoints)}
+          waitMinutes={hourlyWaitMinutes}
+          learningLabel={trainingLabel}
+          topicPrefix={topicPrefix}
+          topicTitle={topicTitle}
+          hintFallback={trainingHintFallback}
+          onHourlyClick={() => go('competitions')}
+          onLearningClick={openLearningCard}
+        />
 
         {/* Shortcuts — compact tiles; More stays one cell (no extra hub card) */}
         <div className="mb-4 grid grid-cols-3 gap-2 sm:mb-5 sm:gap-2.5">

@@ -16,6 +16,7 @@ import { AWARENESS_STORIES } from '../data/awarenessStories';
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
 import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
+import HomePrimaryActionCards from './HomePrimaryActionCards';
 import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
 import {
@@ -910,6 +911,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
   const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
   const [showOnboardingPreviewSection, setShowOnboardingPreviewSection] = useState(false);
+  const [showHomeCtaPreviewSection, setShowHomeCtaPreviewSection] = useState(false);
   const [showSponsorAdSection, setShowSponsorAdSection] = useState(false);
   const [sponsorAds, setSponsorAds] = useState([]);
   const [sponsorAdsLoading, setSponsorAdsLoading] = useState(false);
@@ -2490,6 +2492,74 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               {deliveryHealth.error && (
                 <p className="mt-2 text-xs text-rose-600">{deliveryHealth.error}</p>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: preview Home hourly + learning CTAs (open vs done) */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowHomeCtaPreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🏠 {isEn ? 'Preview Home CTAs' : 'হোম CTA প্রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showHomeCtaPreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showHomeCtaPreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-5">
+              <div>
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                  {isEn ? 'Hour open' : 'ঘণ্টা খোলা'}
+                </p>
+                <div className="rounded-2xl border border-slate-100 bg-[#fffdf7] p-3">
+                  <HomePrimaryActionCards
+                    demo
+                    bn={!isEn}
+                    hourlyDone={false}
+                    hourLabel="5PM"
+                    pointsLabel="+50"
+                    learningLabel={isEn ? 'Continue Training' : 'শিখতে থাকুন'}
+                    topicPrefix={isEn ? "Today's topic:" : 'আজকের বিষয়:'}
+                    topicTitle={
+                      isEn
+                        ? 'Day-one uniform & PPE'
+                        : 'প্রথম দিনের ইউনিফর্ম ও পিপিই (PPE)'
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                  {isEn ? 'Hour done' : 'ঘণ্টা শেষ'}
+                </p>
+                <div className="rounded-2xl border border-slate-100 bg-[#fffdf7] p-3">
+                  <HomePrimaryActionCards
+                    demo
+                    bn={!isEn}
+                    hourlyDone
+                    hourLabel="5PM"
+                    pointsLabel="+50"
+                    waitMinutes={32}
+                    learningLabel={isEn ? 'Continue Training' : 'শিখতে থাকুন'}
+                    topicPrefix={isEn ? "Today's topic:" : 'আজকের বিষয়:'}
+                    topicTitle={
+                      isEn
+                        ? 'Day-one uniform & PPE'
+                        : 'প্রথম দিনের ইউনিফর্ম ও পিপিই (PPE)'
+                    }
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Preview only — cards are not tappable here.'
+                  : 'শুধু প্রিভিউ — এখানে কার্ডে ট্যাপ করা যাবে না।'}
+              </p>
             </div>
           )}
         </div>
