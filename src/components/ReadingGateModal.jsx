@@ -66,10 +66,6 @@ export default function ReadingGateModal({
     return createPortal(
         <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/45 p-4">
             <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-6 text-left shadow-xl">
-                <div
-                    className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                    aria-hidden="true"
-                />
                 <div className="relative pt-2">
                     <p className={`mb-1 text-xs font-bold text-orange-600 ${bn ? 'font-bengali' : 'uppercase tracking-wider'}`}>
                         {bn ? 'ঘণ্টার কুইজ লক' : 'Hourly quiz locked'}

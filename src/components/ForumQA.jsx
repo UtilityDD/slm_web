@@ -253,10 +253,6 @@ function WaToolbar({ language, filter, onFilter }) {
 function WaHeader({ title, channelButtons, onChannelUnavailable }) {
     return (
         <header className="border-b border-slate-200/80 bg-[#fffdf7]/95 text-slate-900 backdrop-blur-md">
-            <div
-                className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                aria-hidden="true"
-            />
             <div className={`flex items-center gap-2.5 py-2.5 ${SAFE_PAD_X}`}>
                 <SlmBrandAvatar size="sm" />
                 <div className="min-w-0 flex-1">

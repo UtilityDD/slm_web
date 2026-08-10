@@ -27,7 +27,6 @@ import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
-import NativeAppTopBar, { getNativeTopBarTitle } from "./components/NativeAppTopBar";
 import RadioMiniPlayer from "./components/RadioMiniPlayer";
 import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } from "./context/LifeSkillRadioContext";
@@ -1201,8 +1200,7 @@ export default function SmartLinemanUI() {
     const updateStatusBar = async () => {
       const isDark = theme === 'dark';
       const native = isNativeCapacitorPlatform();
-      // Native chrome (safe-area + top title bar) is always cream — dark theme
-      // was painting a navy strip above the cream NativeAppTopBar.
+      // Native chrome (safe-area) is always cream — dark theme was painting a navy strip above cream pages.
       const creamChromeViews = [
         'home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions',
         'menu', 'landing', 'login', 'community', 'my_ppe', 'safety-library', 'my_tools',
@@ -1718,7 +1716,6 @@ export default function SmartLinemanUI() {
                 <div className="native-sheet-panel w-full sm:max-w-sm animate-slide-up-sheet sm:animate-scale-in">
                   <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
                     <NativeSheetHandle />
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
 
                     <div className="flex items-start gap-3 px-5 pb-5 pt-2 sm:p-6 sm:pt-6 text-left">
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 shadow-sm" aria-hidden="true">
@@ -1757,7 +1754,6 @@ export default function SmartLinemanUI() {
                 <div className="native-sheet-panel w-full sm:max-w-md max-h-[85vh] flex flex-col animate-slide-up-sheet sm:animate-scale-in">
                   <div className="native-sheet-card relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
                     <NativeSheetHandle />
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
 
                     <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-6 pt-2 text-left sm:p-7 sm:pt-7">
                       <div className="flex shrink-0 items-start gap-3.5">
@@ -1792,7 +1788,6 @@ export default function SmartLinemanUI() {
                 <div className="native-sheet-panel w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
                   <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
                     <NativeSheetHandle />
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
                     <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 text-left sm:p-7 sm:pt-7">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-2xl leading-none shadow-sm" aria-hidden="true">🚀</span>
                       <div className="min-w-0 flex-1">
@@ -2053,34 +2048,6 @@ export default function SmartLinemanUI() {
               </header>
             )}
 
-            {user && !['login', 'verify', 'landing', 'update-password', 'accident-stories'].includes(currentView) && (
-              <NativeAppTopBar
-                title={getNativeTopBarTitle(currentView, language)}
-                language={language}
-                trailing={
-                  currentView === 'home' ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        void hapticImpact('Light');
-                        setCurrentView('menu');
-                      }}
-                      className={`inline-flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-white px-3 py-1.5 text-xs font-black text-slate-800 shadow-sm transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
-                      aria-label={language === 'bn' ? 'আরও' : 'More'}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden>
-                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                      </svg>
-                      {language === 'bn' ? 'আরও' : 'More'}
-                    </button>
-                  ) : null
-                }
-              />
-            )}
-
             <div
               id="main-scroll-container"
               className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
@@ -2251,10 +2218,6 @@ export default function SmartLinemanUI() {
                 >
                   <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
                     <NativeSheetHandle />
-                    <div
-                      className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                      aria-hidden="true"
-                    />
 
                     <div className="flex items-start gap-3.5 px-6 pb-4 pt-2 sm:p-7 sm:pt-7 text-left">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl leading-none shadow-sm" aria-hidden="true">🌐</span>

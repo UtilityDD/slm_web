@@ -3716,11 +3716,6 @@ export default function Training({
                 </div>
             ) : !selectedChapter && !trainingContent ? (
                 <div className="animate-fade-in-up text-slate-900">
-                    {/* Soft brand accent — Material-style hairline instead of hazard tape */}
-                    <div
-                        className="mb-5 h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                        aria-hidden="true"
-                    />
 
                     {gateFocusPending?.lessonId && (
                         <div className={`mx-auto mb-4 max-w-2xl rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-center shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -4826,7 +4821,6 @@ export default function Training({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-0 shadow-sm">
-                            <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
                             <div className="relative px-5 pb-5 pt-4">
                                 <button
                                     type="button"
@@ -4873,7 +4867,6 @@ export default function Training({
                 <div className="fixed inset-0 z-[210] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4">
                     <div className="relative w-full max-w-md animate-scale-in" role="dialog" aria-modal="true">
                         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-0 shadow-sm">
-                            <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
                             <div className="relative p-6 sm:p-7">
                             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-orange-200/80 bg-orange-100 text-3xl text-orange-700 shadow-sm">
                                 🔒
@@ -4947,10 +4940,6 @@ export default function Training({
                         <div className="lesson-reader-page relative flex h-full w-full flex-col overflow-hidden lg:my-5 lg:h-[calc(100%-2.5rem)] lg:w-[min(44rem,92vw)] lg:max-w-[44rem] lg:rounded-sm lg:border lg:border-stone-300/70">
                             {/* Soft Material reading header */}
                             <div className="sticky top-0 z-[100] border-b border-stone-200/70 bg-[#fcfaf2]/95 backdrop-blur-md">
-                                <div
-                                    className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                                    aria-hidden="true"
-                                />
                                 <div className="mx-auto flex h-14 w-full max-w-3xl items-center px-4 py-2.5 sm:h-16 sm:px-6 sm:py-3 lg:px-8">
                                     <button
                                         type="button"
@@ -5857,7 +5846,6 @@ export default function Training({
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="flex max-h-[min(90vh,900px)] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-0 shadow-sm">
-                            <div className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
                             {/* Close Button */}
                             <button
                                 type="button"
@@ -5919,7 +5907,6 @@ export default function Training({
             {showLessonIndex && createPortal(
                 <div className="fixed inset-0 z-[120] flex animate-slide-in-right flex-col overflow-hidden bg-[#fffdf7] safe-area-inset-top safe-area-inset-bottom">
                     {/* Header */}
-                    <div className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden="true" />
                     <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-white p-6">
                         <div>
                             <h2 className={`text-xl font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>

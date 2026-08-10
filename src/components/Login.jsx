@@ -99,10 +99,6 @@ function LoginPageShell({
 }) {
     return (
         <div className="landing-modern relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#fffdf7] px-4 py-6 text-slate-900 touch-manipulation safe-area-inset-bottom native-keyboard-pad">
-            <div
-                className="absolute inset-x-0 top-0 z-20 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                aria-hidden="true"
-            />
             <div className={`relative z-10 w-full max-w-sm shrink-0 space-y-4 pt-2 ${animate}`}>
                 {onGoHome && (
                     <button

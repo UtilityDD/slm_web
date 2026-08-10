@@ -103,10 +103,6 @@ export default function MorePage({
 
   return (
     <div className="min-h-full bg-[#fffdf7] pb-24 text-slate-900">
-      <div
-        className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-        aria-hidden="true"
-      />
 
       {/* Profile header */}
       <header className="border-b border-slate-200/80 bg-[#fffdf7]/90 px-4 py-3 backdrop-blur-md">

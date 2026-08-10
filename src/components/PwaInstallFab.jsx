@@ -122,10 +122,6 @@ export default function PwaInstallFab({ language = 'en', aboveStickyCta = false,
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
-                <div
-                  className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                  aria-hidden="true"
-                />
 
                 <div className="flex items-start gap-3.5 p-6 pt-7 sm:p-7 text-left">
                   <span

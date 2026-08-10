@@ -29,10 +29,6 @@ export default function HourlyPenaltyInfoModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
-                    <div
-                        className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                        aria-hidden="true"
-                    />
 
                     <div className="p-5 pt-7 text-center sm:p-6 sm:text-left">
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 shadow-sm sm:mx-0">

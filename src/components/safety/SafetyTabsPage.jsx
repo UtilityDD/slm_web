@@ -40,10 +40,6 @@ export default function SafetyTabsPage({ activeTab, setCurrentView, language, us
 
     return (
         <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#fffdf7] text-slate-900">
-            <div
-                className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                aria-hidden="true"
-            />
 
             <div className="z-[100] shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                 <div className="mx-auto max-w-7xl px-4 py-3 sm:px-8">

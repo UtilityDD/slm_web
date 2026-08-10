@@ -268,10 +268,6 @@ export default function VideoGuide({ language }) {
                 <div className="fixed inset-0 z-[150] flex animate-fade-in items-end justify-center bg-slate-900/45 p-0 sm:items-center sm:p-4">
                     <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:max-h-[88vh] sm:rounded-2xl sm:animate-scale-in animate-slide-up-sheet">
                         <div className="relative flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/80 bg-[#fffdf7] px-4 py-3">
-                            <div
-                                className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                                aria-hidden="true"
-                            />
                             <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-orange-700">
                                 {selectedVideo.category}
                             </span>

@@ -116,10 +116,6 @@ const OnboardingSequence = ({ language, onComplete, preview = false }) => {
       >
         <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
           <NativeSheetHandle />
-          <div
-            className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-            aria-hidden
-          />
 
           {/* Ticket header */}
           <div className="flex items-center justify-between gap-3 px-5 pt-1 sm:px-6">

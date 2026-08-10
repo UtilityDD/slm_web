@@ -856,10 +856,6 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                         aria-modal="true"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div
-                            className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                            aria-hidden="true"
-                        />
 
                         <div className="flex items-start justify-between gap-3 border-b border-slate-200/80 px-5 pb-4 pt-6 sm:px-6">
                             <div className="min-w-0">

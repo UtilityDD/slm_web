@@ -309,7 +309,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     if (loading) {
         return (
             <main className={pageShell}>
-                <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden />
                 <div className="mx-auto max-w-lg space-y-4 px-4 py-4 sm:max-w-6xl sm:px-6 sm:py-6">
                     {renderBackButton()}
                     <div className="animate-pulse space-y-4">
@@ -329,7 +328,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     if (error || !profile) {
         return (
             <main className={pageShell}>
-                <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden />
                 <div className="mx-auto max-w-lg space-y-4 px-4 py-6 sm:max-w-3xl sm:px-6">
                     {renderBackButton()}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
@@ -350,7 +348,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
     return (
         <main className={`relative ${pageShell} px-4 pb-28 pt-0 sm:px-6 sm:pb-10`}>
-            <div className="h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80" aria-hidden />
 
             <div className="relative z-10 mx-auto max-w-lg space-y-4 pt-4 sm:max-w-6xl sm:space-y-6 sm:pt-6">
                 <div className="flex items-center justify-between gap-3">

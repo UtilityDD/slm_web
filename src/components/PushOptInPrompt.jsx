@@ -122,10 +122,6 @@ export default function PushOptInPrompt({
         aria-labelledby="push-optin-title"
       >
         <div className="relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
-          <div
-            className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-            aria-hidden="true"
-          />
           <div className={`px-5 pb-5 pt-6 ${bn ? 'font-bengali' : ''}`}>
             <h2 id="push-optin-title" className="text-xl font-bold leading-snug text-slate-900">
               {copy.title}

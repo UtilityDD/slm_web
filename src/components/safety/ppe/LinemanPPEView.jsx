@@ -239,10 +239,6 @@ export default function LinemanPPEView({
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#fffdf7] text-slate-900 animate-fadeIn">
-            <div
-                className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                aria-hidden="true"
-            />
 
             <div className="shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/90 px-4 py-4 backdrop-blur-md sm:px-8">
                 <div className="mx-auto max-w-7xl">

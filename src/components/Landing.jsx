@@ -586,10 +586,6 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
         calmEntrance ? ' landing-skip-entrance' : ''
       }${!ambientOn ? ' landing-hold-ambient' : ''}`}
     >
-      <div
-        className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-        aria-hidden="true"
-      />
 
       {/* Top bar */}
       <div className="landing-header-bar sticky top-0 z-20">

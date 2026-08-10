@@ -2123,14 +2123,9 @@ export default function Competitions({
     if (showFullBoards) {
         return (
             <main className="min-h-screen bg-[#fffdf7] text-slate-900">
-                {/* Soft brand accent — Material-style hairline instead of hazard tape */}
-                <div
-                    className="sticky top-0 z-[41] h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                    aria-hidden="true"
-                />
 
                 {/* Sticky controls — tabs first, no page title */}
-                <div className="sticky top-[4px] z-40 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
+                <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
                         {!showHallOfFame && leaderboardTab === 'monthly' && (
                             <div className="flex w-full min-w-0 gap-1 rounded-full bg-slate-100/90 p-1 shadow-sm">

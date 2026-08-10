@@ -1038,10 +1038,6 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         <div className="absolute inset-0 bg-slate-900/55" onClick={closeDetailModal} aria-hidden="true" />
 
                         <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-3xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)]">
-                            <div
-                                className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                                aria-hidden="true"
-                            />
                             <div className="mx-auto mb-1 mt-2 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-300 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
 
                             <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-200/80 bg-white/95 px-3 py-2 backdrop-blur-md sm:px-6 sm:py-3">
@@ -1221,11 +1217,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
     return (
         <div className="min-h-screen bg-[#fffdf7] pb-20 text-slate-900">
-            <div
-                className="sticky top-0 z-[101] h-1 w-full bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-                aria-hidden="true"
-            />
-            <div className="sticky top-[4px] z-[100] border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
+            <div className="sticky top-0 z-[100] border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                 {searchAndCategories}
             </div>
             {libraryContent}

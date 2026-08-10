@@ -36,10 +36,6 @@ export default function LogoutConfirmationModal({ onConfirm, onCancel, language,
       >
         <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
           <NativeSheetHandle />
-          <div
-            className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-            aria-hidden="true"
-          />
 
           <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 sm:p-7 sm:pt-7 text-left">
             <span

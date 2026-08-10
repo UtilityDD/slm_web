@@ -660,10 +660,6 @@ export default function Home({
 
   return (
     <div className={`min-h-full bg-[#fffdf7] pb-28 text-slate-900 ${bn ? 'home-screen--bn' : ''}`}>
-      <div
-        className="h-1 w-full shrink-0 bg-gradient-to-r from-orange-400 via-amber-300 to-orange-400 opacity-80"
-        aria-hidden="true"
-      />
 
       <div className="mx-auto max-w-lg px-4 pt-4 sm:pt-5">
         <header className="mb-4 flex items-center justify-between gap-3 sm:mb-5">
@@ -671,35 +667,39 @@ export default function Home({
             <p className={`font-semibold text-slate-500 ${bn ? 'font-bengali text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>
               {bn ? 'নমস্কার' : 'Hello'}
             </p>
-            <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-2">
-              <h1 className={`truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'}`}>
-                {displayName}
-              </h1>
+            <h1 className={`mt-0.5 truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'}`}>
+              {displayName}
+            </h1>
+            <div className={`mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
               <span
-                className={`inline-flex shrink-0 items-center justify-center rounded-full px-2.5 font-black leading-none ${badge.color} ${bn ? 'h-7 text-[13px]' : 'h-6 text-[11px]'}`}
+                className="inline-flex max-w-full items-center truncate font-bold"
                 style={bn ? { fontFamily: "'Hind Siliguri', 'Noto Serif Bengali', sans-serif" } : undefined}
               >
                 {badgeName}
               </span>
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="text-slate-300" aria-hidden>
+                ·
+              </span>
               <button
                 type="button"
                 onClick={() => go('leaderboard')}
-                className={`inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 font-black text-amber-800 ring-1 ring-amber-200/80 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}
+                className="inline-flex min-w-0 items-center gap-1 font-bold text-amber-800 transition-colors hover:text-amber-950 active:scale-[0.98]"
               >
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M7 6H5.5a2 2 0 0 0 0 4H7M17 6h1.5a2 2 0 0 1 0 4H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
-                {rankDisplay || (bn ? 'র‍্যাঙ্ক' : 'Rank')}
+                <span className="truncate">{rankDisplay || (bn ? 'র‍্যাঙ্ক' : 'Rank')}</span>
               </button>
-              <div className={`inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-2.5 py-1 font-black text-orange-800 ring-1 ring-orange-200/80 ${bn ? 'text-sm' : 'text-xs'}`}>
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[9px] text-white" aria-hidden>
+              <span className="text-slate-300" aria-hidden>
+                ·
+              </span>
+              <span className="inline-flex items-center gap-1 font-bold tabular-nums text-orange-800">
+                <span className="text-amber-500" aria-hidden>
                   ★
                 </span>
-                <span className="tabular-nums">{scoreDisplay}</span>
-              </div>
+                {scoreDisplay}
+              </span>
             </div>
           </div>
 
