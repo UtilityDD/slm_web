@@ -73,6 +73,22 @@ import LeaderboardRankChip from './LeaderboardRankChip';
 import ReadingLevelAvatarFrame from './ReadingLevelAvatarFrame';
 import LeaderboardUserSheet from './LeaderboardUserSheet';
 
+/** Sync peek of SWR monthly cache so Rank can paint before network. */
+function peekCachedMonthlyLeaderboard() {
+    const now = new Date();
+    const m = now.getMonth() + 1;
+    const y = now.getFullYear();
+    const data = cacheHelper.get(`leaderboard_monthly_ist_${y}_${m}`);
+    return Array.isArray(data) ? data : [];
+}
+
+function peekCachedEncouragementBoards(lang = 'bn') {
+    const now = new Date();
+    const m = now.getMonth() + 1;
+    const y = now.getFullYear();
+    return cacheHelper.get(`leaderboard_encouragement_ist_${y}_${m}_${lang}`) || null;
+}
+
 const LiveIndicator = () => (
     <div className="live-pulse" title="Live Now">
         <span className="live-pulse-ring"></span>
@@ -399,8 +415,12 @@ export default function Competitions({
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
     const [leaderboardTab, setLeaderboardTab] = useState('monthly'); // 'monthly' | 'all-time'
     const [monthlyBoardTab, setMonthlyBoardTab] = useState(MONTHLY_SUB_TAB.CHAMPION);
-    const [monthlyLeaderboard, setMonthlyLeaderboard] = useState([]);
-    const [encouragementBoards, setEncouragementBoards] = useState(null);
+    const [monthlyLeaderboard, setMonthlyLeaderboard] = useState(() => (
+        isFullLeaderboard ? peekCachedMonthlyLeaderboard() : []
+    ));
+    const [encouragementBoards, setEncouragementBoards] = useState(() => (
+        isFullLeaderboard ? peekCachedEncouragementBoards(language) : null
+    ));
     const [loadingMonthly, setLoadingMonthly] = useState(false);
     const [showHint, setShowHint] = useState(false);
     const [hintViewedQuestions, setHintViewedQuestions] = useState(new Set());
@@ -807,22 +827,31 @@ export default function Competitions({
             ];
 
             if (isFullLeaderboard) {
+                // Rank / Prizes: cache-first monthly boards (force only when caller asks)
                 promises.push(fetchMonthlyLeaderboard(forceRefresh));
             } else {
                 promises.push(fetchHourlyQuiz());
             }
 
-            // Only fetch leaderboard if user is logged in
             if (user) {
-                promises.push(fetchLeaderboard());
-                promises.push(fetchTodayAttempts());
-                promises.push(fetchUserRank(forceRefresh));
-                
-                // Background pre-fetch for smoother experience
-                if (!isFullLeaderboard) {
+                if (isFullLeaderboard) {
+                    // Soft user rank for all-time sticky bar; skip Play-only fetches
+                    promises.push(fetchUserRank(forceRefresh));
+                    if (isPrizesSurface) {
+                        fetchHallOfFameGallery(forceRefresh);
+                    } else if (isRankSurface) {
+                        // Month winners reveal — warm after paint, never force on open
+                        queueMicrotask(() => {
+                            fetchHallOfFameGallery(false);
+                        });
+                    }
+                } else {
+                    promises.push(fetchLeaderboard());
+                    promises.push(fetchTodayAttempts());
+                    promises.push(fetchUserRank(forceRefresh));
                     fetchMonthlyLeaderboard(forceRefresh);
+                    fetchHallOfFameGallery(forceRefresh);
                 }
-                fetchHallOfFameGallery(forceRefresh);
             }
 
             await Promise.all(promises);
@@ -834,8 +863,9 @@ export default function Competitions({
     };
 
     useEffect(() => {
-        // Passing forceRefresh=true on mount or manual refresh
-        loadData(true); 
+        // Rank/Prizes: cache-first open. Play: keep force refresh (hourly ladder freshness).
+        // Quiz submit / pull-to-refresh still force monthly elsewhere.
+        loadData(isFullLeaderboard ? false : true);
         window.scrollTo({ top: 0, behavior: 'instant' });
         const mainContent = document.getElementById('main-scroll-container');
         if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'instant' });
@@ -870,7 +900,9 @@ export default function Competitions({
     }, [isFullLeaderboard]);
 
     useEffect(() => {
-        // Timer Logic
+        // Hourly countdown is Play-only — skip on Rank/Prizes to avoid 1s full-tree re-renders
+        if (isFullLeaderboard) return undefined;
+
         const updateTimer = () => {
             const now = getIstDate(getSyncedTime());
             const minutes = 59 - now.getUTCMinutes();
@@ -880,7 +912,7 @@ export default function Competitions({
         updateTimer();
         const interval = setInterval(updateTimer, 1000);
         return () => clearInterval(interval);
-    }, [serverTimeOffset]); // Update timer when offset is calculated
+    }, [serverTimeOffset, isFullLeaderboard]);
 
     // Simplified Hourly Quiz ID Generation
     const getHourlyQuizId = () => {
@@ -1636,6 +1668,15 @@ export default function Competitions({
     };
 
     const fetchMonthlyLeaderboard = async (forceRefresh = false) => {
+        // Paint from disk cache immediately when remounting with empty React state
+        if (!forceRefresh) {
+            const cachedMonthly = peekCachedMonthlyLeaderboard();
+            const cachedBoards = peekCachedEncouragementBoards(language);
+            if (cachedMonthly.length > 0) setMonthlyLeaderboard(cachedMonthly);
+            if (cachedBoards) setEncouragementBoards(cachedBoards);
+        }
+
+        // Always track load for empty sub-tabs; UI only blocks when the visible list is empty
         setLoadingMonthly(true);
         try {
             const [monthlyResult, boardsResult] = await Promise.allSettled([
@@ -2368,7 +2409,7 @@ export default function Competitions({
                     {leaderboardTab === 'monthly' && (
                         <div className="mx-auto mb-1 flex max-w-2xl items-start gap-2 px-2 sm:mb-2 sm:items-center sm:gap-3">
                             <div className="min-w-0 flex-1">
-                                {!loadingMonthly && monthlyBoardMeta ? (
+                                {monthlyBoardMeta ? (
                                     <MonthlyBoardHeader
                                         meta={monthlyBoardMeta}
                                         language={language}
@@ -2386,16 +2427,41 @@ export default function Competitions({
 
                     {/* Winners Podium / List Container */}
                     <div className="space-y-4">
-                        {(leaderboardTab === 'all-time' ? loadingFull : loadingMonthly) ? (
-                            <div
-                                className="flex min-h-[min(50vh,420px)] flex-col items-center justify-center py-16"
-                                role="status"
-                                aria-live="polite"
-                                aria-busy="true"
-                            >
-                                <BrutalLoaderContent compact message={t.loadingText} />
+                        {(() => {
+                            const boardList = leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList;
+                            const boardLoading = leaderboardTab === 'all-time' ? loadingFull : loadingMonthly;
+                            const showBoardLoader = boardLoading && boardList.length === 0;
+
+                            if (showBoardLoader) {
+                                return (
+                                    <div
+                                        className="space-y-2 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm"
+                                        role="status"
+                                        aria-live="polite"
+                                        aria-busy="true"
+                                    >
+                                        {Array.from({ length: 8 }).map((_, i) => (
+                                            <SkeletonRow key={i} />
+                                        ))}
+                                    </div>
+                                );
+                            }
+
+                            if (boardList.length === 0) {
+                                return (
+                            <div className="text-center py-16">
+                                <div className="inline-block rounded-2xl border border-slate-200/80 bg-white px-6 py-8 shadow-sm">
+                                    <p className="text-slate-600 font-semibold italic">
+                                {leaderboardTab === 'monthly' && monthlyBoardMeta?.emptyHint
+                                    ? monthlyBoardMeta.emptyHint
+                                    : (language === 'en' ? 'No rankings found for this category.' : 'এই বিভাগে কোনো র‍্যাঙ্কিং পাওয়া যায়নি।')}
+                                    </p>
+                                </div>
                             </div>
-                        ) : (leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList).length > 0 ? (
+                                );
+                            }
+
+                            return (
                             <>
                                 {/* Top 3 — compact strip on monthly; tall podium on all-time */}
                                 {(() => {
@@ -2720,17 +2786,8 @@ export default function Competitions({
                                     })}
                                 </div>
                             </>
-                        ) : (
-                            <div className="text-center py-16">
-                                <div className="inline-block rounded-2xl border border-slate-200/80 bg-white px-6 py-8 shadow-sm">
-                                    <p className="text-slate-600 font-semibold italic">
-                                {leaderboardTab === 'monthly' && monthlyBoardMeta?.emptyHint
-                                    ? monthlyBoardMeta.emptyHint
-                                    : (language === 'en' ? 'No rankings found for this category.' : 'এই বিভাগে কোনো র‍্যাঙ্কিং পাওয়া যায়নি।')}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 </div>
 

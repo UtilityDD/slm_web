@@ -565,7 +565,7 @@ export default function SmartLinemanUI() {
   }, []);
 
   // Background Pre-fetching for Leaderboard & Monthly Stars
-  // Warm-cache only — Competitions / Training rank still fetch when opened.
+  // Warm-cache only — Rank opens cache-first (no force refresh on mount).
   // Deferred longer after login so Supabase lesson sync is not starved.
   useEffect(() => {
     if (user) {
@@ -575,11 +575,12 @@ export default function SmartLinemanUI() {
       const timer = setTimeout(() => {
         leaderboardService.fetchAllTime();
         leaderboardService.fetchMonthly();
+        leaderboardService.fetchEncouragementBoards(false, language);
         leaderboardService.fetchHallOfFame();
       }, 10000);
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, language]);
 
   // Silent Web Push sync when permission already granted (no prompt, no existing-flow changes).
   useEffect(() => {
