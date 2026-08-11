@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
 import { getBadgeByLevel } from '../utils/badgeUtils';
@@ -17,15 +17,12 @@ import {
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { resolveHomeLearningTopic } from '../utils/homeLearningTopic';
 import HomePrimaryActionCards from './HomePrimaryActionCards';
+import HomeTipBoard from './HomeTipBoard';
+import { useCachedAvatar } from '../hooks/useCachedAvatar';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
 const LAST_TIP_INDEX_KEY = 'slm_home_tip_last_index';
-/** How long a tip stays before rotating while user remains on Home.
- *  Longer dwell for field users who read slowly / in Bangla. */
-const HOME_TIP_ROTATE_MS = 32000;
-/** Match CSS exit duration before swapping content. */
-const HOME_TIP_EXIT_MS = 320;
 /** Current IST hourly quiz start hour, e.g. "2PM" (English digits always). */
 function formatIstHourLabel() {
   const now = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
@@ -45,18 +42,15 @@ function minutesUntilNextIstHour() {
   return Math.max(1, Math.ceil(msLeft / 60000));
 }
 
-function normalizeHomeTip(tip, bn) {
-  const fallbackTitle = bn ? 'মনে রাখবেন' : 'Remember';
+function normalizeHomeTip(tip) {
   if (!tip) return null;
   if (typeof tip === 'string') {
     const text = tip.trim();
-    return text ? { title: fallbackTitle, text } : null;
+    return text ? { text } : null;
   }
   if (typeof tip === 'object') {
     const text = String(tip.text || tip.rule || '').trim();
-    if (!text) return null;
-    const title = String(tip.title || '').trim() || fallbackTitle;
-    return { title, text };
+    return text ? { text } : null;
   }
   return null;
 }
@@ -94,14 +88,6 @@ function writeLastTipIndex(index) {
   }
 }
 
-function prefersReducedMotion() {
-  try {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  } catch {
-    return false;
-  }
-}
-
 export default function Home({
   setCurrentView,
   language,
@@ -113,10 +99,7 @@ export default function Home({
   const bn = language === 'bn';
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState(null);
-  const [tipAnim, setTipAnim] = useState('in'); // 'in' | 'out'
-  const [tipRules, setTipRules] = useState([]);
-  const tipIndexRef = useRef(-1);
-  const tipSwapTimerRef = useRef(null);
+  const [tipBoardOpen, setTipBoardOpen] = useState(false);
   const [isHourlyPending, setIsHourlyPending] = useState(true);
   const [hourlyChecked, setHourlyChecked] = useState(false);
   const [hourlyMaxPoints, setHourlyMaxPoints] = useState(HOURLY_POINTS_PER_PACK);
@@ -124,6 +107,7 @@ export default function Home({
   const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
   const [userRank, setUserRank] = useState(null);
   const [learningTopic, setLearningTopic] = useState(null);
+  const avatarSrc = useCachedAvatar(user?.id, userProfile?.avatar_url, !!userProfile);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -163,38 +147,30 @@ export default function Home({
     };
   }, [user?.id]);
 
+  // One fixed tip per Home visit — no auto-rotate while staying on the page.
   useEffect(() => {
     let cancelled = false;
 
     const fallback = normalizeHomeTip(
       bn
-        ? { title: 'ভুলবেন না', text: 'যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।' }
-        : { title: 'Remember', text: 'Always test for voltage before touching any conductor.' },
-      bn
+        ? 'যেকোনো কন্ডাক্টর স্পর্শ করার আগে সর্বদা ভোল্টেজ পরীক্ষা করুন।'
+        : 'Always test for voltage before touching any conductor.'
     );
 
     const loadTip = async () => {
       try {
-        const response = await fetch('/quizzes/carousol.json');
+        const fileName = bn ? 'carousol.json' : 'carousol_en.json';
+        const response = await fetch(`/quizzes/${fileName}`);
         const data = await response.json();
         const rules = Array.isArray(data.rules) ? data.rules : [];
         const nextIndex = pickRandomTipIndex(rules.length, readLastTipIndex());
-        const tip =
-          nextIndex >= 0
-            ? normalizeHomeTip(rules[nextIndex], bn)
-            : null;
+        const tip = nextIndex >= 0 ? normalizeHomeTip(rules[nextIndex]) : null;
 
         if (cancelled) return;
-        setTipRules(rules);
-        tipIndexRef.current = nextIndex;
         if (nextIndex >= 0) writeLastTipIndex(nextIndex);
-        setTipAnim('in');
         setHomeTip(tip || fallback);
       } catch {
         if (cancelled) return;
-        setTipRules([]);
-        tipIndexRef.current = -1;
-        setTipAnim('in');
         setHomeTip(fallback);
       }
     };
@@ -202,78 +178,8 @@ export default function Home({
     loadTip();
     return () => {
       cancelled = true;
-      if (tipSwapTimerRef.current) {
-        clearTimeout(tipSwapTimerRef.current);
-        tipSwapTimerRef.current = null;
-      }
     };
   }, [bn]);
-
-  // Rotate tip while user stays on Home (pause when tab hidden).
-  useEffect(() => {
-    if (tipRules.length < 2) return undefined;
-
-    let rotateTimer = null;
-    let cancelled = false;
-
-    const clearSwap = () => {
-      if (tipSwapTimerRef.current) {
-        clearTimeout(tipSwapTimerRef.current);
-        tipSwapTimerRef.current = null;
-      }
-    };
-
-    const showNextTip = () => {
-      if (cancelled || document.visibilityState === 'hidden') return;
-
-      const nextIndex = pickRandomTipIndex(tipRules.length, tipIndexRef.current);
-      if (nextIndex < 0) return;
-      const nextTip = normalizeHomeTip(tipRules[nextIndex], bn);
-      if (!nextTip) return;
-
-      const applyNext = () => {
-        if (cancelled) return;
-        tipIndexRef.current = nextIndex;
-        writeLastTipIndex(nextIndex);
-        setHomeTip(nextTip);
-        setTipAnim('in');
-      };
-
-      if (prefersReducedMotion()) {
-        applyNext();
-        return;
-      }
-
-      setTipAnim('out');
-      clearSwap();
-      tipSwapTimerRef.current = setTimeout(applyNext, HOME_TIP_EXIT_MS);
-    };
-
-    const startRotate = () => {
-      if (rotateTimer) clearInterval(rotateTimer);
-      rotateTimer = setInterval(showNextTip, HOME_TIP_ROTATE_MS);
-    };
-
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        if (rotateTimer) clearInterval(rotateTimer);
-        rotateTimer = null;
-        clearSwap();
-        return;
-      }
-      startRotate();
-    };
-
-    if (document.visibilityState !== 'hidden') startRotate();
-    document.addEventListener('visibilitychange', onVisibility);
-
-    return () => {
-      cancelled = true;
-      if (rotateTimer) clearInterval(rotateTimer);
-      clearSwap();
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, [tipRules, bn]);
 
   // Keep the hourly CTA clock label in sync with IST (and when tab becomes visible).
   useEffect(() => {
@@ -689,19 +595,17 @@ export default function Home({
             <p className={`font-semibold text-slate-500 ${bn ? 'font-bengali text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>
               {bn ? 'নমস্কার' : 'Hello'}
             </p>
-            <h1 className={`mt-0.5 truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'}`}>
-              {displayName}
-            </h1>
-            <div className={`mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
+            <div className="mt-0.5 flex min-w-0 items-center gap-2">
+              <h1 className={`min-w-0 truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'}`}>
+                {displayName}
+              </h1>
               <span
-                className="inline-flex max-w-full items-center truncate font-bold"
-                style={bn ? { fontFamily: "'Hind Siliguri', 'Noto Serif Bengali', sans-serif" } : undefined}
+                className={`home-level-badge inline-flex shrink-0 items-center justify-center rounded-full px-2 font-black ${badge.color} ${bn ? 'home-level-badge--bn font-bengali' : 'py-0.5 text-[10px] uppercase leading-none tracking-wide sm:text-[11px]'}`}
               >
-                {badgeName}
+                <span className={bn ? 'home-level-badge__label' : undefined}>{badgeName}</span>
               </span>
-              <span className="text-slate-300" aria-hidden>
-                ·
-              </span>
+            </div>
+            <div className={`mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
               <button
                 type="button"
                 onClick={() => go('leaderboard')}
@@ -732,8 +636,8 @@ export default function Home({
             aria-label={bn ? 'প্রোফাইল' : 'Profile'}
           >
             <div className="flex h-[4.75rem] w-[4.75rem] items-center justify-center overflow-hidden rounded-full border border-orange-200/80 bg-orange-400 text-slate-900 shadow-sm sm:h-[5.25rem] sm:w-[5.25rem]">
-              {userProfile?.avatar_url ? (
-                <img src={userProfile.avatar_url} alt="" className="h-full w-full object-cover" />
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="" className="h-full w-full object-cover" decoding="async" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center p-3.5 text-slate-900">
                   <UserIcon className="h-full w-full" />
@@ -747,36 +651,36 @@ export default function Home({
           </button>
         </header>
 
-        {/* Field tip — rotates while user stays on Home */}
+        {/* Field tip — fixed display board for this visit; tap opens full board */}
         {homeTip?.text && (
-          <div
-            className="home-safety-tip relative mb-4 rounded-2xl border border-orange-200/90 bg-gradient-to-br from-orange-50 via-amber-50/80 to-white px-3.5 py-3.5 shadow-sm sm:mb-5 sm:px-4"
-            aria-live="polite"
+          <button
+            type="button"
+            onClick={() => setTipBoardOpen(true)}
+            className="home-tip-board home-tip-board--card mb-4 w-full text-left sm:mb-5"
+            aria-label={bn ? 'টিপ দেখুন' : 'View tip'}
           >
-            <div className="home-safety-tip__body">
-              <div className="mb-1.5 flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center text-orange-600" aria-hidden>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                    <path d="M12 9v4" />
-                    <path d="M12 17h.01" />
-                  </svg>
-                </span>
-                <p
-                  key={`t-${homeTip.title}`}
-                  className={`font-bold text-orange-700 home-safety-tip__copy home-safety-tip__copy--${tipAnim} ${bn ? 'font-bengali text-xs' : 'text-[10px]'}`}
-                >
-                  {homeTip.title}
-                </p>
-              </div>
+            <div className="home-tip-board__inner">
               <p
-                key={`b-${homeTip.text}`}
-                className={`home-safety-tip__shine home-safety-tip__shine--body font-semibold leading-relaxed home-safety-tip__copy home-safety-tip__copy--${tipAnim} ${bn ? 'font-bengali text-base sm:text-lg' : 'text-sm sm:text-[15px]'}`}
+                className={`home-tip-board__text line-clamp-3 ${bn ? 'font-bengali' : ''}`}
               >
                 {homeTip.text}
               </p>
+              <span className={`home-tip-board__hint ${bn ? 'font-bengali' : ''}`}>
+                {bn ? 'ট্যাপ করুন' : 'Tap to view'}
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                  <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
             </div>
-          </div>
+          </button>
+        )}
+
+        {tipBoardOpen && homeTip?.text && (
+          <HomeTipBoard
+            text={homeTip.text}
+            language={language}
+            onClose={() => setTipBoardOpen(false)}
+          />
         )}
 
         <HomePrimaryActionCards

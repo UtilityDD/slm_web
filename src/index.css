@@ -3878,21 +3878,16 @@ body,
 
   .home-hourly-cta__chevron {
     display: inline-flex;
-    height: 2rem;
-    width: 2rem;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    border-radius: 9999px;
-    background: rgb(255 255 255 / 0.16);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
     color: #fff7ed;
   }
 
   .home-hourly-cta__chevron svg {
     display: block;
-    height: 1.05rem;
-    width: 1.05rem;
+    height: 1.25rem;
+    width: 1.25rem;
   }
 
   @media (min-width: 640px) {
@@ -3928,17 +3923,251 @@ body,
     }
   }
 
-  /* Home field tip — soft light sweep across full tip text */
-  .home-safety-tip {
+/* Home header level badge — Bengali sits high in the em-box; nudge label down */
+  .home-level-badge--bn {
+    font-family: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+    min-height: 1.375rem;
+    padding: 0 0.55rem;
+    line-height: 1;
+  }
+
+  .home-level-badge--bn .home-level-badge__label {
+    display: block;
+    line-height: 1.15;
+    /* Optical center: push script down inside the chip */
+    padding-top: 0.22em;
+    transform: translateY(0.08em);
+  }
+
+  @media (min-width: 640px) {
+    .home-level-badge--bn {
+      font-size: 0.75rem;
+      min-height: 1.5rem;
+      padding: 0 0.65rem;
+    }
+  }
+
+  /* Home tip — paper strip on Home + full-bleed blank-board stage */
+  .home-tip-board {
+    --tip-paper: #fffdf6;
+    --tip-paper-edge: #e8dcc4;
+    --tip-ink: #2a2418;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .home-tip-board--card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .home-tip-board--card:active {
+    transform: scale(0.99);
+  }
+
+  .home-tip-board__inner {
     position: relative;
+    border-radius: 0.35rem;
+    padding: 0.9rem 1rem 0.75rem;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, transparent 42%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 11px,
+        rgba(139, 110, 60, 0.045) 11px,
+        rgba(139, 110, 60, 0.045) 12px
+      ),
+      var(--tip-paper);
+    border: 1px solid var(--tip-paper-edge);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 6px 16px rgba(70, 50, 20, 0.08),
+      0 1px 2px rgba(70, 50, 20, 0.06);
   }
 
-  .home-safety-tip__body {
-    min-height: 4.75rem;
+  .home-tip-board__inner::before {
+    content: '';
+    position: absolute;
+    left: 0.55rem;
+    top: 0.55rem;
+    bottom: 0.55rem;
+    width: 2px;
+    border-radius: 1px;
+    background: rgba(196, 80, 40, 0.28);
+    pointer-events: none;
   }
 
-  .home-screen--bn .home-safety-tip__body {
-    min-height: 5.75rem;
+  .home-tip-board__text {
+    margin: 0;
+    padding-left: 0.55rem;
+    color: var(--tip-ink);
+    font-weight: 650;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .home-screen--bn .home-tip-board__text {
+    font-size: 0.9375rem;
+    line-height: 1.45;
+  }
+
+  .home-tip-board__hint {
+    margin-top: 0.4rem;
+    padding-left: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #9a7a4a;
+    opacity: 0.8;
+  }
+
+  .home-screen--bn .home-tip-board__hint {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.7rem;
+  }
+
+  .home-tip-stage {
+    background: #1a120c;
+  }
+
+  .home-tip-stage__viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  /* Full-bleed frame — art covers the entire screen */
+  .home-tip-stage__frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .home-tip-stage__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+  }
+
+  /*
+   * Board face on 2:3 art. On tall phones cover crops sides only,
+   * so vertical % still match the board. Wide screens: slight nudge.
+   */
+  .home-tip-stage__embed {
+    position: absolute;
+    z-index: 10;
+    left: 15.5%;
+    right: 15.5%;
+    top: 47.4%;
+    bottom: 26.2%;
+    display: grid;
+    place-items: center;
+    padding: 2.8% 2.2% 2.4%;
+    box-sizing: border-box;
+    pointer-events: none;
+    container-type: size;
+    animation: homeTipBoardRise 0.4s ease both;
+  }
+
+  /* Wider than 2:3 — cover crops top/bottom; keep board in view */
+  @media (min-aspect-ratio: 2/3) {
+    .home-tip-stage__art {
+      object-position: center 42%;
+    }
+
+    .home-tip-stage__embed {
+      left: 18%;
+      right: 18%;
+      top: 42%;
+      bottom: 33%;
+      padding: 2.5% 2%;
+    }
+  }
+
+  .home-tip-stage__embed-text {
+    margin: 0;
+    width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    text-align: center;
+    color: #2c2114;
+    font-weight: 800;
+    line-height: 1.32;
+    letter-spacing: 0.005em;
+    text-wrap: balance;
+    text-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.4);
+    /* Keep Bengali matras / first-line ascenders inside the clip */
+    padding-top: 0.15em;
+    box-sizing: border-box;
+  }
+
+  /* Scale type from the board box so it fills and stays centered */
+  .home-tip-stage__embed-text.is-sm {
+    font-size: clamp(0.92rem, 20cqh, 1.4rem);
+  }
+
+  .home-tip-stage__embed-text.is-md {
+    font-size: clamp(0.8rem, 16cqh, 1.12rem);
+  }
+
+  .home-tip-stage__embed-text.is-lg {
+    font-size: clamp(0.68rem, 13cqh, 0.95rem);
+    line-height: 1.28;
+  }
+
+  .home-tip-stage__embed-text.is-xl {
+    font-size: clamp(0.6rem, 11cqh, 0.84rem);
+    line-height: 1.26;
+  }
+
+  .home-tip-stage__embed-text.is-bn.is-sm {
+    font-size: clamp(0.98rem, 21.5cqh, 1.48rem);
+  }
+
+  .home-tip-stage__embed-text.is-bn.is-md {
+    font-size: clamp(0.85rem, 17cqh, 1.18rem);
+  }
+
+  .home-tip-stage__embed-text.is-bn.is-lg {
+    font-size: clamp(0.72rem, 14cqh, 0.98rem);
+  }
+
+  .home-tip-stage__embed-text.is-bn.is-xl {
+    font-size: clamp(0.64rem, 12cqh, 0.86rem);
+  }
+
+  @keyframes homeTipBoardRise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-tip-board--card,
+    .home-tip-stage__embed {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 
   /* Bangla bottom-nav labels — still readable, tighter under larger icons */
@@ -3946,111 +4175,6 @@ body,
     font-size: 0.75rem;
     line-height: 1.15;
     letter-spacing: 0;
-  }
-
-  .home-safety-tip__copy--in {
-    animation: homeTipIn 0.4s ease both;
-  }
-
-  .home-safety-tip__copy--out {
-    animation: homeTipOut 0.28s ease both;
-  }
-
-  @keyframes homeTipIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes homeTipOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-
-  .home-safety-tip__shine {
-    background-size: 220% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: homeTipTextLight 6.5s linear infinite;
-  }
-
-  .home-safety-tip__shine.home-safety-tip__copy--in {
-    animation:
-      homeTipIn 0.4s ease both,
-      homeTipTextLight 6.5s linear infinite;
-  }
-
-  .home-safety-tip__shine.home-safety-tip__copy--out {
-    animation:
-      homeTipOut 0.28s ease both,
-      homeTipTextLight 6.5s linear infinite;
-  }
-
-  .home-safety-tip__shine--title {
-    background-image: linear-gradient(
-      100deg,
-      #c2410c 0%,
-      #c2410c 38%,
-      #fb923c 48%,
-      #fef3c7 52%,
-      #fb923c 56%,
-      #c2410c 66%,
-      #c2410c 100%
-    );
-  }
-
-  .home-safety-tip__shine--body {
-    background-image: linear-gradient(
-      100deg,
-      #1e293b 0%,
-      #1e293b 38%,
-      #ea580c 48%,
-      #fbbf24 52%,
-      #ea580c 56%,
-      #1e293b 66%,
-      #1e293b 100%
-    );
-  }
-
-  @keyframes homeTipTextLight {
-    0% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: -100% 50%;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .home-safety-tip__copy--in,
-    .home-safety-tip__copy--out,
-    .home-safety-tip__shine,
-    .home-safety-tip__shine.home-safety-tip__copy--in,
-    .home-safety-tip__shine.home-safety-tip__copy--out {
-      animation: none !important;
-    }
-
-    .home-safety-tip__shine--title {
-      color: #c2410c;
-      background: none;
-      -webkit-background-clip: unset;
-      background-clip: unset;
-    }
-
-    .home-safety-tip__shine--body {
-      color: #1e293b;
-      background: none;
-      -webkit-background-clip: unset;
-      background-clip: unset;
-    }
   }
 
   @keyframes hofBannerIn {

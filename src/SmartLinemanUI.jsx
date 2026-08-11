@@ -16,6 +16,7 @@ import { filterCoreCompletedLessonIds } from './utils/trainingLessonIds';
 import { cacheHelper } from './utils/cacheHelper';
 import { storageUtils } from './utils/storageUtils';
 import { requestManager } from './utils/requestManager';
+import { ensureAvatarCached } from './utils/avatarCache';
 import LogoutConfirmationModal from "./components/LogoutConfirmationModal";
 import Sidebar from "./components/Sidebar";
 import NetworkStatusListener from "./components/NetworkStatusListener";
@@ -735,6 +736,11 @@ export default function SmartLinemanUI() {
         }
 
         setUserProfile(sanitizeGuestProfileForDisplay(profileData));
+
+        // Warm local avatar cache so Home can paint instantly on next open.
+        if (targetUser?.id && profileData.avatar_url && !isGuestUser(profileData)) {
+          ensureAvatarCached(targetUser.id, profileData.avatar_url).catch(() => {});
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
