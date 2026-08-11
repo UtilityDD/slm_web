@@ -5,7 +5,7 @@ import SponsorSolarStoryMorph, { SOLAR_STORY_MORPH_IMAGE, SOLAR_STORY_DURATION_S
 
 /**
  * Full-screen sponsor interstitial — typography-led, staged motion,
- * distinct from the app theme. Once per session; admin preview via `preview`.
+ * distinct from the app theme. Every other app open; admin preview via `preview`.
  * Does not auto-close: after the timer, a red × close control appears.
  */
 export default function SponsorAdOverlay({

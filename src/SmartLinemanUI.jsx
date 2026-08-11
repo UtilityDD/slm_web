@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { App as CapApp } from '@capacitor/app';
 import { supabase } from "./supabaseClient";
@@ -35,10 +35,16 @@ import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
 import OnboardingSequence from "./components/safety/OnboardingSequence";
 import AppBootSplash from "./components/AppBootSplash";
+import CelebrationSplash from "./components/CelebrationSplash";
+import {
+  CELEBRATION_SPLASH,
+  shouldOfferCelebrationSplash,
+} from "./config/celebrationSplash";
 import PushOptInPrompt from "./components/PushOptInPrompt";
 import LandingSupportContact from "./components/LandingSupportContact";
 import { libraryService } from "./utils/libraryService";
 import { trackAppVisit } from "./utils/landingVisitService";
+import { beginSponsorAdAppOpen } from "./utils/sponsorAdService";
 import PageLoader from "./components/loaders/PageLoader";
 import GuestPreviewBanner from "./components/GuestPreviewBanner";
 import { isGuestUser, sanitizeGuestProfileForDisplay } from "./utils/guestPreview";
@@ -77,6 +83,7 @@ const AroJanun = lazy(() => import("./components/safety/AroJanun"));
 const SafetyTabsPage = lazy(() => import("./components/safety/SafetyTabsPage"));
 const WeatherAlertDemo = lazy(() => import("./components/WeatherAlertDemo"));
 const MorePage = lazy(() => import("./components/MorePage"));
+const AmaderKotha = lazy(() => import("./components/AmaderKotha"));
 // const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
@@ -114,12 +121,25 @@ export default function SmartLinemanUI() {
   // Count every app open once per browser session (guest + logged in)
   useEffect(() => {
     trackAppVisit().catch(() => {});
+    beginSponsorAdAppOpen();
   }, []);
 
   const [globalLoading, setGlobalLoading] = useState(false);
   const [appLoading, setAppLoading] = useState(true);
   const [nativeBootSplash, setNativeBootSplash] = useState(() => isNativeCapacitorPlatform());
   const [nativeBootExiting, setNativeBootExiting] = useState(false);
+  const [celebrationSplashOpen, setCelebrationSplashOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (!shouldOfferCelebrationSplash(CELEBRATION_SPLASH)) return false;
+      const hash = window.location.hash.replace('#/', '').split('?')[0];
+      if (hash.startsWith('verify') || hash === 'update-password') return false;
+      return true;
+    } catch {
+      return false;
+    }
+  });
+  const celebrationShownThisOpenRef = useRef(false);
   const nativeBootShownAtRef = useRef(
     typeof performance !== 'undefined' ? performance.now() : Date.now()
   );
@@ -323,6 +343,34 @@ export default function SmartLinemanUI() {
     return () => window.clearTimeout(t);
   }, [appLoading, nativeBootSplash, nativeBootExiting]);
 
+  // Keep celebration open from first paint when eligible (avoids Landing blink).
+  // Ref prevents re-opening after tap-dismiss within the same session.
+  useLayoutEffect(() => {
+    if (celebrationSplashOpen) {
+      celebrationShownThisOpenRef.current = true;
+      return;
+    }
+    if (appLoading) return;
+    if (nativeBootSplash) return;
+    if (celebrationShownThisOpenRef.current) return;
+    if (!shouldOfferCelebrationSplash(CELEBRATION_SPLASH)) return;
+    const blockedViews = ['verify', 'update-password'];
+    if (blockedViews.includes(currentView)) return;
+    celebrationShownThisOpenRef.current = true;
+    setCelebrationSplashOpen(true);
+  }, [appLoading, nativeBootSplash, celebrationSplashOpen, currentView]);
+
+  // Prefetch celebration art during boot when the window is active.
+  useEffect(() => {
+    if (!CELEBRATION_SPLASH.enabled) return;
+    const mobile = new Image();
+    mobile.src = CELEBRATION_SPLASH.image;
+    if (CELEBRATION_SPLASH.imageDesktop) {
+      const desktop = new Image();
+      desktop.src = CELEBRATION_SPLASH.imageDesktop;
+    }
+  }, []);
+
   // Never show ads / soft interrupts while the user is typing (phone, PIN, forms).
   useEffect(() => {
     const isTextField = (el) => {
@@ -374,6 +422,10 @@ export default function SmartLinemanUI() {
     const closeShellOverlay = () => {
       if (showSessionEndedModal) return true; // cannot dismiss via back
       if (showUpdateModal && isForceUpdate) return true; // require update action
+      if (celebrationSplashOpen) {
+        setCelebrationSplashOpen(false);
+        return true;
+      }
       if (showUpdateModal) {
         setShowUpdateModal(false);
         return true;
@@ -478,6 +530,7 @@ export default function SmartLinemanUI() {
     pushOptInOpen,
     monthWinnersRevealOpen,
     sponsorAdOpen,
+    celebrationSplashOpen,
     user,
     currentView,
   ]);
@@ -1204,7 +1257,7 @@ export default function SmartLinemanUI() {
       const creamChromeViews = [
         'home', 'my-progress', 'leaderboard', 'prizes', 'training', 'competitions',
         'menu', 'landing', 'login', 'community', 'my_ppe', 'safety-library', 'my_tools',
-        'sops', 'notifications', 'emergency', 'video-guide', 'aro-janun', 'admin',
+        'sops', 'notifications', 'emergency', 'video-guide', 'aro-janun', 'amader-kotha', 'admin',
         'accident-stories',
       ];
       let bgColor;
@@ -1358,7 +1411,7 @@ export default function SmartLinemanUI() {
   };
 
   const renderContent = () => {
-    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'sops', 'weather-alert-demo'];
+    const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'amader-kotha', 'sops', 'weather-alert-demo'];
     const isPublic = publicViews.includes(currentView);
 
     if (!user && !isPublic && !appLoading) {
@@ -1530,6 +1583,8 @@ export default function SmartLinemanUI() {
           return <VideoGuide language={language} />;
         case 'aro-janun':
           return <AroJanun language={language} />;
+        case 'amader-kotha':
+          return <AmaderKotha language={language} setCurrentView={setCurrentView} />;
         case 'weather-alert-demo':
           return <WeatherAlertDemo language={language} setCurrentView={setCurrentView} />;
         /* case 'safety-hero':
@@ -1574,6 +1629,7 @@ export default function SmartLinemanUI() {
   const overlayBlocked =
     appLoading ||
     globalLoading ||
+    celebrationSplashOpen ||
     showLogoutModal ||
     showLanguageModal ||
     !!pushNotification ||
@@ -1611,6 +1667,7 @@ export default function SmartLinemanUI() {
   const sponsorAdBlocked =
     appLoading ||
     globalLoading ||
+    celebrationSplashOpen ||
     showLogoutModal ||
     showLanguageModal ||
     !!pushNotification ||
@@ -1668,7 +1725,8 @@ export default function SmartLinemanUI() {
               : 'bg-slate-50 dark:bg-slate-900 transition-colors duration-300'
           } ${
             isNativeCapacitorPlatform() && nativeBootExiting ? 'slm-app-reveal' : ''
-          }`}
+          } ${celebrationSplashOpen ? 'invisible pointer-events-none' : ''}`}
+          aria-hidden={celebrationSplashOpen ? true : undefined}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -1792,19 +1850,19 @@ export default function SmartLinemanUI() {
                     <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 text-left sm:p-7 sm:pt-7">
                       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-2xl leading-none shadow-sm" aria-hidden="true">🚀</span>
                       <div className="min-w-0 flex-1">
-                    <h2 className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'Update Available' : 'নতুন সংস্করণ উপলব্ধ'}</h2>
+                    <h2 className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'New update' : 'নতুন আপডেট'}</h2>
                     <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                       {updateInfo.channel === 'apk'
                         ? (isForceUpdate
                           ? (language === 'en'
-                            ? `A critical update (v${updateInfo.version_name}) is required. Download inside the app, then confirm install.`
-                            : `গুরুত্বপূর্ণ আপডেট (v${updateInfo.version_name}) প্রয়োজন। অ্যাপে ডাউনলোড করে ইনস্টল নিশ্চিত করুন।`)
+                            ? `Please update to v${updateInfo.version_name} to keep using the app.`
+                            : `অ্যাপ চালাতে v${updateInfo.version_name} আপডেট করুন।`)
                           : (language === 'en'
-                            ? `Version ${updateInfo.version_name} is ready. Download inside the app (avoids browser blocks), then confirm install.`
-                            : `ভার্সন ${updateInfo.version_name} প্রস্তুত। অ্যাপে ডাউনলোড করুন (ব্রাউজার ব্লক এড়াতে), তারপর ইনস্টল নিশ্চিত করুন।`))
+                            ? `Version ${updateInfo.version_name} is ready. Download and install the update.`
+                            : `নতুন ভার্সন ${updateInfo.version_name} এসেছে। আপডেট ডাউনলোড করে ইনস্টল করুন।`))
                         : (isForceUpdate
-                          ? (language === 'en' ? `A critical update (v${updateInfo.version_name}) is required to continue using the app.` : `পরবর্তী ধাপের জন্য একটি গুরুত্বপূর্ণ আপডেট (v${updateInfo.version_name}) প্রয়োজন।`)
-                          : (language === 'en' ? `A new version is available. Please refresh to apply the latest updates.` : `একটি নতুন সংস্করণ এসেছে। সর্বশেষ আপডেটগুলি পেতে দয়া করে রিফ্রেশ করুন।`))}
+                          ? (language === 'en' ? `Please update to v${updateInfo.version_name} to continue.` : `এগিয়ে যেতে v${updateInfo.version_name} আপডেট করুন।`)
+                          : (language === 'en' ? 'A new version is ready. Please update now.' : 'নতুন ভার্সন আপডেট করুন।'))}
                     </p>
                     {updateInfo.release_notes && (
                       <p className={`mt-2 rounded-xl bg-orange-50 px-3 py-2 text-sm font-bold leading-snug text-orange-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -1902,8 +1960,8 @@ export default function SmartLinemanUI() {
                           : updateInfo.update_url && updateInfo.update_url !== '#'
                             ? (language === 'en' ? 'Download Update' : 'আপডেট ডাউনলোড করুন')
                             : (isForceUpdate
-                              ? (language === 'en' ? 'Update Now' : 'এখনই আপডেট করুন')
-                              : (language === 'en' ? 'Refresh Now' : 'এখনই রিফ্রেশ করুন'))}
+                              ? (language === 'en' ? 'Update now' : 'আপডেট করুন')
+                              : (language === 'en' ? 'Update now' : 'আপডেট করুন'))}
                       </button>
                       {updateInfo.channel === 'apk' && (updateError || updateNeedsPermission) && (
                         <button
@@ -2059,12 +2117,12 @@ export default function SmartLinemanUI() {
                   : user
                     ? 'pb-20 md:pb-0'
                     : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
                   ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
-                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={['my_ppe', 'safety-library'].includes(currentView) ? 'safety-tabs' : currentView}
               >
                 {renderContent()}
@@ -2269,6 +2327,17 @@ export default function SmartLinemanUI() {
           </div>
         </div>
         </LifeSkillRadioProvider>
+      ) : null}
+      {celebrationSplashOpen && !nativeBootSplash ? (
+        <CelebrationSplash
+          language={language}
+          config={CELEBRATION_SPLASH}
+          onDismiss={() => setCelebrationSplashOpen(false)}
+        />
+      ) : null}
+      {/* Opaque hold while celebration is up during web boot — blocks Landing flash under loader. */}
+      {celebrationSplashOpen && appLoading && !isNativeCapacitorPlatform() ? (
+        <div className="celebration-splash fixed inset-0 z-[10055] bg-[#0c1a2e]" aria-hidden />
       ) : null}
       {nativeBootSplash ? (
         <AppBootSplash

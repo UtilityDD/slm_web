@@ -908,6 +908,19 @@ export default function Home({
             </svg>
             <span>{bn ? 'ফেসবুক' : 'Facebook'}</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(5);
+              setCurrentView('amader-kotha');
+            }}
+            className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50 px-3.5 text-sm font-bold text-orange-800 shadow-sm transition-all hover:bg-orange-100 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+            aria-label={bn ? 'আমাদের কথা' : 'Our Story'}
+          >
+            <span aria-hidden>📖</span>
+            <span>{bn ? 'আমাদের কথা' : 'Our Story'}</span>
+          </button>
         </div>
 
       </div>

@@ -121,12 +121,12 @@ const RegisterSW = () => {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              {isEn ? 'Update available' : 'আপডেট উপলব্ধ'}
+              {isEn ? 'New update' : 'নতুন আপডেট'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {isEn
-                ? 'A new version of SmartLineman is ready. Reload to apply updates.'
-                : 'স্মার্টলাইনম্যানের নতুন ভার্সন প্রস্তুত। আপডেট করতে রিলোড করুন।'}
+                ? 'A new version is ready. Please update now.'
+                : 'নতুন ভার্সন আপডেট করুন।'}
             </p>
           </div>
         </div>
@@ -140,7 +140,7 @@ const RegisterSW = () => {
           >
             {reloading
               ? (isEn ? 'Updating…' : 'আপডেট হচ্ছে…')
-              : (isEn ? 'Reload' : 'রিলোড')}
+              : (isEn ? 'Update' : 'আপডেট করুন')}
           </button>
           <button
             type="button"

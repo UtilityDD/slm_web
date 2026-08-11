@@ -1,18 +1,20 @@
 /**
  * Sponsor full-screen ad.
  *
- * Rotation: every clock hour alternates between
+ * Content rotation: every clock hour alternates between
  *   - the live paid/sponsor ad from Supabase (when available), and
  *   - the built-in invite (“স্পনসর চাই”) demo ad.
  *
- * Gate: at most one interstitial per clock hour per browser session
- * (sessionStorage hour bucket), not once-forever per ad id.
+ * Show frequency: every other app open (1st, 3rd, 5th…), then at most
+ * once within that open (session flag after dismiss).
  */
 
 import { supabase } from '../supabaseClient';
 
 const HOUR_MS = 60 * 60 * 1000;
-const HOUR_SEEN_PREFIX = 'slm_sponsor_ad_hour_';
+const APP_OPEN_COUNT_KEY = 'slm_sponsor_ad_app_opens';
+const OPEN_ELIGIBLE_KEY = 'slm_sponsor_ad_open_eligible';
+const OPEN_SHOWN_KEY = 'slm_sponsor_ad_open_shown';
 
 /** Built-in inviting / “sponsor wanted” ad (same content as Admin SPONSOR_ASK_PRESET). */
 export const INVITE_SPONSOR_AD = {
@@ -36,28 +38,51 @@ export const INVITE_SPONSOR_AD = {
 };
 
 let dbAdPromise = null;
+let appOpenCounted = false;
 
 export function currentSponsorHourBucket(nowMs = Date.now()) {
     return Math.floor(nowMs / HOUR_MS);
 }
 
-function hourSeenKey(nowMs = Date.now()) {
-    return `${HOUR_SEEN_PREFIX}${currentSponsorHourBucket(nowMs)}`;
+/**
+ * Call once per app boot. Increments open count and marks whether
+ * this open is eligible for the interstitial (odd opens: 1, 3, 5…).
+ */
+export function beginSponsorAdAppOpen() {
+    if (appOpenCounted) {
+        try {
+            return sessionStorage.getItem(OPEN_ELIGIBLE_KEY) === '1';
+        } catch {
+            return false;
+        }
+    }
+    appOpenCounted = true;
+    try {
+        const n = (Number(localStorage.getItem(APP_OPEN_COUNT_KEY)) || 0) + 1;
+        localStorage.setItem(APP_OPEN_COUNT_KEY, String(n));
+        const eligible = n % 2 === 1;
+        sessionStorage.setItem(OPEN_ELIGIBLE_KEY, eligible ? '1' : '0');
+        sessionStorage.removeItem(OPEN_SHOWN_KEY);
+        return eligible;
+    } catch {
+        return true;
+    }
 }
 
-/** True if an ad was already shown during this clock hour (this browser session). */
-export function hasSeenSponsorAd(_adId, nowMs = Date.now()) {
+/** True if ad should not show again this open (ineligible open, or already shown). */
+export function hasSeenSponsorAd(_adId) {
     try {
-        return sessionStorage.getItem(hourSeenKey(nowMs)) === '1';
+        if (sessionStorage.getItem(OPEN_ELIGIBLE_KEY) !== '1') return true;
+        return sessionStorage.getItem(OPEN_SHOWN_KEY) === '1';
     } catch {
         return false;
     }
 }
 
-/** Mark this clock hour as shown for the current browser session. */
-export function markSponsorAdSeen(_adId, nowMs = Date.now()) {
+/** Mark interstitial as shown for the current app open. */
+export function markSponsorAdSeen(_adId) {
     try {
-        sessionStorage.setItem(hourSeenKey(nowMs), '1');
+        sessionStorage.setItem(OPEN_SHOWN_KEY, '1');
     } catch {
         // private mode / quota — worst case it shows again next navigation
     }

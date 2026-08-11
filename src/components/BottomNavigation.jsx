@@ -2,7 +2,7 @@ import React from 'react';
 import { hapticImpact } from '../utils/nativeAndroidUx';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
 
-const iconClass = 'h-[22px] w-[22px]';
+const iconClass = 'h-[26px] w-[26px]';
 
 function NavIcon({ active, fillOnActive = true, children }) {
   // Stroke-drawn icons (e.g. trophy) look broken if we zero stroke + fill on select.
