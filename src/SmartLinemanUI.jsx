@@ -1269,14 +1269,22 @@ export default function SmartLinemanUI() {
       ];
       let bgColor;
       let darkContent;
-      if (native) {
+      if (celebrationSplashOpen) {
+        // Match Tiranga / seasonal splash stage so the Android PWA top bar is not cream over navy art.
+        bgColor = '#0c1a2e';
+        darkContent = false;
+      } else if (native) {
+        bgColor = '#fffdf7';
+        darkContent = true;
+      } else if (creamChromeViews.includes(currentView)) {
+        // PWA: keep system top bar cream on cream screens (same as APK), even if appTheme is dark.
         bgColor = '#fffdf7';
         darkContent = true;
       } else if (isDark) {
         bgColor = '#0F172A';
         darkContent = false;
       } else {
-        bgColor = creamChromeViews.includes(currentView) ? '#fffdf7' : '#F8FAFC';
+        bgColor = '#F8FAFC';
         darkContent = true;
       }
 
@@ -1298,7 +1306,7 @@ export default function SmartLinemanUI() {
     };
 
     updateStatusBar();
-  }, [currentView, theme]);
+  }, [currentView, theme, celebrationSplashOpen]);
 
   // Redundancy check for Theme
   useEffect(() => {

@@ -10,8 +10,8 @@
             "url": "https://smartlineman.in/manifest.json"
         }
     ],
-    "background_color": "#0F172A",
-    "theme_color": "#0F172A",
+    "background_color": "#fffdf7",
+    "theme_color": "#fffdf7",
     "description": "Empowering West Bengal's electrical linemen through safety, community & recognition",
     "scope": "/",
     "orientation": "portrait",

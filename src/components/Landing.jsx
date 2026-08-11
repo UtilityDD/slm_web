@@ -478,7 +478,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
       metaThemeColor.setAttribute('name', 'theme-color');
       document.head.appendChild(metaThemeColor);
     }
-    metaThemeColor.setAttribute('content', '#f8fafc');
+    metaThemeColor.setAttribute('content', '#fffdf7');
 
     return () => {
       const savedTheme = storageUtils.getItem('appTheme') || 'dark';

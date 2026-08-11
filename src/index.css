@@ -8061,8 +8061,9 @@ html.native-android .lesson-reader-root {
 }
 
 .celebration-splash__img {
-  object-fit: contain;
-  object-position: center center;
+  /* Phones: edge-to-edge cover (full screen) */
+  object-fit: cover;
+  object-position: center top;
 }
 
 @media (min-width: 768px) {
