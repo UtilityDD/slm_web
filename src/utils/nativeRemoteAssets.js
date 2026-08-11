@@ -1,8 +1,9 @@
 import { Capacitor } from '@capacitor/core';
-import { WEBSITE_URL } from '../config';
+import { WEBSITE_ORIGIN_WWW } from '../config';
 import { LOADER_IMAGES } from '../components/loaders/loaderImages';
 
-const LIVE_ORIGIN = WEBSITE_URL.replace(/\/$/, '');
+/** Use www — apex smartlineman.in 308-redirects and breaks some native image loads. */
+const LIVE_ORIGIN = WEBSITE_ORIGIN_WWW.replace(/\/$/, '');
 
 /** Packed in APK — never rewrite these to the live site. */
 const LOCAL_PACKED = new Set([
@@ -12,6 +13,9 @@ const LOCAL_PACKED = new Set([
   '/assets/emotional/wife.webp',
   '/assets/emotional/mother.webp',
   '/assets/emotional/eyes.webp',
+  '/images/celebrations/har-ghar-tiranga.webp',
+  '/images/celebrations/har-ghar-tiranga-desktop.webp',
+  '/images/home-tip-lineman-blank-board.webp',
   '/icon-192.png',
   '/icon-512.png',
   '/icon.svg',
@@ -104,7 +108,23 @@ export function toNativeRemoteUrl(url) {
   return `${LIVE_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-function patchProperty(proto, prop) {
+/** Rewrite each URL in an HTML srcset value (descriptors preserved). */
+export function toNativeRemoteSrcSet(srcset) {
+  if (!isNative() || srcset == null || typeof srcset !== 'string') return srcset;
+  return srcset
+    .split(',')
+    .map((part) => {
+      const trimmed = part.trim();
+      if (!trimmed) return trimmed;
+      const match = trimmed.match(/^(\S+)(\s+.+)?$/);
+      if (!match) return trimmed;
+      const [, url, descriptor = ''] = match;
+      return `${toNativeRemoteUrl(url)}${descriptor}`;
+    })
+    .join(', ');
+}
+
+function patchProperty(proto, prop, transform = toNativeRemoteUrl) {
   const desc = Object.getOwnPropertyDescriptor(proto, prop);
   if (!desc || !desc.set || !desc.get || desc.configurable === false) return;
   Object.defineProperty(proto, prop, {
@@ -114,7 +134,7 @@ function patchProperty(proto, prop) {
       return desc.get.call(this);
     },
     set(value) {
-      desc.set.call(this, toNativeRemoteUrl(value));
+      desc.set.call(this, transform(value));
     },
   });
 }
@@ -130,31 +150,14 @@ function warmImage(url) {
 }
 
 /**
- * Warm packed first-paint assets immediately, then quietly prefetch a few
- * common remote screens so the first session feels lag-less.
+ * Warm packed first-paint assets immediately (celebration + tip board included).
  */
 export function prefetchNativeEssentials() {
   if (typeof window === 'undefined' || !isNative()) return;
 
-  const packed = [...LOCAL_PACKED];
-  const remoteWarm = [
-    `${LIVE_ORIGIN}/images/loader/helmet.webp`, // no-op if local already
-  ].filter((url) => !packed.some((p) => url.endsWith(p)));
-
-  // Local pack first (sync kickoff)
-  packed.forEach((src) => {
+  [...LOCAL_PACKED].forEach((src) => {
     warmImage(src);
   });
-
-  // After first paint, warm a tiny remote set (landing brand already local)
-  const runRemote = () => {
-    remoteWarm.forEach((src) => warmImage(src));
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runRemote, { timeout: 2500 });
-  } else {
-    setTimeout(runRemote, 1200);
-  }
 }
 
 /**
@@ -180,7 +183,7 @@ export function installNativeRemoteAssets() {
   };
 
   patchProperty(HTMLImageElement.prototype, 'src');
-  patchProperty(HTMLImageElement.prototype, 'srcset');
+  patchProperty(HTMLImageElement.prototype, 'srcset', toNativeRemoteSrcSet);
   if (typeof HTMLAudioElement !== 'undefined') patchProperty(HTMLAudioElement.prototype, 'src');
   if (typeof HTMLVideoElement !== 'undefined') {
     patchProperty(HTMLVideoElement.prototype, 'src');
@@ -199,7 +202,8 @@ export function installNativeRemoteAssets() {
         this instanceof HTMLVideoElement ||
         this instanceof HTMLSourceElement)
     ) {
-      return origSetAttribute.call(this, name, toNativeRemoteUrl(value));
+      const next = name === 'srcset' ? toNativeRemoteSrcSet(value) : toNativeRemoteUrl(value);
+      return origSetAttribute.call(this, name, next);
     }
     return origSetAttribute.call(this, name, value);
   };

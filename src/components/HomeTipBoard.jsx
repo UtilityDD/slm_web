@@ -51,8 +51,12 @@ export default function HomeTipBoard({ text, language = 'bn', onClose }) {
           <img
             src="/images/home-tip-lineman-blank-board.webp"
             alt=""
+            width={1024}
+            height={1536}
             decoding="async"
+            fetchPriority="high"
             className="home-tip-stage__art pointer-events-none select-none"
+            draggable={false}
           />
 
           <div className="home-tip-stage__embed" aria-live="polite">

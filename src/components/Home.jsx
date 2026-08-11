@@ -114,6 +114,13 @@ export default function Home({
     setLoading(false);
   }, [userProfile, user]);
 
+  // Warm tip-board art while Home is open so tap opens instantly.
+  useEffect(() => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = '/images/home-tip-lineman-blank-board.webp';
+  }, []);
+
   // Same source as My Progress: profiles.completed_lessons ∪ lesson_bonus_* awards.
   useEffect(() => {
     if (!user?.id) {

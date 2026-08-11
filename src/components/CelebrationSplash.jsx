@@ -38,7 +38,7 @@ export default function CelebrationSplash({
       onClick={dismiss}
     >
       <img
-        src={config.imageDesktop || config.image}
+        src={config.image}
         srcSet={`${config.image} 720w, ${config.imageDesktop || config.image} 1024w`}
         sizes="(max-width: 767px) 100vw, 42rem"
         alt=""

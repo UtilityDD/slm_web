@@ -1,6 +1,6 @@
 /**
  * After `vite build`, strip heavy / unused media from dist before `cap sync`.
- * Native app loads those paths from https://smartlineman.in instead.
+ * Native app loads those paths from https://www.smartlineman.in instead.
  * A small first-paint kit stays packed for smooth cold start.
  */
 import fs from 'fs';
@@ -48,6 +48,9 @@ const KEEP_PACKED = [
   'images/loader/ball-chain.webp',
   'images/loader/link-chain.webp',
   'images/loader/caution-tape.webp',
+  'images/celebrations/har-ghar-tiranga.webp',
+  'images/celebrations/har-ghar-tiranga-desktop.webp',
+  'images/home-tip-lineman-blank-board.webp',
   'assets/emotional/lineman.webp',
   'assets/emotional/child.webp',
   'assets/emotional/wife.webp',

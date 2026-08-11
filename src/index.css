@@ -4043,30 +4043,43 @@ body,
   .home-tip-stage__viewport {
     position: absolute;
     inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+    padding:
+      max(0px, env(safe-area-inset-top))
+      max(0px, env(safe-area-inset-right))
+      max(0px, env(safe-area-inset-bottom))
+      max(0px, env(safe-area-inset-left));
+    box-sizing: border-box;
   }
 
-  /* Full-bleed frame — art covers the entire screen */
+  /* Shrink-wrap 2:3 art — hands stay in frame; letterbox on tall phones */
   .home-tip-stage__frame {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+    max-width: 100%;
+    max-height: 100%;
+    line-height: 0;
     overflow: hidden;
   }
 
   .home-tip-stage__art {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: min(100%, 100dvh);
+    object-fit: contain;
     object-position: center center;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
   /*
-   * Board face on 2:3 art. On tall phones cover crops sides only,
-   * so vertical % still match the board. Wide screens: slight nudge.
+   * Board face on 2:3 art. Frame matches rendered art, so % coords stay locked.
    */
   .home-tip-stage__embed {
     position: absolute;
@@ -4082,21 +4095,6 @@ body,
     pointer-events: none;
     container-type: size;
     animation: homeTipBoardRise 0.4s ease both;
-  }
-
-  /* Wider than 2:3 — cover crops top/bottom; keep board in view */
-  @media (min-aspect-ratio: 2/3) {
-    .home-tip-stage__art {
-      object-position: center 42%;
-    }
-
-    .home-tip-stage__embed {
-      left: 18%;
-      right: 18%;
-      top: 42%;
-      bottom: 33%;
-      padding: 2.5% 2%;
-    }
   }
 
   .home-tip-stage__embed-text {
@@ -8063,8 +8061,8 @@ html.native-android .lesson-reader-root {
 }
 
 .celebration-splash__img {
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  object-position: center center;
 }
 
 @media (min-width: 768px) {
