@@ -54,6 +54,18 @@ const copy = {
         connectionTitle: 'You’re offline',
         retry: 'Try again',
         storiesCta: 'করুণ কাহিনী',
+        errPhone: 'Enter a 10-digit mobile number',
+        errPin: 'Enter your 6-digit PIN',
+        errCredentials: 'Wrong phone or PIN',
+        errNetwork: 'No connection. Try again.',
+        errTimeout: 'Taking too long. Try again.',
+        errBusy: 'Too many tries. Wait a moment.',
+        errGeneric: 'Couldn’t sign in. Try again.',
+        errPinSave: 'Couldn’t save PIN. Try again.',
+        errPinMismatch: 'PINs don’t match',
+        errPinLength: 'PIN must be 6 digits',
+        setPinInfo: 'Set a new PIN to continue',
+        pinSaved: 'PIN updated',
     },
     bn: {
         backHome: 'হোম',
@@ -75,11 +87,94 @@ const copy = {
         connectionTitle: 'ইন্টারনেট নেই',
         retry: 'আবার চেষ্টা',
         storiesCta: 'করুণ কাহিনী',
+        errPhone: '১০ সংখ্যার মোবাইল নম্বর দিন',
+        errPin: '৬ সংখ্যার পিন দিন',
+        errCredentials: 'ফোন বা পিন ভুল',
+        errNetwork: 'সংযোগ নেই। আবার চেষ্টা করুন।',
+        errTimeout: 'সময় বেশি লাগছে। আবার চেষ্টা করুন।',
+        errBusy: 'অনেকবার চেষ্টা। একটু অপেক্ষা করুন।',
+        errGeneric: 'সাইন ইন হয়নি। আবার চেষ্টা করুন।',
+        errPinSave: 'পিন সেভ হয়নি। আবার চেষ্টা করুন।',
+        errPinMismatch: 'পিন মিলছে না',
+        errPinLength: 'পিন ৬ সংখ্যার হতে হবে',
+        setPinInfo: 'এগিয়ে যেতে নতুন পিন সেট করুন',
+        pinSaved: 'পিন আপডেট হয়েছে',
     },
 };
 
 /** Per-slide object-position — faces sit high in these square crops; wide hero strips top/bottom by default. */
 const HERO_IMAGE_FOCUS = EMOTIONAL_IMAGE_FOCUS;
+
+function loginErrorText(error) {
+    if (!error) return '';
+    if (typeof error === 'string') return error;
+    return [error.message, error.details, error.hint, error.code, error.name]
+        .filter(Boolean)
+        .join(' ');
+}
+
+function isLoginNetworkError(error) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return true;
+    const text = loginErrorText(error).toLowerCase();
+    const name = String(error?.name || '').toLowerCase();
+    if (name === 'aborterror') return true;
+    if (!text) return false;
+    if (
+        /failed to fetch|networkerror|network request failed|load failed|err_network|err_internet|err_connection|net::err|offline|no internet|internet disconnected|timed?\s*out|timeout|econnrefused|econnreset|enotfound|socket hang up|dns|unreachable|connection (refused|reset|aborted|closed|terminated)/i.test(text)
+    ) {
+        return true;
+    }
+    // Browsers often surface offline RPC failures as TypeError + "Failed to fetch".
+    if (name === 'typeerror' && /fetch|network|load failed|internet/.test(text)) return true;
+    return false;
+}
+
+/**
+ * Map any login/PIN failure to a short user-facing line.
+ * Never return raw Supabase / PostgREST text.
+ */
+function friendlyLoginError(error, t, { pinFlow = false } = {}) {
+    const text = loginErrorText(error).toLowerCase();
+
+    if (isLoginNetworkError(error)) return { kind: 'network', message: t.errNetwork };
+
+    if (text.includes('10 digit') || text.includes('10-digit') || text.includes('phone number must')) {
+        return { kind: 'toast', message: t.errPhone };
+    }
+    if (
+        text.includes('password must be exactly') ||
+        text.includes('password must be 6') ||
+        text.includes('pin must')
+    ) {
+        return { kind: 'toast', message: pinFlow ? t.errPinLength : t.errPin };
+    }
+    if (text.includes('do not match') || text.includes("don't match") || text.includes('dont match')) {
+        return { kind: 'toast', message: t.errPinMismatch };
+    }
+    if (
+        text.includes('rate') ||
+        text.includes('too many') ||
+        text.includes('429') ||
+        text.includes('limit exceeded')
+    ) {
+        return { kind: 'toast', message: t.errBusy };
+    }
+    if (text.includes('timeout') || text.includes('timed out') || text.includes('504') || text.includes('408')) {
+        return { kind: 'toast', message: t.errTimeout };
+    }
+    if (
+        text.includes('invalid') ||
+        text.includes('wrong') ||
+        text.includes('incorrect') ||
+        text.includes('unauthorized') ||
+        text.includes('credentials') ||
+        text.includes('authentication failed')
+    ) {
+        return { kind: 'toast', message: t.errCredentials };
+    }
+
+    return { kind: 'toast', message: pinFlow ? t.errPinSave : t.errGeneric };
+}
 
 function FilmCrossfade({ images, activeIndex }) {
     // Prefetch only the active slide and the next one — keep login light.
@@ -308,12 +403,13 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
 
         try {
             setConnectionError(false);
-            // Validate inputs
             if (phone.length !== 10) {
-                throw new Error('Phone number must be 10 digits');
+                showNotification(t.errPhone, 'error');
+                return;
             }
             if (password.length !== 6) {
-                throw new Error('Password must be 6 characters');
+                showNotification(t.errPin, 'error');
+                return;
             }
 
             const { data, error } = await supabase.rpc('authenticate_user', {
@@ -322,38 +418,34 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
             });
 
             if (error) {
-                // Check if it's a network error
-                if (error.message?.toLowerCase().includes('network') ||
-                    error.message?.toLowerCase().includes('fetch') ||
-                    !navigator.onLine) {
+                const friendly = friendlyLoginError(error, t);
+                if (friendly.kind === 'network') {
                     setConnectionError(true);
                     return;
                 }
-                throw error;
+                showNotification(friendly.message, 'error');
+                return;
             }
 
             if (!data || data.length === 0) {
-                throw new Error('Invalid phone number or password');
+                showNotification(t.errCredentials, 'error');
+                return;
             }
 
             const user = data[0];
 
             if (user.must_change_password) {
-                // Show password change form
                 setMustChangePassword(true);
                 setCurrentUser(user);
-                showNotification('Please set a new password to continue', 'info');
+                showNotification(t.setPinInfo, 'info');
             } else {
                 persistRememberPreference(rememberMe, phone, password);
 
-                // Store session
                 storageUtils.setItem('session_token', user.session_token);
                 storageUtils.setItem('user_id', user.user_id);
 
-                // Claim this device as the single active session
                 await claimDeviceSession(user.user_id);
 
-                // Trigger app login (parent may switch view / nav); toast after layout
                 onLogin({
                     id: user.user_id,
                     phone: user.phone_number,
@@ -364,12 +456,11 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
             }
         } catch (error) {
             console.error('Login error:', error);
-            if (error.message?.toLowerCase().includes('network') ||
-                error.message?.toLowerCase().includes('fetch') ||
-                !navigator.onLine) {
+            const friendly = friendlyLoginError(error, t);
+            if (friendly.kind === 'network') {
                 setConnectionError(true);
             } else {
-                showNotification(error.message, 'error');
+                showNotification(friendly.message, 'error');
             }
         } finally {
             setLoading(false);
@@ -380,12 +471,12 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
         e.preventDefault();
 
         if (newPassword.length !== 6) {
-            showNotification('Password must be exactly 6 characters', 'error');
+            showNotification(t.errPinLength, 'error');
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            showNotification('Passwords do not match', 'error');
+            showNotification(t.errPinMismatch, 'error');
             return;
         }
 
@@ -397,15 +488,21 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
                 p_new_password: newPassword
             });
 
-            if (error) throw error;
+            if (error) {
+                const friendly = friendlyLoginError(error, t, { pinFlow: true });
+                if (friendly.kind === 'network') {
+                    setConnectionError(true);
+                    return;
+                }
+                showNotification(friendly.message, 'error');
+                return;
+            }
 
             persistRememberPreference(rememberMe, phone, newPassword);
 
-            // Store session and auto-login
             storageUtils.setItem('session_token', currentUser.session_token);
             storageUtils.setItem('user_id', currentUser.user_id);
 
-            // Claim this device as the single active session
             await claimDeviceSession(currentUser.user_id);
 
             onLogin({
@@ -417,11 +514,16 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
             });
 
             requestAnimationFrame(() => {
-                showNotification('Password changed successfully!', 'success');
+                showNotification(t.pinSaved, 'success');
             });
         } catch (error) {
             console.error('Password change error:', error);
-            showNotification(error.message, 'error');
+            const friendly = friendlyLoginError(error, t, { pinFlow: true });
+            if (friendly.kind === 'network') {
+                setConnectionError(true);
+            } else {
+                showNotification(friendly.message, 'error');
+            }
         } finally {
             setLoading(false);
         }
