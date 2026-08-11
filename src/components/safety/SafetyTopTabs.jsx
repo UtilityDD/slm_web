@@ -3,7 +3,7 @@ import React from 'react';
 
 const TABS = [
     { id: 'my_ppe', en: 'My PPE', bn: 'আমার পিপিই' },
-    { id: 'safety-library', en: 'Safety Library', bn: 'সুরক্ষা লাইব্রেরি' },
+    { id: 'safety-library', en: 'Identify', bn: 'চিনুন' },
 ];
 
 export default function SafetyTopTabs({ current, onNavigate, language = 'bn', className = '' }) {

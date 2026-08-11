@@ -51,7 +51,7 @@ export default function Sidebar({
       id: 'safety',
       title: bn ? 'সুরক্ষা' : 'Safety',
       items: [
-        { id: 'safety-library', label: bn ? 'সুরক্ষা লাইব্রেরি' : 'Safety Library', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
+        { id: 'safety-library', label: bn ? 'চিনুন' : 'Identify', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
         { id: 'sops', label: bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi', icon: '📋', tint: 'bg-indigo-100 text-indigo-700', show: true },
         { id: 'my_ppe', label: bn ? 'সুরক্ষা' : 'Suraksha', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },

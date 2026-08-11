@@ -643,6 +643,21 @@ body,
     -webkit-backdrop-filter: none;
     border-bottom: none;
     box-shadow: none;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+    will-change: transform;
+  }
+
+  /* Keep transparent look; avoid clutter by tucking the bar away while scrolling down */
+  .landing-header-bar--away {
+    transform: translateY(-110%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-header-bar {
+      transition: none;
+    }
   }
 
   .landing-hero-glow {
@@ -942,24 +957,48 @@ body,
   .landing-nonprofit-strip {
     position: relative;
     display: flex;
-    align-items: flex-start;
-    gap: 0.85rem;
-    padding: 1rem 1rem 0.9rem;
-    border: 2px solid #0f172a;
-    border-radius: 1rem;
-    background: linear-gradient(120deg, #ecfdf5 0%, #fff 55%, #fff7ed 100%);
-    box-shadow: 3px 3px 0 #0f172a;
-    /* Keep fall gag visible inside the card */
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.25rem;
+    border: none;
+    border-radius: 9999px;
+    background: rgba(236, 253, 245, 0.92);
+    box-shadow: none;
+    outline: 1.5px solid rgba(16, 185, 129, 0.28);
     overflow: visible;
   }
 
-  /* Stick lineman — skeletal rAF animation; feet plant on strip top border. */
+  /* First-viewport walkway under Join — close enough for hotstick to tap CTA */
+  .landing-nonprofit-strip--hero {
+    width: min(100%, 22rem);
+    margin: 2.55rem auto 0;
+  }
+
+  .landing-nonprofit-strip__title {
+    margin: 0;
+    max-width: 28ch;
+    text-align: center;
+    text-wrap: balance;
+    font-size: clamp(0.82rem, 2.6vw, 0.95rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    color: #065f46;
+  }
+
+  .landing-page-light.lang-bn .landing-nonprofit-strip__title {
+    letter-spacing: 0;
+    line-height: 1.45;
+    max-width: 22ch;
+  }
+
+  /* Stick lineman — feet plant on the ribbon top edge under Join */
   .landing-nonprofit-lineman {
     position: absolute;
-    left: 0.5rem;
-    right: 0.5rem;
-    top: calc(-3.5rem - 2px);
-    height: 3.5rem;
+    left: 0.35rem;
+    right: 0.35rem;
+    top: calc(-3.55rem - 2px);
+    height: 3.55rem;
     pointer-events: none;
     z-index: 20;
     overflow: visible;

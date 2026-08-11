@@ -5,6 +5,7 @@ import { getBadgeByLevel } from '../utils/badgeUtils';
 import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
+import { openExternalUrl } from '../utils/nativeAndroidUx';
 import { supabase } from '../supabaseClient';
 import { requestManager } from '../utils/requestManager';
 import {
@@ -104,6 +105,7 @@ function prefersReducedMotion() {
 export default function Home({
   setCurrentView,
   language,
+  onLanguageChange,
   user,
   userProfile,
   completedLessons: completedLessonsProp,
@@ -518,8 +520,8 @@ export default function Home({
       label: bn ? 'অগ্রগতি' : 'Progress',
       value: `${progressPct}%`,
       onClick: () => go('my-progress'),
-      accent: 'border-orange-200 bg-orange-50/80 text-orange-800',
-      iconWrap: 'bg-white/80 text-orange-600 border-orange-200/70',
+      accent: 'border-teal-200 bg-teal-50/80 text-teal-900',
+      iconWrap: 'bg-white/80 text-teal-600 border-teal-200/70',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
           <path d="M3 3v18h18" />
@@ -546,18 +548,38 @@ export default function Home({
       ),
     },
     {
-      id: 'suraksha',
-      label: bn ? 'সুরক্ষা' : 'Suraksha',
+      id: 'my-ppe',
+      label: bn ? 'আমার পিপিই' : 'My PPE',
       value: null,
       onClick: () => go('my_ppe'),
-      accent: 'border-teal-200 bg-teal-50/80 text-teal-900',
-      iconWrap: 'bg-white/80 text-teal-600 border-teal-200/70',
+      accent: 'border-orange-200 bg-orange-50/80 text-orange-900',
+      iconWrap: 'bg-white/80 text-orange-600 border-orange-200/70',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
+          <path d="M2 18h20" />
+          <path d="M4 18v-3a8 8 0 0 1 16 0v3" />
+          <path d="M12 5v3" />
+          <path d="M9 18v2" />
+          <path d="M15 18v2" />
+        </svg>
+      ),
+      ariaLabel: bn ? 'আমার পিপিই' : 'My PPE',
+    },
+    {
+      id: 'safety-library',
+      label: bn ? 'চিনুন' : 'Identify',
+      value: null,
+      onClick: () => go('safety-library'),
+      accent: 'border-indigo-200 bg-indigo-50/80 text-indigo-900',
+      iconWrap: 'bg-white/80 text-indigo-600 border-indigo-200/70',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="m9 12 2 2 4-4" />
+          <path d="M12 8v5" />
+          <path d="M12 16h.01" />
         </svg>
       ),
+      ariaLabel: bn ? 'চিনুন' : 'Identify',
     },
     {
       id: 'life-skill',
@@ -567,8 +589,8 @@ export default function Home({
         if (navigator.vibrate) navigator.vibrate(5);
         window.location.hash = '/training?tab=supplementary';
       },
-      accent: 'border-indigo-200 bg-indigo-50/80 text-indigo-900',
-      iconWrap: 'bg-white/80 text-indigo-600 border-indigo-200/70',
+      accent: 'border-emerald-200 bg-emerald-50/80 text-emerald-900',
+      iconWrap: 'bg-white/80 text-emerald-600 border-emerald-200/70',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
           <path d="M12 3l1.8 5.5H20l-4.5 3.4 1.7 5.6L12 14.8 6.8 17.5l1.7-5.6L4 8.5h6.2L12 3Z" />
@@ -849,6 +871,42 @@ export default function Home({
             <span className={`font-black text-emerald-800 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
               {bn ? 'শেয়ার' : 'Invite'}
             </span>
+          </button>
+        </div>
+
+        {/* Simple footer — language + Facebook (not shortcut cards) */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 border-t border-slate-200/70 pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(5);
+              onLanguageChange?.(bn ? 'en' : 'bn');
+            }}
+            aria-label={bn ? 'ভাষা পরিবর্তন' : 'Change language'}
+            title={bn ? 'ভাষা' : 'Language'}
+            className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-slate-200/80 bg-white px-3.5 text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98]"
+          >
+            <span className="flex items-baseline gap-px font-black leading-none" aria-hidden>
+              <span className={`text-[13px] ${!bn ? 'text-orange-600' : 'text-slate-400'}`}>A</span>
+              <span className={`font-bengali text-[13px] ${bn ? 'text-orange-600' : 'text-slate-400'}`}>অ</span>
+            </span>
+            <span className={`text-xs font-bold ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'বাংলা' : 'English'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(5);
+              void openExternalUrl('https://www.facebook.com/smartlineman');
+            }}
+            className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-slate-200/80 bg-white px-3.5 text-sm font-bold text-[#1877F2] shadow-sm transition-all hover:bg-blue-50 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+          >
+            <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+            </svg>
+            <span>{bn ? 'ফেসবুক' : 'Facebook'}</span>
           </button>
         </div>
 

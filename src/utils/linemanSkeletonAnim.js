@@ -421,8 +421,8 @@ export function hotstickPose(localSec) {
       headRot: 30,
       headTilt: -12,
       chestRot: 10,
-      armRU: lerp(48, -118, easeInOutCubic(u)),
-      armRL: lerp(35, 18, u),
+      armRU: lerp(48, -132, easeInOutCubic(u)),
+      armRL: lerp(35, 12, u),
       armLU: lerp(-14, -28, u),
       armLL: 14,
       pouchRot: -8,
@@ -441,8 +441,8 @@ export function hotstickPose(localSec) {
       headRot: 32 + bob * 0.15,
       headTilt: -14,
       chestRot: 12 + sweep * 0.08,
-      armRU: -118 + sweep,
-      armRL: 16 + bob * 0.4,
+      armRU: -132 + sweep,
+      armRL: 12 + bob * 0.4,
       armLU: -30,
       armLL: 16,
       pouchRot: -6 + sweep * 0.15,
@@ -486,7 +486,7 @@ export function sampleHelmetFlight(t, cycleSeed = 1) {
   const T0 = HELMET_GAG_T0;
 
   if (t < T0) {
-    return { leftPct: 42, yRem: -2.4, rot: 0, opacity: 0, scale: 1 };
+    return { leftPct: 50, yRem: -2.4, rot: 0, opacity: 0, scale: 1 };
   }
 
   // Cause lift — stay invisible until the worn head-helmet is gone (no double helmet).
@@ -495,7 +495,7 @@ export function sampleHelmetFlight(t, cycleSeed = 1) {
     // Handoff after worn fade (~0.22s); tiny ease so it doesn’t pop harshly.
     const flyIn = clamp01((t - T0 - 0.22) / 0.08);
     return {
-      leftPct: lerp(42, 38, u),
+      leftPct: lerp(50, 46, u),
       yRem: lerp(-2.4, -3.2, u),
       rot: lerp(0, -25, u),
       opacity: flyIn,
@@ -697,13 +697,14 @@ export function sampleLinemanScene(timeMs, cycleIndex = 0) {
   else if (t < HELMET_GAG_T0) {
     const local = t - 23.85;
     facing = 1; // face audience / Join button above
-    xPct = lerp(28, 42, easeOutCubic(clamp01(local / 0.55)));
+    // Stand under the centered Join button so the hotstick can tap it
+    xPct = lerp(28, 50, easeOutCubic(clamp01(local / 0.55)));
     pose = hotstickPose(local);
   }
 
   // --- Helmet adjust → slips (sudden after hotstick) ---
   else if (t < HELMET_GAG_T0 + 0.8) {
-    xPct = 42;
+    xPct = 50;
     facing = 1;
     const u = (t - HELMET_GAG_T0) / 0.8;
     // Hide worn helmet before the flying prop appears (~0.22s) so only one is visible.
@@ -726,7 +727,7 @@ export function sampleLinemanScene(timeMs, cycleIndex = 0) {
 
   // --- Track flying helmet ---
   else if (t < HELMET_GAG_T0 + 3.0) {
-    xPct = 42;
+    xPct = 50;
     facing = 1;
     const u = (t - (HELMET_GAG_T0 + 0.8)) / 2.2;
     pose = {
@@ -746,7 +747,7 @@ export function sampleLinemanScene(timeMs, cycleIndex = 0) {
   // --- Uh-oh ---
   else if (t < HELMET_GAG_T0 + 3.95) {
     facing = 1;
-    xPct = lerp(42, 40, (t - (HELMET_GAG_T0 + 3.0)) / 0.95);
+    xPct = lerp(50, 48, (t - (HELMET_GAG_T0 + 3.0)) / 0.95);
     const u = (t - (HELMET_GAG_T0 + 3.0)) / 0.95;
     pose = {
       ...REST_POSE,

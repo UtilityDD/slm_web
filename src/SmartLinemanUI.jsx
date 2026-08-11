@@ -1546,6 +1546,7 @@ export default function SmartLinemanUI() {
                 setCurrentView(view);
               }}
               language={language}
+              onLanguageChange={handleLanguageSelect}
               t={t}
               user={user}
               userProfile={userProfile}

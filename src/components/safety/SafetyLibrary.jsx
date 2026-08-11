@@ -710,7 +710,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
     const t = {
         en: {
-            title: 'Safety Library',
+            title: 'Identify',
             searchPlaceholder: 'Search...',
             noResults: 'No items found',
             priceLabel: 'Price:',
@@ -727,7 +727,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             myPpeSubtitle: 'Tap gear on your lineman to update'
         },
         bn: {
-            title: 'সুরক্ষা লাইব্রেরি',
+            title: 'চিনুন',
             searchPlaceholder: 'খুঁজুন...',
             noResults: 'কিছু পাওয়া যায়নি',
             priceLabel: 'মূল্য:',

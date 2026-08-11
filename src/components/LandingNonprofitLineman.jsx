@@ -116,8 +116,9 @@ const JOINT_NAMES = [
 ];
 
 /**
- * Ambient stick-figure lineman on the nonprofit strip top border.
- * Same gag story — skeletal rAF acting (walk, idle, helmet, fall, recover).
+ * Ambient stick-figure lineman on the hero nonprofit ribbon under Join.
+ * Same gag story — skeletal rAF acting (walk, idle, helmet, fall, recover);
+ * hotstick phase also pulses the Join CTA.
  */
 export default function LandingNonprofitLineman({ active = true }) {
   const rootRef = useRef(null);

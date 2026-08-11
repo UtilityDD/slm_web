@@ -22,15 +22,14 @@ const copy = {
     heroTitle: 'Learn while you play',
     heroSubtitle: 'From ordinary to smart',
     visionTitle: 'Our Vision',
-    vision:
-      'Every lineman works with confidence and modern safety knowledge—reducing field accidents and protecting families.',
+    vision: 'Confident, safer work for every lineman—and peace of mind for families.',
     missionTitle: 'Our Mission',
-    mission: '90 days of simple training, quizzes, contests, prizes, and recognition.',
+    mission: '90 days of training, quizzes, contests, prizes, and recognition.',
     nonprofitTitle: '100% non-profit · volunteer-run',
-    nonprofitBody: 'SmartLineman is built and run by volunteers—no profit motive, only safer work for linemen.',
     statsMembers: 'Members',
     statsSafetyMitra: 'Safety Mitra',
     monthToppersTitle: 'This month’s leaders',
+    viewLeaderboard: 'View full leaderboard',
     podiumOpenSlot: 'Your spot awaits',
     podiumOpenHint: 'Keep learning',
     sponsorsTitle: 'Our sponsors',
@@ -49,16 +48,14 @@ const copy = {
     heroTitle: 'খেলতে খেলতে শিখুন',
     heroSubtitle: 'সাধারণ থেকে স্মার্ট হয়ে উঠুন',
     visionTitle: 'আমাদের স্বপ্ন',
-    vision:
-      'আমরা চাই, প্রতিটি লাইনম্যান আত্মবিশ্বাস ও সঠিক নিরাপত্তা জ্ঞান নিয়ে মাঠে নিরাপদে কাজ করতে পারেন। দুর্ঘটনা কমবে, পরিবারও নিশ্চিন্ত থাকবে।',
+    vision: 'প্রতিটি লাইনম্যান নিরাপদে কাজ করুক—পরিবারও নিশ্চিন্ত থাকুক।',
     missionTitle: 'আমরা যা করি',
-    mission: '৯০ দিনের সহজ প্রশিক্ষণ, কুইজ, প্রতিযোগিতা, পুরস্কার আর স্বীকৃতি।',
+    mission: '৯০ দিনের প্রশিক্ষণ, কুইজ, প্রতিযোগিতা, পুরস্কার ও স্বীকৃতি।',
     nonprofitTitle: 'অলাভজনক উদ্যোগ · স্বেচ্ছাসেবীদের তৈরি',
-    nonprofitBody:
-      'স্মার্ট লাইনম্যান গড়ে তুলেছেন স্বেচ্ছাসেবীরাই। এখানে লাভের হিসাব নেই—আছে শুধু লাইনম্যানদের নিরাপদ কাজের অঙ্গীকার।',
     statsMembers: 'সদস্য',
     statsSafetyMitra: 'সেফটি মিত্র',
     monthToppersTitle: 'এই মাসের সেরা তিনজন',
+    viewLeaderboard: 'পুরো লিডারবোর্ড দেখুন',
     podiumOpenSlot: 'এখানে আপনার নাম হতে পারে',
     podiumOpenHint: 'শিখতে থাকুন, এগিয়ে যান',
     sponsorsTitle: 'যাঁরা পাশে দাঁড়িয়েছেন',
@@ -284,7 +281,6 @@ function mapLandingPlayer(row) {
     id: row.user_id || row.id || row.name,
     name: landingGivenName(row.full_name || row.name),
     points: Number(row.points ?? row.score) || 0,
-    district: row.district || '',
     avatarUrl: row.avatar_url || row.profile_image_url || row.photo_url || '',
   };
 }
@@ -298,6 +294,8 @@ function MonthToppers({
   fillTo = 3,
   emptyTitle = '',
   emptyHint = '',
+  viewLeaderboardLabel = '',
+  onViewLeaderboard,
 }) {
   const realPlayers = players || [];
   if (!realPlayers.length) return null;
@@ -367,9 +365,6 @@ function MonthToppers({
                     <p className="text-xs font-bold tabular-nums text-orange-700 sm:text-sm">
                       {player.points} <span className="font-semibold text-orange-600/80">{ptsLabel}</span>
                     </p>
-                    {player.district && (
-                      <p className={`truncate text-[11px] font-medium text-slate-500 ${bnFont ? 'font-bengali' : ''}`}>{player.district}</p>
-                    )}
                   </>
                 )}
               </div>
@@ -377,6 +372,21 @@ function MonthToppers({
           );
         })}
       </div>
+
+      {onViewLeaderboard && viewLeaderboardLabel && (
+        <div className="mt-5 flex justify-center sm:mt-6">
+          <button
+            type="button"
+            onClick={onViewLeaderboard}
+            className={`landing-month-toppers__board-link inline-flex min-h-[40px] items-center gap-1 touch-manipulation text-sm font-bold text-orange-600 transition-colors hover:text-orange-700 active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
+          >
+            <span>{viewLeaderboardLabel}</span>
+            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
     </section>
   );
 }
@@ -407,6 +417,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
   });
   const [visitCount, setVisitCount] = useState(null);
   const [visitLoading, setVisitLoading] = useState(true);
+  const [headerAway, setHeaderAway] = useState(false);
   const contactFormRef = useRef(null);
   // Native cold start: skip simultaneous hero entrance animations under the splash fade.
   const calmEntrance = isNativeCapacitorPlatform();
@@ -424,6 +435,36 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
     const t = window.setTimeout(() => setAmbientOn(true), 700);
     return () => window.clearTimeout(t);
   }, [calmEntrance, motionReady]);
+
+  // Transparent sticky bar: hide after leaving the top. Do not re-show on
+  // mid-page scroll-up (that reintroduces overlap over content). Reveal only
+  // when the user is back near the page top / hero.
+  useEffect(() => {
+    const scroller = document.getElementById('main-scroll-container');
+    if (!scroller) return undefined;
+
+    let ticking = false;
+    const TOP_SHOW = 20;
+    const HIDE_AFTER = 48;
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = Math.max(0, scroller.scrollTop);
+        if (y <= TOP_SHOW) {
+          setHeaderAway(false);
+        } else if (y >= HIDE_AFTER) {
+          setHeaderAway(true);
+        }
+        ticking = false;
+      });
+    };
+
+    onScroll();
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    return () => scroller.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Landing is always shown in light theme, regardless of global app theme.
   useEffect(() => {
@@ -588,7 +629,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
     >
 
       {/* Top bar */}
-      <div className="landing-header-bar sticky top-0 z-20">
+      <div className={`landing-header-bar sticky top-0 z-20${headerAway ? ' landing-header-bar--away' : ''}`}>
         <div className="mx-auto max-w-5xl px-3 sm:px-6">
           <div className="flex h-12 items-center justify-between gap-2 sm:h-14 sm:gap-3">
             <div className="flex min-w-0 select-none items-center gap-2 sm:gap-2.5">
@@ -606,26 +647,6 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-              <div
-                className="inline-flex items-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 text-[9px] font-semibold shadow-sm sm:text-[10px]"
-                role="group"
-                aria-label={t.language}
-              >
-                <button
-                  type="button"
-                  onClick={() => onLanguageChange('en')}
-                  className={`min-h-[28px] min-w-[28px] rounded-full px-2 py-0.5 touch-manipulation transition-all active:scale-95 sm:min-h-0 sm:min-w-0 sm:px-2.5 ${language === 'en' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  EN
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onLanguageChange('bn')}
-                  className={`min-h-[28px] min-w-[28px] rounded-full px-2 py-0.5 touch-manipulation transition-all active:scale-95 sm:min-h-0 sm:min-w-0 sm:px-2.5 ${language === 'bn' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  বাং
-                </button>
-              </div>
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
@@ -690,25 +711,22 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
               <span className={bnFont ? 'font-bengali' : ''}>{t.joinCta}</span>
             </button>
           </div>
-        </section>
 
-        {/* Non-profit / volunteer highlight */}
-        <aside className="landing-nonprofit-strip relative z-20 mb-6 sm:mb-8" aria-label={t.nonprofitTitle}>
-          <LandingNonprofitLineman active={ambientOn} />
-          <SectionIconBadge name="sparkles" tone="emerald" className="relative z-[1] h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
-          <div className="relative z-[1] min-w-0">
-            <p className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${bnFont ? 'font-bengali' : ''}`}>
+          {/* Walkway under Join — visible in first viewport; pairs with hotstick gag */}
+          <aside
+            className="landing-nonprofit-strip landing-nonprofit-strip--hero relative z-20"
+            aria-label={t.nonprofitTitle}
+          >
+            <LandingNonprofitLineman active={ambientOn} />
+            <p className={`landing-nonprofit-strip__title relative z-[1] ${bnFont ? 'font-bengali' : ''}`}>
               {t.nonprofitTitle}
             </p>
-            <p className={`mt-0.5 text-xs font-medium leading-relaxed text-slate-600 sm:text-sm ${bnFont ? 'font-bengali landing-bn-reading' : ''}`}>
-              {t.nonprofitBody}
-            </p>
-          </div>
-        </aside>
+          </aside>
+        </section>
 
-        {/* Vision & Mission — near top */}
+        {/* Vision & Mission */}
         <section className="relative z-10 mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-5 md:grid-cols-2">
-          <article className="landing-vm-card landing-vm-card--vision relative">
+          <article className="landing-vm-card landing-vm-card--vision">
             <SectionIconBadge name="eye" tone="amber" className="mb-3 sm:mb-4" />
             <h2 className={`mb-2 text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${bnFont ? 'font-bengali' : ''}`}>{t.visionTitle}</h2>
             <p className={`text-sm font-medium leading-relaxed text-slate-700 sm:text-base ${bnFont ? 'landing-bn-reading' : ''}`}>{t.vision}</p>
@@ -749,6 +767,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
           fillTo={3}
           emptyTitle={t.podiumOpenSlot}
           emptyHint={t.podiumOpenHint}
+          viewLeaderboardLabel={t.viewLeaderboard}
+          onViewLeaderboard={() => setCurrentView('login')}
         />
 
         <LandingPrizeCarousel
@@ -789,19 +809,45 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
           </div>
         )}
 
-        <footer className="flex justify-center py-6 sm:py-8 mt-6 sm:mt-10">
+        <footer className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border-t border-slate-200/70 py-6 sm:mt-10 sm:py-8">
+          <div
+            className="inline-flex items-center gap-1 text-sm font-semibold text-slate-500"
+            role="group"
+            aria-label={t.language}
+          >
+            <button
+              type="button"
+              onClick={() => onLanguageChange('en')}
+              className={`min-h-[40px] touch-manipulation px-1.5 transition-colors active:scale-95 ${
+                language === 'en' ? 'font-black text-slate-900' : 'hover:text-slate-700'
+              }`}
+            >
+              EN
+            </button>
+            <span className="text-slate-300" aria-hidden>
+              ·
+            </span>
+            <button
+              type="button"
+              onClick={() => onLanguageChange('bn')}
+              className={`min-h-[40px] touch-manipulation px-1.5 transition-colors active:scale-95 ${
+                language === 'bn' ? 'font-black text-slate-900 font-bengali' : 'hover:text-slate-700'
+              }`}
+            >
+              বাং
+            </button>
+          </div>
+
           <a
             href="https://www.facebook.com/smartlineman"
             target="_blank"
             rel="noopener noreferrer"
-            className="landing-facebook-link inline-flex items-center justify-center gap-2.5 min-h-[44px] px-5 py-2.5 touch-manipulation"
+            className={`inline-flex min-h-[40px] items-center gap-1.5 text-sm font-bold text-[#1877F2] touch-manipulation transition-colors hover:text-blue-700 active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
           >
-            <svg className="h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
             </svg>
-            <span className={`text-sm font-bold ${bnFont ? 'font-bengali' : 'uppercase tracking-wide'}`}>
-              {t.followFacebook}
-            </span>
+            <span>{t.followFacebook}</span>
           </a>
         </footer>
       </div>
