@@ -25,6 +25,9 @@ export default function CelebrationSplash({
   const title = bn ? config.title.bn : config.title.en;
   const subtitle = bn ? config.subtitle.bn : config.subtitle.en;
   const continueLabel = bn ? config.continueLabel.bn : config.continueLabel.en;
+  const dateLabel = bn
+    ? (config.dateLabel?.bn || '')
+    : (config.dateLabel?.en || config.dateLabel?.bn || '');
 
   const node = (
     <div
@@ -60,6 +63,15 @@ export default function CelebrationSplash({
           >
             {title}
           </h1>
+          {dateLabel ? (
+            <p
+              className={`celebration-splash__date mt-2.5 inline-flex items-center rounded-full px-3 py-1 text-xs font-bold tracking-wide text-white sm:text-sm ${
+                bn ? 'font-bengali' : ''
+              }`}
+            >
+              {dateLabel}
+            </p>
+          ) : null}
           <p
             className={`mx-auto mt-3 max-w-sm text-sm font-semibold leading-relaxed text-white/95 sm:text-base ${
               bn ? 'font-bengali' : ''

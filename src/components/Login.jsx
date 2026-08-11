@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
 import { DotLottiePlayer } from '@dotlottie/react-player';
@@ -54,6 +54,7 @@ const copy = {
         connectionTitle: 'You’re offline',
         retry: 'Try again',
         storiesCta: 'করুণ কাহিনী',
+        storiesHint: 'Tap to read',
         errPhone: 'Enter a 10-digit mobile number',
         errPin: 'Enter your 6-digit PIN',
         errCredentials: 'Wrong phone or PIN',
@@ -87,6 +88,7 @@ const copy = {
         connectionTitle: 'ইন্টারনেট নেই',
         retry: 'আবার চেষ্টা',
         storiesCta: 'করুণ কাহিনী',
+        storiesHint: 'পড়তে ট্যাপ করুন',
         errPhone: '১০ সংখ্যার মোবাইল নম্বর দিন',
         errPin: '৬ সংখ্যার পিন দিন',
         errCredentials: 'ফোন বা পিন ভুল',
@@ -177,6 +179,10 @@ function friendlyLoginError(error, t, { pinFlow = false } = {}) {
 }
 
 function FilmCrossfade({ images, activeIndex }) {
+    const [shownIndex, setShownIndex] = useState(activeIndex);
+    const [leavingIndex, setLeavingIndex] = useState(null);
+    const leaveTimerRef = useRef(null);
+
     // Prefetch only the active slide and the next one — keep login light.
     useEffect(() => {
         const toPrefetch = [
@@ -189,21 +195,37 @@ function FilmCrossfade({ images, activeIndex }) {
         });
     }, [images, activeIndex]);
 
+    useEffect(() => {
+        if (activeIndex === shownIndex) return undefined;
+        if (leaveTimerRef.current) window.clearTimeout(leaveTimerRef.current);
+        setLeavingIndex(shownIndex);
+        setShownIndex(activeIndex);
+        leaveTimerRef.current = window.setTimeout(() => {
+            leaveTimerRef.current = null;
+            setLeavingIndex(null);
+        }, 1600);
+        return () => {
+            if (leaveTimerRef.current) window.clearTimeout(leaveTimerRef.current);
+        };
+    }, [activeIndex, shownIndex]);
+
     return (
         <div className="login-film__plane" aria-hidden="true">
-            {images.map((src, i) => (
-                <img
-                    key={src}
-                    src={src}
-                    alt=""
-                    decoding="async"
-                    loading={i === activeIndex || i === (activeIndex + 1) % images.length ? 'eager' : 'lazy'}
-                    className={`login-film__img ${
-                        i === activeIndex ? 'login-film__img--active' : ''
-                    }`}
-                    style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 18%' }}
-                />
-            ))}
+            {images.map((src, i) => {
+                const isActive = i === shownIndex;
+                const isLeaving = i === leavingIndex;
+                return (
+                    <img
+                        key={src}
+                        src={src}
+                        alt=""
+                        decoding="async"
+                        loading={isActive || isLeaving || i === (shownIndex + 1) % images.length ? 'eager' : 'lazy'}
+                        className={`login-film__img${isActive ? ' login-film__img--active' : ''}${isLeaving ? ' login-film__img--leaving' : ''}`}
+                        style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 18%' }}
+                    />
+                );
+            })}
         </div>
     );
 }
@@ -234,10 +256,14 @@ function LoginPageShell({
                         type="button"
                         onClick={onOpenAwarenessStories}
                         className="login-film__hit touch-manipulation"
-                        aria-label={t.storiesCta}
+                        aria-label={`${t.storiesCta}. ${t.storiesHint}`}
                     >
                         <FilmCrossfade images={emotionalImages} activeIndex={emotionalImageIndex} />
                     </button>
+                    <span className={`login-film__cta ${bn ? 'font-bengali' : ''}`} aria-hidden="true">
+                        <span className="login-film__cta-label">{t.storiesCta}</span>
+                        <span className="login-film__cta-hint">{t.storiesHint}</span>
+                    </span>
                     <div className="login-film__fade" aria-hidden="true" />
                 </section>
             ) : (
@@ -252,16 +278,14 @@ function LoginPageShell({
                     <button
                         type="button"
                         onClick={onGoHome}
-                        className="login-back inline-flex h-10 w-10 items-center justify-center rounded-xl touch-manipulation transition-colors active:scale-95"
+                        className="login-back touch-manipulation"
                         aria-label={t.backHome}
                     >
-                        <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        <svg className="login-back__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="m15 18-6-6 6-6" />
                         </svg>
                     </button>
-                ) : (
-                    <span />
-                )}
+                ) : null}
             </header>
 
             <div className={`login-stage relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col px-5 pb-3 sm:px-6 ${animate}`}>
@@ -341,7 +365,7 @@ export default function Login({ onLogin, showNotification, setCurrentView, langu
 
         const imageInterval = setInterval(() => {
             setEmotionalImageIndex(prev => (prev + 1) % emotionalImages.length);
-        }, 4000);
+        }, 6500);
 
         return () => clearInterval(imageInterval);
     }, []);

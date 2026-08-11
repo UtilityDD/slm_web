@@ -30,6 +30,10 @@ export const CELEBRATION_SPLASH = {
     bn: 'এগিয়ে যান',
     en: 'Continue',
   },
+  dateLabel: {
+    bn: '৯–১৬ আগস্ট',
+    en: '9–16 August',
+  },
 };
 
 /** Current calendar day in IST as YYYY-MM-DD. */
