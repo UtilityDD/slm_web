@@ -16,16 +16,13 @@ function getCurrentMonthLabel(language = 'bn') {
 
 function AllTimeLink({ language, onAllTimeClick, className = '' }) {
     return (
-        <span className={className}>
-            {language === 'en' ? 'All-time scores: ' : 'সর্বকালীন দেখতে '}
-            <button
-                type="button"
-                onClick={onAllTimeClick}
-                className="font-semibold text-orange-600 hover:text-orange-700 underline-offset-2 hover:underline active:opacity-80"
-            >
-                {language === 'en' ? 'tap here' : 'এখানে ট্যাপ করুন'}
-            </button>
-        </span>
+        <button
+            type="button"
+            onClick={onAllTimeClick}
+            className={`font-bold text-orange-600 hover:text-orange-700 underline-offset-2 hover:underline active:opacity-80 ${className}`}
+        >
+            {language === 'en' ? 'All-time' : 'সর্বকালীন'}
+        </button>
     );
 }
 
@@ -35,7 +32,7 @@ function BoardRulesButton({ language, onClick }) {
         <button
             type="button"
             onClick={onClick}
-            className={`inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700 active:scale-95 ${bn ? 'font-bengali' : ''}`}
+            className={`inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700 active:scale-95 ${bn ? 'font-bengali' : ''}`}
             aria-label={bn ? 'তালিকার নিয়ম' : 'Board rules'}
         >
             <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -67,19 +64,20 @@ export function MonthlyBoardHeader({
         : (meta?.rankBy || meta?.prize || '');
 
     return (
-        <div className="min-w-0 space-y-1.5">
-            <div className="flex items-center gap-2">
-                <p className={`min-w-0 flex-1 truncate text-[11px] leading-snug text-slate-600 sm:text-xs ${bn ? 'font-bengali' : ''}`}>
-                    {summary}
-                </p>
-                {meta && onInfoClick && (
-                    <BoardRulesButton language={language} onClick={onInfoClick} />
+        <div className="flex min-w-0 items-center gap-2">
+            <p className={`min-w-0 flex-1 truncate text-xs leading-snug text-slate-600 sm:text-sm ${bn ? 'font-bengali' : ''}`}>
+                {summary}
+                {onAllTimeClick && (
+                    <>
+                        <span className="mx-1.5 text-slate-300" aria-hidden>
+                            ·
+                        </span>
+                        <AllTimeLink language={language} onAllTimeClick={onAllTimeClick} />
+                    </>
                 )}
-            </div>
-            {isChampion && onAllTimeClick && (
-                <p className={`text-[10px] leading-snug text-slate-500 sm:text-[11px] ${bn ? 'font-bengali' : ''}`}>
-                    <AllTimeLink language={language} onAllTimeClick={onAllTimeClick} />
-                </p>
+            </p>
+            {meta && onInfoClick && (
+                <BoardRulesButton language={language} onClick={onInfoClick} />
             )}
         </div>
     );

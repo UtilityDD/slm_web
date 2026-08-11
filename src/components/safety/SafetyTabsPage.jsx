@@ -1,13 +1,12 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect } from 'react';
-import SafetyTopTabs from './SafetyTopTabs';
 import { storageUtils } from '../../utils/storageUtils';
 import MyPPE from './MyPPE';
 import SafetyLibrary from './SafetyLibrary';
 
 /**
- * Shared shell for My PPE ↔ Safety Library — soft Material chrome,
- * stable tabs-only header (no PPE List/Figure control), both panels stay mounted.
+ * Full-height shell for My PPE and Identify (Chinun).
+ * Home opens each as its own view — no shared top tabs.
  */
 export default function SafetyTabsPage({ activeTab, setCurrentView, language, user }) {
     const isPpe = activeTab === 'my_ppe';
@@ -40,40 +39,21 @@ export default function SafetyTabsPage({ activeTab, setCurrentView, language, us
 
     return (
         <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#fffdf7] text-slate-900">
-
-            <div className="z-[100] shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
-                <div className="mx-auto max-w-7xl px-4 py-3 sm:px-8">
-                    <SafetyTopTabs
-                        current={activeTab}
-                        onNavigate={setCurrentView}
-                        language={language}
-                        className="w-full max-w-md"
-                    />
-                </div>
-            </div>
-
             <div className="relative min-h-0 flex-1 overflow-hidden">
-                <div
-                    className={`h-full min-h-0 ${isPpe ? '' : 'hidden'}`}
-                    aria-hidden={!isPpe}
-                >
+                {isPpe ? (
                     <MyPPE
                         language={language}
                         user={user}
                         setCurrentView={setCurrentView}
                         embedded
                     />
-                </div>
-                <div
-                    className={`h-full min-h-0 ${isPpe ? 'hidden' : ''}`}
-                    aria-hidden={isPpe}
-                >
+                ) : (
                     <SafetyLibrary
                         language={language}
                         setCurrentView={setCurrentView}
                         embedded
                     />
-                </div>
+                )}
             </div>
         </div>
     );

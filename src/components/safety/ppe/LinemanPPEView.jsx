@@ -5,7 +5,6 @@ import LinemanFigure from './LinemanFigure';
 import PPEItemSheet from './PPEItemSheet';
 import PPECompactList from './PPECompactList';
 import PpeViewSegment from './PpeViewSegment';
-import SafetyTopTabs from '../SafetyTopTabs';
 import { fetchUserPPE, saveSinglePPEItem } from './ppeSave';
 
 /**
@@ -15,8 +14,6 @@ import { fetchUserPPE, saveSinglePPEItem } from './ppeSave';
 export default function LinemanPPEView({
     user,
     language = 'bn',
-    onClose,
-    setCurrentView,
     embedded = false,
     view: controlledView,
     onViewChange,
@@ -122,9 +119,20 @@ export default function LinemanPPEView({
 
     const selectedAnswer = answers.find((a) => a.name === selectedName);
 
+    const pageTitle = language === 'en' ? 'My PPE' : 'আমার পিপিই';
+
     /** Fixed toolbar — same place for figure and list so the toggle never jumps. */
     const viewToolbar = (
         <div className={`shrink-0 ${embedded ? 'px-3 pt-2 sm:px-6' : 'px-4 pt-3 sm:px-6'}`}>
+            <div className="mx-auto mb-3 w-full max-w-xs text-center">
+                <h1
+                    className={`text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${
+                        language === 'bn' ? 'font-bengali' : ''
+                    }`}
+                >
+                    {pageTitle}
+                </h1>
+            </div>
             <div className="mx-auto flex w-full max-w-xs items-center justify-center">
                 <PpeViewSegment view={view} onChange={setView} language={language} />
             </div>
@@ -239,24 +247,6 @@ export default function LinemanPPEView({
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#fffdf7] text-slate-900 animate-fadeIn">
-
-            <div className="shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/90 px-4 py-4 backdrop-blur-md sm:px-8">
-                <div className="mx-auto max-w-7xl">
-                    {setCurrentView ? (
-                        <SafetyTopTabs
-                            current="my_ppe"
-                            onNavigate={setCurrentView}
-                            language={language}
-                            className="w-full max-w-md"
-                        />
-                    ) : (
-                        <h1 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">
-                            {language === 'en' ? 'My PPE' : 'আমার পিপিই'}
-                        </h1>
-                    )}
-                </div>
-            </div>
-
             {content}
         </div>
     );

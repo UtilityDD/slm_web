@@ -345,24 +345,6 @@ const getIstDate = (date) => {
     return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
 };
 
-function RankPrizeButton({ language, onClick }) {
-    const bn = language === 'bn';
-    const label = bn ? 'পুরস্কার' : 'Prizes';
-
-    return (
-        <button
-            type="button"
-            aria-label={label}
-            title={label}
-            onClick={onClick}
-            className={`rank-prize-btn shrink-0 rounded-full border border-amber-300/90 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 px-3 py-1.5 text-[11px] font-black leading-none tracking-wide text-white shadow-md shadow-orange-500/25 transition-all hover:shadow-lg hover:shadow-orange-500/35 active:scale-95 sm:px-3.5 sm:py-2 ${bn ? 'font-bengali' : ''}`}
-        >
-            <span className="rank-prize-btn__glow" aria-hidden />
-            <span className="relative z-[1]">{label}</span>
-        </button>
-    );
-}
-
 export default function Competitions({
     language = 'bn',
     user,
@@ -732,7 +714,7 @@ export default function Competitions({
             searchProceed: "Proceed",
             noDistrict: "No Update",
             leaderboardTimeInfo:
-                "This month follows India time (IST). Hourly scores shown are after wrong-answer penalties — same rule as the monthly board."
+                "India time (IST). Scores shown are after penalties."
         },
         bn: {
             title: "প্রতিযোগিতা",
@@ -795,7 +777,7 @@ export default function Competitions({
             searchProceed: "সার্চ করুন",
             noDistrict: "তথ্য নেই",
             leaderboardTimeInfo:
-                "এই মাস ভারতীয় সময় (IST) অনুযায়ী গণনা হয়। ঘণ্টার কুইজে দেখানো স্কোর ভুল উত্তরের পেনাল্টি বাদ দিয়ে — মাসিক বোর্ডের মতোই।"
+                "ভারতীয় সময় (IST) অনুযায়ী। পেনাল্টি বাদ দিয়ে স্কোর।"
         }
     }[language];
 
@@ -1735,23 +1717,6 @@ export default function Competitions({
         }
     };
 
-    const goToPrizes = () => {
-        if (typeof setCurrentView === 'function') {
-            setCurrentView('prizes');
-            return;
-        }
-        fetchHallOfFameGallery();
-        setShowHallOfFame(true);
-    };
-
-    const exitHallOfFame = () => {
-        if (isPrizesSurface && typeof setCurrentView === 'function') {
-            setCurrentView('leaderboard');
-            return;
-        }
-        setShowHallOfFame(false);
-    };
-
     const switchToMonthlyLeaderboard = () => {
         setLeaderboardTab('monthly');
     };
@@ -2169,13 +2134,20 @@ export default function Competitions({
                 <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
                         {!showHallOfFame && leaderboardTab === 'monthly' && (
-                            <div className="flex w-full min-w-0 gap-1 rounded-full bg-slate-100/90 p-1 shadow-sm">
+                            <div
+                                className="flex w-full min-w-0 gap-1 rounded-full bg-slate-100/90 p-1 shadow-sm"
+                                role="tablist"
+                                aria-label={language === 'en' ? 'Monthly boards' : 'মাসিক বোর্ড'}
+                            >
                                 {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
                                     <button
                                         key={tabId}
                                         type="button"
+                                        role="tab"
+                                        aria-selected={monthlyBoardTab === tabId}
                                         onClick={() => setMonthlyBoardTab(tabId)}
-                                        className={`flex-1 min-w-0 truncate rounded-full px-1.5 py-2 text-[10px] font-bold transition-all active:scale-[0.98] sm:px-2 sm:py-2.5 sm:text-xs ${
+                                        title={encouragementCopy.monthlyTabs[tabId]}
+                                        className={`flex-1 min-w-0 truncate rounded-full px-2 py-2.5 text-[13px] font-black leading-tight transition-all active:scale-[0.98] sm:px-3 sm:py-3 sm:text-base ${
                                             monthlyBoardTab === tabId
                                                 ? 'bg-white text-orange-600 shadow-sm'
                                                 : 'text-slate-600 hover:text-slate-900'
@@ -2193,13 +2165,13 @@ export default function Competitions({
                         )}
 
                         {!showHallOfFame && leaderboardTab === 'all-time' && (
-                            <div className="flex items-center justify-between gap-2 sm:gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                                 <button
                                     type="button"
                                     onClick={switchToMonthlyLeaderboard}
-                                    className={`inline-flex min-w-0 items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    className={`inline-flex min-w-0 items-center gap-1.5 text-sm font-bold text-orange-600 hover:text-orange-700 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0" aria-hidden>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0" aria-hidden>
                                         <path d="m15 18-6-6 6-6" />
                                     </svg>
                                     <span className="truncate sm:hidden">
@@ -2209,22 +2181,14 @@ export default function Competitions({
                                         {language === 'en' ? 'Monthly leaderboard' : 'মাসিক লিডারবোর্ড'}
                                     </span>
                                 </button>
-                                <RankPrizeButton language={language} onClick={goToPrizes} />
                             </div>
                         )}
 
                         {showHallOfFame && (
-                            <div className="flex items-center justify-between gap-3">
-                                <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <div className="flex items-center">
+                                <p className={`text-sm font-black text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'en' ? 'Prizes' : 'পুরস্কার'}
                                 </p>
-                                <button
-                                    type="button"
-                                    onClick={exitHallOfFame}
-                                    className={`rounded-full px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {language === 'en' ? '← Rank' : '← র‍্যাঙ্ক'}
-                                </button>
                             </div>
                         )}
                     </div>
@@ -2324,7 +2288,7 @@ export default function Competitions({
                                                         key={tabId}
                                                         type="button"
                                                         onClick={() => setHallOfFameBoardTab(tabId)}
-                                                        className={`whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold shadow-sm transition-all active:scale-95 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : ''} ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
+                                                        className={`whitespace-nowrap rounded-full px-3.5 py-2.5 text-[13px] font-black shadow-sm transition-all active:scale-95 sm:px-4 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
                                                     >
                                                         {encouragementCopy.monthlyTabs[tabId]}
                                                     </button>
@@ -2407,21 +2371,18 @@ export default function Competitions({
                     <>
                     <div className={`max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 ${leaderboardTab === 'all-time' ? 'pb-48 md:pb-56' : 'pb-24 md:pb-28'}`}>
                     {leaderboardTab === 'monthly' && (
-                        <div className="mx-auto mb-1 flex max-w-2xl items-start gap-2 px-2 sm:mb-2 sm:items-center sm:gap-3">
-                            <div className="min-w-0 flex-1">
-                                {monthlyBoardMeta ? (
-                                    <MonthlyBoardHeader
-                                        meta={monthlyBoardMeta}
-                                        language={language}
-                                        monthlyBoardTab={monthlyBoardTab}
-                                        onInfoClick={() => setShowMonthlyBoardInfoModal(true)}
-                                        onAllTimeClick={switchToAllTimeLeaderboard}
-                                    />
-                                ) : (
-                                    <div className="h-8" aria-hidden />
-                                )}
-                            </div>
-                            <RankPrizeButton language={language} onClick={goToPrizes} />
+                        <div className="mx-auto mb-1 max-w-2xl px-2 sm:mb-2">
+                            {monthlyBoardMeta ? (
+                                <MonthlyBoardHeader
+                                    meta={monthlyBoardMeta}
+                                    language={language}
+                                    monthlyBoardTab={monthlyBoardTab}
+                                    onInfoClick={() => setShowMonthlyBoardInfoModal(true)}
+                                    onAllTimeClick={switchToAllTimeLeaderboard}
+                                />
+                            ) : (
+                                <div className="h-8" aria-hidden />
+                            )}
                         </div>
                     )}
 
@@ -2875,10 +2836,6 @@ export default function Competitions({
                 open={showMonthlyBoardInfoModal}
                 language={language}
                 meta={monthlyBoardMeta}
-                encouragementData={encouragementBoards}
-                userId={user?.id}
-                timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
-                hourlyAvgInfo={encouragementCopy.hourlyAvgNote}
                 onClose={() => setShowMonthlyBoardInfoModal(false)}
             />
 
@@ -3610,10 +3567,6 @@ export default function Competitions({
                 open={showMonthlyBoardInfoModal}
                 language={language}
                 meta={monthlyBoardMeta}
-                encouragementData={encouragementBoards}
-                userId={user?.id}
-                timeInfo={monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION ? t.leaderboardTimeInfo : null}
-                hourlyAvgInfo={encouragementCopy.hourlyAvgNote}
                 onClose={() => setShowMonthlyBoardInfoModal(false)}
             />
         </div>

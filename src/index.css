@@ -3108,23 +3108,6 @@ body,
     animation: blink 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  /* Training: soft focus on Life Skills tab (disabled when prefers-reduced-motion) */
-  @keyframes lifeskills-hint-glow {
-
-    0%,
-    100% {
-      box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.35);
-    }
-
-    50% {
-      box-shadow: 0 0 22px 3px rgba(99, 102, 241, 0.22);
-    }
-  }
-
-  .animate-lifeskills-hint-glow {
-    animation: lifeskills-hint-glow 3.5s ease-in-out infinite;
-  }
-
   @keyframes lessonRadioPulse {
 
     0%,
@@ -3589,43 +3572,6 @@ body,
   /* Hall of Fame congrats: slide in from top while grid row expands (pushes content) */
   .animate-hof-banner-in {
     animation: hofBannerIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  /* Rank page → Prizes CTA (text-only) */
-  .rank-prize-btn {
-    position: relative;
-    isolation: isolate;
-    overflow: visible;
-  }
-
-  .rank-prize-btn__glow {
-    position: absolute;
-    inset: -3px;
-    border-radius: 9999px;
-    background: radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.55), rgba(249, 115, 22, 0.2) 55%, transparent 70%);
-    opacity: 0.55;
-    animation: rankPrizeGlow 2.4s ease-in-out infinite;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  @keyframes rankPrizeGlow {
-    0%,
-    100% {
-      opacity: 0.35;
-      transform: scale(0.96);
-    }
-    50% {
-      opacity: 0.75;
-      transform: scale(1.06);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .rank-prize-btn__glow {
-      animation: none !important;
-      opacity: 0.45;
-    }
   }
 
   /* Home hourly quiz — Material filled CTA (sharp, Android-like) */

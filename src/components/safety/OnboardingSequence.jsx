@@ -41,7 +41,7 @@ const OnboardingSequence = ({ language, onComplete, preview = false }) => {
       body: bn
         ? 'PPE থেকে SOP — একের পর এক পাঠ। শেষ করলে পথ পরিষ্কার।'
         : 'From PPE to SOPs — one lesson after another. Finish the path, stay ready.',
-      tip: bn ? 'ট্রেনিং ট্যাবে শুরু' : 'Start in Training',
+      tip: bn ? 'ট্রেনিং থেকে শুরু' : 'Start in Training',
     },
     {
       icon: '⚡',

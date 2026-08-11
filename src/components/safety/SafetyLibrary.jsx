@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { libraryService } from '../../utils/libraryService';
 import { storageUtils } from '../../utils/storageUtils';
-import SafetyTopTabs from './SafetyTopTabs';
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -723,8 +722,6 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             zoomToolbarAria: 'Image zoom controls',
             relatedOpenAriaPrefix: 'Open related item:',
             backPreviousAria: 'Previous item',
-            myPpeTitle: 'My PPE',
-            myPpeSubtitle: 'Tap gear on your lineman to update'
         },
         bn: {
             title: 'চিনুন',
@@ -740,8 +737,6 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             zoomToolbarAria: 'ছবির জুম নিয়ন্ত্রণ',
             relatedOpenAriaPrefix: 'খুলুন:',
             backPreviousAria: 'আগের আইটেমে ফিরুন',
-            myPpeTitle: 'আমার পিপিই',
-            myPpeSubtitle: 'লাইনম্যানে সরঞ্জামে ট্যাপ করে আপডেট করুন'
         }
     }[language];
 
@@ -818,106 +813,17 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const searchAndCategories = (
         <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b border-slate-200/80' : ''}`}>
             <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8 py-3' : 'py-4 px-4 sm:px-8'}`}>
-                {!embedded && (
-                    <div className="flex items-center justify-between gap-4">
-                        {!isSearchExpanded ? (
-                            <>
-                                <SafetyTopTabs
-                                    current="safety-library"
-                                    onNavigate={setCurrentView}
-                                    language={language}
-                                    className="flex-1 min-w-0 max-w-md"
-                                />
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        disabled={loading}
-                                        onClick={() => !loading && setIsSearchExpanded(true)}
-                                        className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-40"
-                                    >
-                                        <SearchIcon className="w-5 h-5" />
-                                    </button>
-
-                                    {loading ? (
-                                        <div className="relative hidden h-10 w-full min-w-[200px] max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:block">
-                                            <SkeletonShimmer />
-                                        </div>
-                                    ) : (
-                                        <div className="hidden sm:block relative max-w-md w-full">
-                                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
-                                            <input
-                                                type="text"
-                                                placeholder={t.searchPlaceholder}
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="nb-input !min-h-[40px] py-2 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex-1 flex items-center gap-2">
-                                <div className="relative flex-1">
-                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        placeholder={t.searchPlaceholder}
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="nb-input py-2.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
-                                    />
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                    className="rounded-full px-3 py-2 text-sm font-bold text-orange-600 transition-colors hover:bg-orange-50 active:scale-95"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {embedded && (
-                    <div className="flex items-center gap-2">
-                        {isSearchExpanded ? (
-                            <>
-                                <div className="relative flex-1">
-                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        placeholder={t.searchPlaceholder}
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="nb-input py-2 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
-                                    />
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                    className={`rounded-full px-2.5 py-2 text-xs font-bold text-orange-600 transition-colors hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {language === 'en' ? 'Done' : 'ঠিক'}
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {!loading && (
-                                    <div className="hidden sm:block relative flex-1 max-w-md">
-                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
-                                        <input
-                                            type="text"
-                                            placeholder={t.searchPlaceholder}
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="nb-input !min-h-[36px] py-1.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
-                                        />
-                                    </div>
-                                )}
+                <div className="flex items-center justify-between gap-3">
+                    {!isSearchExpanded ? (
+                        <>
+                            <h1
+                                className={`min-w-0 flex-1 text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${
+                                    language === 'bn' ? 'font-bengali' : ''
+                                }`}
+                            >
+                                {t.title}
+                            </h1>
+                            <div className="flex shrink-0 items-center gap-2">
                                 <button
                                     type="button"
                                     disabled={loading}
@@ -926,10 +832,48 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 >
                                     <SearchIcon className="w-5 h-5" />
                                 </button>
-                            </>
-                        )}
-                    </div>
-                )}
+
+                                {loading ? (
+                                    <div className="relative hidden h-10 w-full min-w-[200px] max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:block">
+                                        <SkeletonShimmer />
+                                    </div>
+                                ) : (
+                                    <div className="hidden sm:block relative max-w-md w-full min-w-[200px]">
+                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
+                                        <input
+                                            type="text"
+                                            placeholder={t.searchPlaceholder}
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="nb-input !min-h-[40px] py-2 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex flex-1 items-center gap-2">
+                            <div className="relative flex-1">
+                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder={t.searchPlaceholder}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="nb-input py-2.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
+                                className={`rounded-full px-3 py-2 text-sm font-bold text-orange-600 transition-colors hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                            >
+                                {language === 'en' ? 'Cancel' : 'বন্ধ'}
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5 scroll-smooth">
                     {loading ? (

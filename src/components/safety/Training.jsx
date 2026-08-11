@@ -82,12 +82,6 @@ const LOADING_TIPS = {
 /** Shared hardcover art for the lesson cover (preloaded on Training mount). */
 const LESSON_COVER_IMAGE_SRC = '/assets/covers/lesson-cover-smartlineman.webp';
 
-/** localStorage JSON `{ visits, dismissed }`; legacy v1 `'1'` = dismissed. */
-const LIFE_SKILLS_HINT_STORAGE_KEY = 'slm_training_lifeskills_hint_v2';
-const LIFE_SKILLS_HINT_LEGACY_KEY = 'slm_training_lifeskills_hint_v1';
-/** Show hint on core training home for this many visits, then stop (unless dismissed earlier). */
-const MAX_LIFE_SKILLS_HINT_VISITS = 3;
-
 const ONBOARDING_COMPLETE_KEY = 'hasSeenOnboarding';
 const ONBOARDING_LEGACY_DATE_KEY = 'lastOnboardingDate';
 const DAILY_BRIEF_DISMISS_KEY = 'slm_daily_brief_dismissed';
@@ -107,30 +101,22 @@ function isDailyBriefDismissedToday() {
     return localStorage.getItem(DAILY_BRIEF_DISMISS_KEY) === new Date().toDateString();
 }
 
-function readLifeSkillsHintState() {
-    if (typeof window === 'undefined') return { visits: 0, dismissed: true };
-    try {
-        if (localStorage.getItem(LIFE_SKILLS_HINT_LEGACY_KEY) === '1') {
-            return { visits: MAX_LIFE_SKILLS_HINT_VISITS, dismissed: true };
-        }
-        const raw = localStorage.getItem(LIFE_SKILLS_HINT_STORAGE_KEY);
-        if (!raw) return { visits: 0, dismissed: false };
-        const o = JSON.parse(raw);
-        return {
-            visits: typeof o.visits === 'number' && o.visits >= 0 ? o.visits : 0,
-            dismissed: !!o.dismissed,
-        };
-    } catch {
-        return { visits: 0, dismissed: false };
-    }
+/** Home / deep links use `#/training?tab=supplementary` (aliases: life-skill, lifeskill). */
+function readTrainingSurfaceFromHash() {
+    if (typeof window === 'undefined') return 'core';
+    const tabMatch = window.location.hash.match(/[?&]tab=([^&]*)/);
+    if (!tabMatch) return 'core';
+    const tab = decodeURIComponent(tabMatch[1]);
+    if (tab === 'supplementary' || tab === 'life-skill' || tab === 'lifeskill') return 'supplementary';
+    return 'core';
 }
 
-function writeLifeSkillsHintState(state) {
+function writeTrainingSurfaceHash(surface) {
     if (typeof window === 'undefined') return;
-    try {
-        localStorage.setItem(LIFE_SKILLS_HINT_STORAGE_KEY, JSON.stringify(state));
-    } catch {
-        /* ignore */
+    const next =
+        surface === 'supplementary' ? '#/training?tab=supplementary' : '#/training';
+    if (window.location.hash !== next) {
+        window.history.replaceState(null, '', next);
     }
 }
 
@@ -1212,8 +1198,8 @@ export default function Training({
     const [readingPoints, setReadingPoints] = useState(0);
     const { expanded: radioGlobalExpanded } = useLifeSkillRadio();
 
-    // Supplementary Modules State
-    const [trainingTab, setTrainingTab] = useState('core'); // 'core' | 'supplementary'
+    // Supplementary Modules State — surface from Home deep link / hash (no in-page tabs)
+    const [trainingTab, setTrainingTab] = useState(readTrainingSurfaceFromHash); // 'core' | 'supplementary'
     const [supplementaryModules, setSupplementaryModules] = useState([]);
     const [suppCompleted, setSuppCompleted] = useState([]);
     /** moduleId → ISO created_at of last Life Skill award still inside the 30-day cooldown. */
@@ -1222,11 +1208,11 @@ export default function Training({
     const [lifeSkillTotalsByModule, setLifeSkillTotalsByModule] = useState(() => new Map());
     /** lessonId → ISO effective award time while still inside the 30-day core re-claim cooldown. */
     const [coreLessonScoreCooldownByLesson, setCoreLessonScoreCooldownByLesson] = useState(() => new Map());
-    const [showLifeSkillsHint, setShowLifeSkillsHint] = useState(() => {
-        const s = readLifeSkillsHintState();
-        return !s.dismissed && s.visits < MAX_LIFE_SKILLS_HINT_VISITS;
-    });
-    const lifeSkillsHintHomeBumpRef = useRef(false);
+
+    const setTrainingSurface = useCallback((surface) => {
+        setTrainingTab(surface);
+        writeTrainingSurfaceHash(surface);
+    }, []);
 
     // Quiz Modal State
     const [showQuizModal, setShowQuizModal] = useState(false);
@@ -1565,12 +1551,6 @@ export default function Training({
         [user, language, profile, showNotification]
     );
 
-    const dismissLifeSkillsHint = useCallback(() => {
-        const s = readLifeSkillsHintState();
-        writeLifeSkillsHintState({ ...s, dismissed: true });
-        setShowLifeSkillsHint(false);
-    }, []);
-
     const dismissDailyBrief = useCallback(() => {
         if (typeof window !== 'undefined') {
             localStorage.setItem(DAILY_BRIEF_DISMISS_KEY, new Date().toDateString());
@@ -1592,39 +1572,6 @@ export default function Training({
         if (!user?.id) return;
         setCurrentView('competitions');
     }, [user?.id, setCurrentView]);
-
-    useEffect(() => {
-        if (trainingTab !== 'supplementary') return;
-        const s = readLifeSkillsHintState();
-        writeLifeSkillsHintState({ ...s, dismissed: true });
-        setShowLifeSkillsHint(false);
-    }, [trainingTab]);
-
-    // Count core-home "visits" for Life Skills hint; cap at MAX_LIFE_SKILLS_HINT_VISITS.
-    useEffect(() => {
-        if (selectedChapter || trainingContent) {
-            lifeSkillsHintHomeBumpRef.current = false;
-            return;
-        }
-        if (trainingTab !== 'core') {
-            lifeSkillsHintHomeBumpRef.current = false;
-            return;
-        }
-        if (lifeSkillsHintHomeBumpRef.current) return;
-        lifeSkillsHintHomeBumpRef.current = true;
-
-        const s = readLifeSkillsHintState();
-        if (s.dismissed) {
-            setShowLifeSkillsHint(false);
-            return;
-        }
-        if (s.visits >= MAX_LIFE_SKILLS_HINT_VISITS) {
-            setShowLifeSkillsHint(false);
-            return;
-        }
-        setShowLifeSkillsHint(true);
-        writeLifeSkillsHintState({ ...s, visits: s.visits + 1 });
-    }, [selectedChapter, trainingContent, trainingTab]);
 
     // Life Skills surfaces: keep scroll at top (window + app main scroller).
     useEffect(() => {
@@ -2922,30 +2869,38 @@ export default function Training({
     // Gate lesson open is handled by consumeGateNavigation / unlock-pending effects above.
 
     useEffect(() => {
-        const openTabIfRequested = () => {
+        const syncSurfaceFromHash = () => {
             const tabMatch = window.location.hash.match(/[?&]tab=([^&]*)/);
-            if (!tabMatch) return;
-            const tab = decodeURIComponent(tabMatch[1]);
+            const tab = tabMatch ? decodeURIComponent(tabMatch[1]) : null;
 
             if (tab === 'supplementary' || tab === 'life-skill' || tab === 'lifeskill') {
-                window.history.replaceState(null, '', '#/training');
                 setTrainingTab('supplementary');
+                // Normalize aliases to the canonical Home deep link.
+                if (tab !== 'supplementary') {
+                    writeTrainingSurfaceHash('supplementary');
+                }
                 return;
             }
 
-            if (tab !== 'faq') return;
-            if (trainingChapters.length === 0) return;
+            if (tab === 'faq') {
+                if (trainingChapters.length === 0) return;
 
-            const faq = trainingChapters.find((c) => c.number === 10);
-            if (!faq) return;
+                const faq = trainingChapters.find((c) => c.number === 10);
+                if (!faq) return;
 
-            window.history.replaceState(null, '', '#/training');
-            handleChapterClick(faq, null, { faqExitUsesHistory: true });
+                window.history.replaceState(null, '', '#/training');
+                setTrainingTab('core');
+                handleChapterClick(faq, null, { faqExitUsesHistory: true });
+                return;
+            }
+
+            // Plain `#/training` (Home / bottom nav) → core training home.
+            setTrainingTab('core');
         };
 
-        openTabIfRequested();
-        window.addEventListener('hashchange', openTabIfRequested);
-        return () => window.removeEventListener('hashchange', openTabIfRequested);
+        syncSurfaceFromHash();
+        window.addEventListener('hashchange', syncSurfaceFromHash);
+        return () => window.removeEventListener('hashchange', syncSurfaceFromHash);
     }, [trainingChapters]);
 
     // TTS Logic: Compile full lesson text
@@ -3062,9 +3017,9 @@ export default function Training({
             setSupplementaryRadioOverlayOpen(false);
             setTrainingContent(null);
             setIsJournalMode(false);
-            setTrainingTab('supplementary');
+            setTrainingSurface('supplementary');
         },
-        [handleMarkSupplementaryRead]
+        [handleMarkSupplementaryRead, setTrainingSurface]
     );
 
     const awardLifeSkillMonthlyPoints = useCallback(
@@ -3727,112 +3682,33 @@ export default function Training({
                         </div>
                     )}
 
-                    {/* Sticky tab row + hourly challenge entry (z-40). Hint stays below in normal flow. */}
-                    <div className="sticky top-[6px] z-40 mx-auto mb-6 flex w-full max-w-sm flex-col gap-1.5">
-                        <div
-                            className={`flex w-full justify-center ${
-                                showLifeSkillsHint && trainingTab === 'core'
-                                    ? prefersReducedMotion
-                                        ? 'p-[2px] ring-2 ring-indigo-500/60 rounded-full'
-                                        : 'animate-lifeskills-hint-glow p-[2px] ring-2 ring-indigo-500/60 rounded-full'
-                                    : ''
-                            }`}
-                        >
-                            <div className="relative flex w-full rounded-full border border-slate-200/80 bg-slate-100/90 p-1 shadow-sm backdrop-blur-sm">
-                                {showLifeSkillsHint && trainingTab === 'core' && (
-                                    <span
-                                        className="pointer-events-none absolute right-2 top-0 z-20 -translate-y-1/2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-md dark:bg-indigo-500"
-                                        aria-hidden
-                                    >
-                                        {language === 'en' ? (
-                                            'New'
-                                        ) : (
-                                            <>
-                                                <span className="font-sans tracking-wide">New</span>
-                                                <span className="mx-0.5 opacity-80">·</span>
-                                                <span className={language === 'bn' ? 'font-bengali tracking-normal normal-case' : ''}>
-                                                    নতুন
-                                                </span>
-                                            </>
-                                        )}
-                                    </span>
-                                )}
-                                <div
-                                    className={`absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-orange-500 shadow-md shadow-orange-500/25 transition-all duration-300 ease-out ${trainingTab === 'core' ? 'left-1' : 'left-[calc(50%+2px)]'}`}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setTrainingTab('core')}
-                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 active:scale-[0.98] ${trainingTab === 'core' ? 'text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                                >
-                                    {language === 'en' ? 'Training' : 'প্রশিক্ষণ'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setTrainingTab('supplementary')}
-                                    aria-describedby={showLifeSkillsHint && trainingTab === 'core' ? 'lifeskills-hint-copy' : undefined}
-                                    className={`relative z-10 w-1/2 rounded-full py-2.5 text-xs font-black uppercase tracking-wider nb-mono transition-colors duration-300 active:scale-[0.98] ${trainingTab === 'supplementary' ? 'text-white' : 'text-slate-600 hover:text-slate-900'}`}
-                                >
-                                    {language === 'en' ? 'Life Skill ✨' : 'লাইফ স্কিল ✨'}
-                                </button>
-                            </div>
-                        </div>
-                        {trainingTab === 'core' && !trainingLoading && !radioGlobalExpanded && (
-                            <div className="flex w-full justify-end pr-0.5">
-                                <button
-                                    type="button"
-                                    onClick={handleHourlyChallengeClick}
-                                    className="transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7]"
-                                    title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
-                                    aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
-                                >
-                                    <div className="relative">
-                                        <div className="h-12 w-12 drop-shadow-lg sm:h-14 sm:w-14">
-                                            <DotLottiePlayer
-                                                src={clockLottie}
-                                                autoplay
-                                                loop
-                                                className="h-full w-full filter saturate-150 contrast-125"
-                                            />
-                                        </div>
-                                        {isHourlyPending && (
-                                            <span className="absolute right-1 top-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
-                                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                                                <span className="relative inline-flex h-full w-full rounded-full border border-white bg-emerald-500 shadow-sm dark:border-slate-800" />
-                                            </span>
-                                        )}
-                                    </div>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    {showLifeSkillsHint && trainingTab === 'core' && (
-                        <div className="mx-auto mb-6 w-full max-w-sm rounded-2xl border border-indigo-100 bg-indigo-50/90 px-3 py-2.5 shadow-sm">
-                            <p
-                                id="lifeskills-hint-copy"
-                                className={`text-center text-[11px] font-semibold leading-snug text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                    {/* Hourly challenge entry (core training home only). */}
+                    {trainingTab === 'core' && !trainingLoading && !radioGlobalExpanded && (
+                        <div className="sticky top-[6px] z-40 mx-auto mb-4 flex w-full max-w-sm justify-end pr-0.5">
+                            <button
+                                type="button"
+                                onClick={handleHourlyChallengeClick}
+                                className="transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7]"
+                                title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
+                                aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
                             >
-                                {language === 'en' ? (
-                                    <>
-                                        Short modules next to training—tap{' '}
-                                        <span className="whitespace-nowrap font-bold text-indigo-700">Life Skill</span>.
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="font-bold text-indigo-700">লাইফ স্কিল</span>
-                                        —প্রশিক্ষণের পাশে ছোট মডিউল; ডান দিকের ট্যাবে।
-                                    </>
-                                )}
-                            </p>
-                            <div className="mt-2 flex justify-center">
-                                <button
-                                    type="button"
-                                    onClick={dismissLifeSkillsHint}
-                                    className={`rounded-full px-3 py-1 text-[11px] font-bold text-indigo-700 transition-colors hover:bg-indigo-100 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {language === 'en' ? 'Got it' : 'বুঝেছি'}
-                                </button>
-                            </div>
+                                <div className="relative">
+                                    <div className="h-12 w-12 drop-shadow-lg sm:h-14 sm:w-14">
+                                        <DotLottiePlayer
+                                            src={clockLottie}
+                                            autoplay
+                                            loop
+                                            className="h-full w-full filter saturate-150 contrast-125"
+                                        />
+                                    </div>
+                                    {isHourlyPending && (
+                                        <span className="absolute right-1 top-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                                            <span className="relative inline-flex h-full w-full rounded-full border border-white bg-emerald-500 shadow-sm dark:border-slate-800" />
+                                        </span>
+                                    )}
+                                </div>
+                            </button>
                         </div>
                     )}
 
@@ -4929,10 +4805,12 @@ export default function Training({
                                     return;
                                 }
                                 stop();
+                                const wasLifeSkill = !!trainingContent?.isSupplementary;
                                 setTrainingContent(null);
                                 setIsJournalMode(false);
                                 setSelectedChapter(null);
                                 setSelectedLesson(null);
+                                if (wasLifeSkill) setTrainingSurface('supplementary');
                             }}
                             aria-hidden
                         />
@@ -4950,10 +4828,12 @@ export default function Training({
                                                 return;
                                             }
                                             stop();
+                                            const wasLifeSkill = !!trainingContent?.isSupplementary;
                                             setTrainingContent(null);
                                             setIsJournalMode(false);
                                             setSelectedChapter(null);
                                             setSelectedLesson(null);
+                                            if (wasLifeSkill) setTrainingSurface('supplementary');
                                         }}
                                         className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
                                         aria-label={language === 'en' ? 'Close lesson' : 'পাঠ বন্ধ করুন'}
@@ -5567,7 +5447,7 @@ export default function Training({
                                                                             stop();
                                                                             setTrainingContent(null);
                                                                             setIsJournalMode(false);
-                                                                            setTrainingTab('supplementary');
+                                                                            setTrainingSurface('supplementary');
                                                                         }}
                                                                         className={`py-1 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                     >
@@ -5581,7 +5461,7 @@ export default function Training({
                                                                         stop();
                                                                         setTrainingContent(null);
                                                                         setIsJournalMode(false);
-                                                                        setTrainingTab('supplementary');
+                                                                        setTrainingSurface('supplementary');
                                                                     }}
                                                                     className={`py-1 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
                                                                 >

@@ -1626,12 +1626,12 @@ export default function SmartLinemanUI() {
       }
     })();
 
-    const safetyTabViews = ['my_ppe', 'safety-library'];
-    const isSafetyTabView = safetyTabViews.includes(currentView);
+    const safetySurfaceViews = ['my_ppe', 'safety-library'];
+    const isSafetySurfaceView = safetySurfaceViews.includes(currentView);
 
     return (
       <Suspense fallback={<PageLoader />}>
-        <div key={isSafetyTabView ? 'safety-tabs' : currentView} className={`h-full w-full ${isSafetyTabView ? '' : 'view-transition'}`}>
+        <div key={currentView} className={`h-full w-full ${isSafetySurfaceView ? '' : 'view-transition'}`}>
           {content}
         </div>
       </Suspense>
@@ -2138,7 +2138,7 @@ export default function SmartLinemanUI() {
                 className={`h-full relative z-10 w-full view-transition ${
                   ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
                 } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
-                key={['my_ppe', 'safety-library'].includes(currentView) ? 'safety-tabs' : currentView}
+                key={currentView}
               >
                 {renderContent()}
               </div>
