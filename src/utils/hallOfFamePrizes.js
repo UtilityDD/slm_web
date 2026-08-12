@@ -349,6 +349,44 @@ export function buildLandingSponsors(language = 'bn') {
     return Array.from(seen.values());
 }
 
+/** Extra delivery photos for the public landing carousel (no winner / বিজেতা badge). */
+const LANDING_GALLERY_PRIZE_IMAGES = Array.from({ length: 11 }, (_, i) => `/prizes/prize-${i + 1}`);
+
+function shuffleInPlace(items) {
+    for (let i = items.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = items[i];
+        items[i] = items[j];
+        items[j] = tmp;
+    }
+    return items;
+}
+
+function buildLandingGallerySlides(language = 'bn') {
+    const alt = language === 'en' ? 'Prize delivered to a winner' : 'বিজয়ীর কাছে পুরস্কার পৌঁছেছে';
+    return LANDING_GALLERY_PRIZE_IMAGES.map((imageUrl, index) => {
+        const imageCandidates = getPrizeImageCandidates(imageUrl);
+        return {
+            id: `gallery-prize-${index + 1}`,
+            year: null,
+            month: null,
+            prizeRank: null,
+            rankLabel: null,
+            monthLabel: null,
+            boardLabel: null,
+            winnerName: null,
+            winnerAvatarUrl: null,
+            winnerDistrict: null,
+            title: '',
+            caution: '',
+            sponsor: '',
+            imageUrl: imageCandidates[0] || null,
+            imageCandidates,
+            imageAlt: alt,
+        };
+    });
+}
+
 /** Public landing carousel — catalog prizes enriched with winner names when available. */
 export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
     const monthlyTabs = getEncouragementCopy(language).monthlyTabs;
@@ -374,7 +412,7 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
         ? { 1: '1st Prize', 2: '2nd Prize', 3: '3rd Prize' }
         : { 1: 'প্রথম পুরস্কার', 2: 'দ্বিতীয় পুরস্কার', 3: 'তৃতীয় পুরস্কার' };
 
-    return (prizeCatalog.prizes || [])
+    const catalogSlides = (prizeCatalog.prizes || [])
         .map((entry) => {
             const prize = resolvePrizeDisplay(entry, language);
             if (!prize) return null;
@@ -403,4 +441,7 @@ export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
             if (a.prizeRank !== b.prizeRank) return a.prizeRank - b.prizeRank;
             return a.boardLabel.localeCompare(b.boardLabel, language === 'bn' ? 'bn' : 'en');
         });
+
+    // Mix delivery-gallery photos among catalog slides; gallery items never get a বিজেতা badge.
+    return shuffleInPlace([...catalogSlides, ...buildLandingGallerySlides(language)]);
 }
