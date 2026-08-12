@@ -3999,13 +3999,20 @@ body,
       max(0px, env(safe-area-inset-bottom))
       max(0px, env(safe-area-inset-left));
     box-sizing: border-box;
+    /* Size frame from this box so desktop height-limits don't desync % board coords */
+    container-type: size;
   }
 
-  /* Shrink-wrap 2:3 art — hands stay in frame; letterbox on tall phones */
+  /*
+   * Exact 2:3 art box: width is the lesser of full viewport width or the width that
+   * fits the viewport height. Prevents fit-content + max-height mismatch on desktop
+   * where the image shrinks but the frame stayed intrinsically wide.
+   */
   .home-tip-stage__frame {
     position: relative;
-    width: fit-content;
-    height: fit-content;
+    aspect-ratio: 2 / 3;
+    width: min(100cqw, calc(100cqh * 2 / 3));
+    height: auto;
     max-width: 100%;
     max-height: 100%;
     line-height: 0;
@@ -4014,18 +4021,17 @@ body,
 
   .home-tip-stage__art {
     display: block;
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: min(100%, 100dvh);
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     object-position: center center;
     user-select: none;
     -webkit-user-drag: none;
   }
 
   /*
-   * Board face on 2:3 art. Frame matches rendered art, so % coords stay locked.
+   * Board face on 2:3 art. Frame always matches rendered art, so % coords stay locked
+   * on both mobile (width-limited) and desktop (height-limited).
    */
   .home-tip-stage__embed {
     position: absolute;
