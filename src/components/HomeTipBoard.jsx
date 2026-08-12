@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { pushNativeBackHandler } from '../utils/nativeAndroidUx';
+import { downloadHomeTipBoardImage } from '../utils/homeTipBoardExport';
 
 /** Size tier so longer tips still fill the board without overflowing. */
 function tipLengthClass(text) {
@@ -17,6 +18,7 @@ function tipLengthClass(text) {
 export default function HomeTipBoard({ text, language = 'bn', onClose }) {
   const bn = language === 'bn';
   const lengthClass = useMemo(() => tipLengthClass(text), [text]);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -35,6 +37,18 @@ export default function HomeTipBoard({ text, language = 'bn', onClose }) {
       window.removeEventListener('keydown', onKey);
     };
   }, [onClose]);
+
+  const handleDownload = async () => {
+    if (downloading || !text) return;
+    setDownloading(true);
+    try {
+      await downloadHomeTipBoardImage({ text, language });
+    } catch (err) {
+      console.error('Tip image download failed:', err);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   if (typeof document === 'undefined') return null;
 
@@ -66,19 +80,41 @@ export default function HomeTipBoard({ text, language = 'bn', onClose }) {
               {text}
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="home-tip-stage__close"
+            aria-label={bn ? 'বন্ধ' : 'Close'}
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+              <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="home-tip-stage__download"
+            aria-label={bn ? 'ছবি ডাউনলোড' : 'Download image'}
+            aria-busy={downloading || undefined}
+          >
+            {downloading ? (
+              <svg viewBox="0 0 24 24" className="h-5 w-5 animate-spin" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                <circle cx="12" cy="12" r="9" strokeOpacity="0.25" />
+                <path d="M21 12a9 9 0 00-9-9" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                <path d="M12 4v10" strokeLinecap="round" />
+                <path d="M8 10l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M5 19h14" strokeLinecap="round" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={onClose}
-        className="home-tip-stage__close absolute left-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/40 text-white backdrop-blur-sm transition active:scale-95 sm:left-5 sm:top-5"
-        aria-label={bn ? 'বন্ধ' : 'Close'}
-      >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
-          <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
     </div>,
     document.body
   );

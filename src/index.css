@@ -4029,6 +4029,71 @@ body,
     -webkit-user-drag: none;
   }
 
+  /* Back control — top-left of the image frame (not the full screen) */
+  .home-tip-stage__close {
+    position: absolute;
+    top: 0.65rem;
+    left: 0.65rem;
+    z-index: 20;
+    display: flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 0.12s ease;
+  }
+
+  .home-tip-stage__close:active {
+    transform: scale(0.95);
+  }
+
+  /* Download — top-right of the image frame */
+  .home-tip-stage__download {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 20;
+    display: flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+
+  .home-tip-stage__download:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .home-tip-stage__download:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  @media (min-width: 640px) {
+    .home-tip-stage__close {
+      top: 0.85rem;
+      left: 0.85rem;
+    }
+
+    .home-tip-stage__download {
+      top: 0.85rem;
+      right: 0.85rem;
+    }
+  }
+
   /*
    * Board face on 2:3 art. Frame always matches rendered art, so % coords stay locked
    * on both mobile (width-limited) and desktop (height-limited).
