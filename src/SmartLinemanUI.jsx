@@ -1840,7 +1840,7 @@ export default function SmartLinemanUI() {
           className={`h-screen overflow-hidden font-sans flex flex-col ${language === 'bn' ? 'font-bengali' : ''} ${
             isNativeCapacitorPlatform()
               ? 'bg-[#fffdf7]'
-              : 'bg-slate-50 dark:bg-slate-900 transition-colors duration-300'
+              : 'bg-[var(--slm-status-bg,#fffdf7)] transition-colors duration-300'
           } ${
             isNativeCapacitorPlatform() && nativeBootExiting ? 'slm-app-reveal' : ''
           } ${celebrationSplashOpen ? 'invisible pointer-events-none' : ''}`}
@@ -1849,9 +1849,9 @@ export default function SmartLinemanUI() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Mobile: push ALL screens below the system status bar (landing already had this; shell pages did not). */}
+          {/* Mobile: continuous status chrome (no hairline). PWA uses black-translucent + matching shell bg. */}
           <div
-            className="shrink-0 md:hidden"
+            className="shrink-0 border-0 md:hidden"
             style={{
               height: 'env(safe-area-inset-top, 0px)',
               background: 'var(--slm-status-bg, #fffdf7)',
