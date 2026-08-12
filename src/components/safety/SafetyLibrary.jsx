@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { libraryService } from '../../utils/libraryService';
 import { storageUtils } from '../../utils/storageUtils';
+import {
+    toSafetyLibraryDisplayUrl,
+    handleSafetyLibraryImageError,
+} from '../../utils/safetyLibraryImageUrl';
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -74,15 +78,6 @@ const MagnifierPlusIcon = ({ className }) => (
         <path d="M10.5 8v5M8 10.5h5" strokeWidth="2.25" />
     </svg>
 );
-
-const getGoogleDriveDirectLink = (url) => {
-    if (!url) return '';
-    if (!url.includes('drive.google.com')) return url;
-    const match = url.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
-    const id = match ? (match[1] || match[2]) : '';
-    const today = new Date().toISOString().split('T')[0];
-    return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
-};
 
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.5;
@@ -462,11 +457,16 @@ const ImageSlider = forwardRef(function ImageSlider(
                 <img
                     ref={activeImageRef}
                     key={currentIndex}
-                    src={getGoogleDriveDirectLink(validImages[currentIndex])}
+                    src={toSafetyLibraryDisplayUrl(validImages[currentIndex])}
                     alt={`${alt} ${currentIndex + 1}`}
                     draggable={false}
+                    data-fallback-index="0"
                     onDragStart={(e) => e.preventDefault()}
-                    onError={() => handleImageError(validImages[currentIndex])}
+                    onError={(e) => {
+                        if (handleSafetyLibraryImageError(e, validImages[currentIndex])) {
+                            handleImageError(validImages[currentIndex]);
+                        }
+                    }}
                     className={`object-contain filter drop-shadow-md transition-opacity duration-300 ${
                         naturalImageHeight
                             ? 'h-auto w-full max-w-full'
@@ -611,8 +611,9 @@ const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
         const randomIndex = Math.floor(Math.random() * images.length);
         return images[randomIndex];
     });
+    const [failed, setFailed] = useState(false);
 
-    if (!randomImage) {
+    if (!randomImage || failed) {
         return (
             <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400`}>
                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
@@ -623,8 +624,14 @@ const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
     return (
         <div className={`${aspect} bg-white relative overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-500`}>
             <img
-                src={getGoogleDriveDirectLink(randomImage)}
+                src={toSafetyLibraryDisplayUrl(randomImage)}
                 alt={alt}
+                data-fallback-index="0"
+                onError={(e) => {
+                    if (handleSafetyLibraryImageError(e, randomImage)) {
+                        setFailed(true);
+                    }
+                }}
                 className="max-h-full w-full object-contain filter drop-shadow-sm p-2"
             />
         </div>

@@ -1,14 +1,5 @@
 import { CapacitorHttp } from '@capacitor/core';
-
-const getGoogleDriveDirectLink = (url) => {
-    if (!url) return '';
-    if (!url.includes('drive.google.com')) return url;
-    const match = url.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
-    const id = match ? (match[1] || match[2]) : '';
-    // Add a daily cache buster to force refresh if Google Drive content changes
-    const today = new Date().toISOString().split('T')[0];
-    return id ? `https://lh3.googleusercontent.com/u/0/d/${id}?v=${today}` : url;
-};
+import { toSafetyLibraryDisplayUrl } from './safetyLibraryImageUrl';
 
 // Simple but robust CSV line splitter
 const splitCSVLine = (line) => {
@@ -56,9 +47,9 @@ export const preloadSafetyLibraryAssets = async () => {
         const rawLinks = lines.slice(1).map(line => {
             const values = splitCSVLine(line);
             return values[fileLinkIndex];
-        }).filter(link => link && link.includes('drive.google.com'));
+        }).filter(link => link && (link.includes('drive.google.com') || link.startsWith('/') || link.startsWith('http')));
 
-        const uniqueLinks = [...new Set(rawLinks.map(getGoogleDriveDirectLink))];
+        const uniqueLinks = [...new Set(rawLinks.map((link) => toSafetyLibraryDisplayUrl(link)).filter(Boolean))];
         
         console.log(`📦 Preloading ${uniqueLinks.length} unique assets...`);
 
