@@ -95,8 +95,10 @@ export default function Home({
   user,
   userProfile,
   completedLessons: completedLessonsProp,
+  cultureSurveyPending = false,
 }) {
   const bn = language === 'bn';
+  const isAdmin = userProfile?.role === 'admin';
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState(null);
   const [tipBoardOpen, setTipBoardOpen] = useState(false);
@@ -428,6 +430,25 @@ export default function Home({
 
   const iconClass = 'h-5 w-5';
   const snapshotCards = [
+    ...(isAdmin
+      ? [
+          {
+            id: 'safety-culture',
+            label: bn ? 'সংস্কৃতি জরিপ' : 'Culture survey',
+            value: null,
+            onClick: () => go('safety-culture-admin'),
+            accent: 'border-emerald-200 bg-emerald-50/80 text-emerald-950',
+            iconWrap: 'bg-white/80 text-emerald-700 border-emerald-200/70',
+            icon: (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            ),
+            ariaLabel: bn ? 'নিরাপত্তা সংস্কৃতি জরিপ' : 'Safety culture survey',
+          },
+        ]
+      : []),
     {
       id: 'progress',
       label: bn ? 'অগ্রগতি' : 'Progress',
@@ -597,6 +618,22 @@ export default function Home({
     <div className={`min-h-full bg-[#fffdf7] pb-28 text-slate-900 ${bn ? 'home-screen--bn' : ''}`}>
 
       <div className="mx-auto max-w-lg px-4 pt-4 sm:pt-5">
+        {cultureSurveyPending && (
+          <button
+            type="button"
+            onClick={() => go('safety-culture-survey')}
+            className="mb-3 w-full rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-left shadow-sm active:scale-[0.99]"
+          >
+            <p className={`font-bold text-teal-900 ${bn ? 'font-bengali text-sm' : 'text-sm'}`}>
+              {bn ? 'নিরাপত্তা সংস্কৃতি জরিপ' : 'Safety culture survey'}
+            </p>
+            <p className={`mt-1 text-teal-800/90 ${bn ? 'font-bengali text-xs' : 'text-xs'}`}>
+              {bn
+                ? 'হোমের যেকোনো মেনুতে ট্যাপ করলে জরিপে যাবেন। সৎভাবে শেষ করুন—পরেরবার ৯০ দিন পর।'
+                : 'Any Home tap opens the survey. Finish honestly—next one after 90 days.'}
+            </p>
+          </button>
+        )}
         <header className="mb-4 flex items-center justify-between gap-3 sm:mb-5">
           <div className="min-w-0 flex-1">
             <p className={`font-semibold text-slate-500 ${bn ? 'font-bengali text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>

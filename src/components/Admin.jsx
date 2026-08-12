@@ -19,6 +19,7 @@ import DeleteUserConfirmationModal from './DeleteUserConfirmationModal';
 import HomePrimaryActionCards from './HomePrimaryActionCards';
 import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
+import SafetyCultureAdminPanel from './safety/SafetyCultureAdminPanel';
 import {
   describeUserAgent,
   describeWebPushBlockReason,
@@ -836,7 +837,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -2626,6 +2627,14 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             </div>
           )}
         </div>
+      )}
+
+      {/* Admin: safety culture survey waves + report + preview */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <SafetyCultureAdminPanel
+          language={language}
+          onPreviewFlow={() => onPreviewCultureSurvey?.()}
+        />
       )}
 
       {/* Admin: preview first-login welcome pass (4 steps) */}

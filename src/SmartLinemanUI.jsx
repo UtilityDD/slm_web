@@ -85,6 +85,8 @@ const SafetyTabsPage = lazy(() => import("./components/safety/SafetyTabsPage"));
 const WeatherAlertDemo = lazy(() => import("./components/WeatherAlertDemo"));
 const MorePage = lazy(() => import("./components/MorePage"));
 const AmaderKotha = lazy(() => import("./components/AmaderKotha"));
+const SafetyCultureSurvey = lazy(() => import("./components/safety/SafetyCultureSurvey"));
+const SafetyCultureAdminPage = lazy(() => import("./components/safety/SafetyCultureAdminPage"));
 // const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
@@ -217,6 +219,9 @@ export default function SmartLinemanUI() {
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
   const [onboardingPreview, setOnboardingPreview] = useState(null);
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
+  const [cultureSurveyPreview, setCultureSurveyPreview] = useState(false);
+  const [cultureSurveyPending, setCultureSurveyPending] = useState(false);
+  const [cultureSurveyWave, setCultureSurveyWave] = useState(null);
   const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
   const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
@@ -947,6 +952,45 @@ export default function SmartLinemanUI() {
     }
   }, [appLoading, user, currentView]);
 
+  // Quarterly safety-culture survey gate (Home click intercept)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Wait for profile so guests are not briefly treated as regular users.
+      if (!user?.id || !userProfile) {
+        if (!cancelled) {
+          setCultureSurveyPending(false);
+          setCultureSurveyWave(null);
+        }
+        return;
+      }
+      if (isGuestUser(userProfile)) {
+        if (!cancelled) {
+          setCultureSurveyPending(false);
+          setCultureSurveyWave(null);
+        }
+        return;
+      }
+      try {
+        const { isCultureSurveyPending } = await import('./utils/safetyCultureSurvey');
+        const { pending, wave } = await isCultureSurveyPending(user.id);
+        if (!cancelled) {
+          setCultureSurveyPending(Boolean(pending));
+          setCultureSurveyWave(wave);
+        }
+      } catch (e) {
+        console.warn('culture survey gate', e);
+        if (!cancelled) {
+          setCultureSurveyPending(false);
+          setCultureSurveyWave(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, userProfile, userProfile?.role, currentView]);
+
   // Load completed lessons from localStorage
   useEffect(() => {
     if (user) {
@@ -1425,6 +1469,24 @@ export default function SmartLinemanUI() {
     setCurrentView('my-progress');
   };
 
+  const navigateWithCultureGate = (view) => {
+    const escapingSurvey =
+      cultureSurveyPending &&
+      !cultureSurveyPreview &&
+      currentView !== 'safety-culture-survey' &&
+      view !== 'safety-culture-survey' &&
+      view !== 'safety-culture-admin' &&
+      view !== 'admin' &&
+      view !== 'login' &&
+      view !== 'landing';
+    if (escapingSurvey) {
+      setCultureSurveyPreview(false);
+      setCurrentView('safety-culture-survey');
+      return;
+    }
+    setCurrentView(view);
+  };
+
   const renderContent = () => {
     const publicViews = ['landing', 'login', 'update-password', 'verify', 'accident-stories', 'video-guide', 'aro-janun', 'amader-kotha', 'sops', 'weather-alert-demo'];
     const isPublic = publicViews.includes(currentView);
@@ -1547,6 +1609,42 @@ export default function SmartLinemanUI() {
               onPreviewSponsorAd={(adRow) =>
                 setSponsorAdPreview({ ad: adRow, key: Date.now() })
               }
+              onPreviewCultureSurvey={() => {
+                setCultureSurveyPreview(true);
+                setCurrentView('safety-culture-survey');
+              }}
+            />
+          );
+        case 'safety-culture-admin':
+          if (userProfile?.role !== 'admin') {
+            setCurrentView('home');
+            return null;
+          }
+          return (
+            <SafetyCultureAdminPage
+              language={language}
+              setCurrentView={setCurrentView}
+              onPreviewFlow={() => {
+                setCultureSurveyPreview(true);
+                setCurrentView('safety-culture-survey');
+              }}
+            />
+          );
+        case 'safety-culture-survey':
+          return (
+            <SafetyCultureSurvey
+              language={language}
+              user={user}
+              wave={cultureSurveyPreview ? null : cultureSurveyWave}
+              preview={cultureSurveyPreview}
+              setCurrentView={(view) => {
+                setCultureSurveyPreview(false);
+                setCurrentView(view);
+              }}
+              onCompleted={() => {
+                setCultureSurveyPending(false);
+                setCultureSurveyPreview(false);
+              }}
             />
           );
         case 'visual-quiz-preview':
@@ -1610,10 +1708,14 @@ export default function SmartLinemanUI() {
             <Home
               setCurrentView={(view) => {
                 if (view === 'my-progress') {
+                  if (cultureSurveyPending && !cultureSurveyPreview) {
+                    setCurrentView('safety-culture-survey');
+                    return;
+                  }
                   openMyProgress(user?.id, 'home');
                   return;
                 }
-                setCurrentView(view);
+                navigateWithCultureGate(view);
               }}
               language={language}
               onLanguageChange={handleLanguageSelect}
@@ -1621,6 +1723,7 @@ export default function SmartLinemanUI() {
               user={user}
               userProfile={userProfile}
               completedLessons={completedLessons}
+              cultureSurveyPending={cultureSurveyPending}
             />
           );
       }
@@ -1762,17 +1865,21 @@ export default function SmartLinemanUI() {
               currentView={currentView}
               setCurrentView={(view) => {
                 if (view === 'my-progress') {
+                  if (cultureSurveyPending && !cultureSurveyPreview) {
+                    setCurrentView('safety-culture-survey');
+                    return;
+                  }
                   openMyProgress(user?.id, 'home');
                   return;
                 }
-                setCurrentView(view);
+                navigateWithCultureGate(view);
               }}
               userProfile={userProfile}
               language={language}
               t={translations[language]}
               onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
               onToggleLanguageModal={() => setShowLanguageModal(true)}
-              onToggleNotifications={() => setCurrentView('notifications')}
+              onToggleNotifications={() => navigateWithCultureGate('notifications')}
               onLogout={() => setShowLogoutModal(true)}
             />
           )}
@@ -2255,7 +2362,7 @@ export default function SmartLinemanUI() {
             {user && <RadioScrollPaddingBridge currentView={currentView} />}
             {user && <RadioSafetyGuard currentView={currentView} />}
 
-            {user && !['login', 'verify', 'sops'].includes(currentView) && (
+            {user && !['login', 'verify', 'sops', 'safety-culture-survey'].includes(currentView) && (
               <RadioMiniPlayer
                 language={language}
                 currentView={currentView}
@@ -2263,10 +2370,10 @@ export default function SmartLinemanUI() {
               />
             )}
 
-            {user && !['login', 'verify', 'sops'].includes(currentView) && (
+            {user && !['login', 'verify', 'sops', 'safety-culture-survey'].includes(currentView) && (
               <BottomNavigation
                 currentView={currentView} 
-                setCurrentView={setCurrentView} 
+                setCurrentView={navigateWithCultureGate} 
                 language={language} 
                 userId={user?.id}
                 selectedProgressUserId={selectedProgressUserId}
