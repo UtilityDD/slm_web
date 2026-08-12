@@ -2234,11 +2234,15 @@ export default function SmartLinemanUI() {
               className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
                 ['my_ppe', 'safety-library', 'training'].includes(currentView) ? 'overflow-hidden' : ''
               } ${
-                currentView === 'leaderboard'
-                  ? 'pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-8'
-                  : user
-                    ? 'pb-20 md:pb-0'
-                    : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
+                // Full-height panes (Training/PPE/Identify) manage their own scroll clearance —
+                // parent pb-20 left an empty cream strip above the bottom nav.
+                ['my_ppe', 'safety-library', 'training'].includes(currentView)
+                  ? 'pb-0'
+                  : currentView === 'leaderboard'
+                    ? 'pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-8'
+                    : user
+                      ? 'pb-20 md:pb-0'
+                      : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
               } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
