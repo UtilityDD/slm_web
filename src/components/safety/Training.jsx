@@ -1233,6 +1233,8 @@ export default function Training({
     const [pendingSubchapter, setPendingSubchapter] = useState(null);
     const [userPPEData, setUserPPEData] = useState([]);
     const galleryRef = useRef(null);
+    /** Core journey scroller (title/index stay above; map scrolls underneath). */
+    const roadmapScrollRef = useRef(null);
     const [supplementaryRadioOverlayOpen, setSupplementaryRadioOverlayOpen] = useState(false);
     /** True after audible listen (volume > 0, not muted) to ≥97% / end for current Life Skill session. */
     const [lifeSkillListenQualified, setLifeSkillListenQualified] = useState(false);
@@ -1905,22 +1907,32 @@ export default function Training({
         [language]
     );
 
-    // Auto-scroll to current reading position
+    // Auto-scroll journey pane to current reading position (title/index stay outside this scroller)
     useEffect(() => {
-        if (!selectedChapter && !trainingContent && !trainingLoading && roadmapData.items.length > 0) {
-            const nextLesson = roadmapData.items.find(item => item.type === 'lesson' && !item.isCompleted && item.isUnlocked);
+        if (selectedChapter || trainingContent || trainingLoading || trainingTab !== 'core') return undefined;
+        if (roadmapData.items.length === 0) return undefined;
 
-            if (nextLesson) {
-                const timer = setTimeout(() => {
-                    const scrollTarget = document.getElementById(`roadmap-node-${nextLesson.id}`);
-                    if (scrollTarget) {
-                        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 800);
-                return () => clearTimeout(timer);
-            }
-        }
-    }, [selectedChapter, trainingContent, trainingLoading, roadmapData.items]);
+        const nextLesson = roadmapData.items.find(
+            (item) => item.type === 'lesson' && !item.isCompleted && item.isUnlocked
+        );
+        if (!nextLesson) return undefined;
+
+        const timer = setTimeout(() => {
+            const container = roadmapScrollRef.current;
+            const scrollTarget = document.getElementById(`roadmap-node-${nextLesson.id}`);
+            if (!container || !scrollTarget) return;
+
+            const cRect = container.getBoundingClientRect();
+            const eRect = scrollTarget.getBoundingClientRect();
+            // Sit the next node in the upper third so path context stays below — not viewport-center.
+            const topPad = Math.min(120, Math.max(48, cRect.height * 0.22));
+            const nextTop = container.scrollTop + (eRect.top - cRect.top) - topPad;
+            const maxTop = Math.max(0, container.scrollHeight - container.clientHeight);
+            container.scrollTo({ top: Math.max(0, Math.min(nextTop, maxTop)), behavior: 'smooth' });
+        }, 800);
+
+        return () => clearTimeout(timer);
+    }, [selectedChapter, trainingContent, trainingLoading, trainingTab, roadmapData.items]);
 
     const scrollGallery = (direction) => {
         if (galleryRef.current) {
@@ -3604,7 +3616,7 @@ export default function Training({
     }, [pendingLessonId, stop, handleHourlyChallengeClick, profile]);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:mb-6 animate-slide-down">
+        <div className="mx-auto flex h-full min-h-0 max-w-7xl flex-col animate-slide-down px-4 py-4 sm:px-6 sm:py-6">
 
 
             {fetchError && (
@@ -3641,7 +3653,7 @@ export default function Training({
 
             {/* Main Content Area */}
             {trainingLoading ? (
-                <div className="animate-fade-in relative z-10">
+                <div className="relative z-10 flex min-h-0 flex-1 flex-col justify-center animate-fade-in">
                     {/* Lesson open / initial fetch — skip heavy Lottie; cover appears next */}
                     {!selectedChapter ? (
                         <div
@@ -3670,10 +3682,10 @@ export default function Training({
                     )}
                 </div>
             ) : !selectedChapter && !trainingContent ? (
-                <div className="animate-fade-in-up text-slate-900">
+                <div className="flex min-h-0 flex-1 flex-col animate-fade-in-up text-slate-900">
 
                     {gateFocusPending?.lessonId && (
-                        <div className={`mx-auto mb-4 max-w-2xl rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-center shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        <div className={`mx-auto mb-3 w-full max-w-2xl shrink-0 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-center shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                             <p className="text-sm font-bold text-slate-900">
                                 {language === 'en'
                                     ? `Hourly quiz locked — opening lesson ${gateFocusPending.lessonId}…`
@@ -3682,38 +3694,108 @@ export default function Training({
                         </div>
                     )}
 
-                    {/* Hourly challenge entry (core training home only). */}
-                    {trainingTab === 'core' && !trainingLoading && !radioGlobalExpanded && (
-                        <div className="sticky top-[6px] z-40 mx-auto mb-4 flex w-full max-w-sm justify-end pr-0.5">
-                            <button
-                                type="button"
-                                onClick={handleHourlyChallengeClick}
-                                className="transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7]"
-                                title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
-                                aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
-                            >
-                                <div className="relative">
-                                    <div className="h-12 w-12 drop-shadow-lg sm:h-14 sm:w-14">
-                                        <DotLottiePlayer
-                                            src={clockLottie}
-                                            autoplay
-                                            loop
-                                            className="h-full w-full filter saturate-150 contrast-125"
-                                        />
-                                    </div>
-                                    {isHourlyPending && (
-                                        <span className="absolute right-1 top-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
-                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                                            <span className="relative inline-flex h-full w-full rounded-full border border-white bg-emerald-500 shadow-sm dark:border-slate-800" />
-                                        </span>
-                                    )}
-                                </div>
-                            </button>
-                        </div>
-                    )}
-
                     {trainingTab === 'core' ? (
                         <>
+                    {/* Title + Index stay above the journey; path scrolls under a soft opaque→transparent veil. */}
+                    <div className="relative z-20 shrink-0">
+                        <div className="relative bg-[#fffdf7] px-2 pt-1">
+                            <div className="relative mx-auto max-w-2xl">
+                                {!trainingLoading && !radioGlobalExpanded && (
+                                    <div className="absolute right-0 top-0 z-10 sm:right-1">
+                                        <button
+                                            type="button"
+                                            onClick={handleHourlyChallengeClick}
+                                            className="transition-transform duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7]"
+                                            title={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
+                                            aria-label={language === 'en' ? 'Hourly Challenge' : 'প্রতি ঘণ্টার চ্যালেঞ্জ'}
+                                        >
+                                            <div className="relative">
+                                                <div className="h-11 w-11 drop-shadow-lg sm:h-14 sm:w-14">
+                                                    <DotLottiePlayer
+                                                        src={clockLottie}
+                                                        autoplay
+                                                        loop
+                                                        className="h-full w-full filter saturate-150 contrast-125"
+                                                    />
+                                                </div>
+                                                {isHourlyPending && (
+                                                    <span className="absolute right-1 top-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
+                                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                                                        <span className="relative inline-flex h-full w-full rounded-full border border-white bg-emerald-500 shadow-sm dark:border-slate-800" />
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </button>
+                                    </div>
+                                )}
+
+                                <h1
+                                    className={`px-12 text-center text-2xl font-black leading-tight tracking-tight text-slate-900 sm:px-16 sm:text-4xl md:text-5xl ${language === 'bn' ? 'font-bengali' : ''}`}
+                                >
+                                    {language === 'en' ? 'Grow your professional knowledge' : 'পেশাগত জ্ঞান বাড়ান'}
+                                </h1>
+
+                                {(() => {
+                                    const { journeyChapters } = roadmapData;
+                                    const totalLessons = journeyChapters.reduce((acc, c) => acc + (c.count || 0), 0);
+                                    const totalCompleted = completedLessons.filter((id) => {
+                                        if (!id) return false;
+                                        const chapterNum = parseInt(id.toString().split('.')[0], 10);
+                                        return chapterNum >= 1 && chapterNum < 10;
+                                    }).length;
+                                    const doneStr =
+                                        language === 'bn'
+                                            ? totalCompleted === 0
+                                                ? '০'
+                                                : toBengaliNumber(totalCompleted, language) || String(totalCompleted)
+                                            : String(totalCompleted);
+                                    const totalStr =
+                                        language === 'bn'
+                                            ? totalLessons === 0
+                                                ? '০'
+                                                : toBengaliNumber(totalLessons, language) || String(totalLessons)
+                                            : String(totalLessons);
+
+                                    return (
+                                        <div
+                                            className="mx-auto mt-3 flex max-w-lg flex-wrap items-center justify-center gap-2.5 animate-fade-in-up sm:mt-4 sm:gap-3"
+                                            style={{ animationDelay: '120ms' }}
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowLessonIndex(true)}
+                                                className={`inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            >
+                                                <span aria-hidden>📑</span>
+                                                {language === 'en' ? 'Index' : 'সূচীপত্র'}
+                                            </button>
+                                            {totalLessons > 0 ? (
+                                                <span
+                                                    className={`inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-4 py-2.5 text-sm font-black tabular-nums text-orange-800 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                >
+                                                    {doneStr} / {totalStr}
+                                                </span>
+                                            ) : null}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+                        {/* Opaque → transparent veil; path scrolls up underneath this */}
+                        <div
+                            className="pointer-events-none h-14 w-full sm:h-16"
+                            style={{
+                                background:
+                                    'linear-gradient(to bottom, #fffdf7 0%, rgba(255,253,247,0.82) 32%, rgba(255,253,247,0.4) 62%, rgba(255,253,247,0.12) 82%, rgba(255,253,247,0) 100%)',
+                            }}
+                            aria-hidden
+                        />
+                    </div>
+
+                    <div
+                        ref={roadmapScrollRef}
+                        className="relative z-0 -mt-14 min-h-0 flex-1 overflow-y-auto overscroll-y-contain scrollbar-hide sm:-mt-16"
+                    >
                     {/* Gamified Journey Map Logic */}
                     {(() => {
                         const isMobile = window.innerWidth < 768;
@@ -3722,61 +3804,7 @@ export default function Training({
 
                         // Main Journey View
                         return (
-                            <div className="relative mx-auto max-w-2xl px-4 pb-32 sm:px-2">
-                                {/* Header */}
-                                <div className="mb-12 px-2 pt-4 md:mb-16">
-                                    <h1
-                                        className={`text-center text-2xl font-black leading-tight tracking-tight text-slate-900 sm:text-4xl md:text-5xl ${language === 'bn' ? 'font-bengali' : ''}`}
-                                    >
-                                        {language === 'en' ? 'Grow your professional knowledge' : 'পেশাগত জ্ঞান বাড়ান'}
-                                    </h1>
-
-                                    {/* Index + core step count (same counts as former progress card; no bar / %) */}
-                                    {(() => {
-                                        const totalLessons = journeyChapters.reduce((acc, c) => acc + (c.count || 0), 0);
-                                        const totalCompleted = completedLessons.filter((id) => {
-                                            if (!id) return false;
-                                            const chapterNum = parseInt(id.toString().split('.')[0], 10);
-                                            return chapterNum >= 1 && chapterNum < 10;
-                                        }).length;
-                                        const doneStr =
-                                            language === 'bn'
-                                                ? totalCompleted === 0
-                                                    ? '০'
-                                                    : toBengaliNumber(totalCompleted, language) || String(totalCompleted)
-                                                : String(totalCompleted);
-                                        const totalStr =
-                                            language === 'bn'
-                                                ? totalLessons === 0
-                                                    ? '০'
-                                                    : toBengaliNumber(totalLessons, language) || String(totalLessons)
-                                                : String(totalLessons);
-
-                                        return (
-                                            <div
-                                                className="mx-auto mt-6 flex max-w-lg flex-wrap items-center justify-center gap-2.5 animate-fade-in-up sm:gap-3"
-                                                style={{ animationDelay: '120ms' }}
-                                            >
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowLessonIndex(true)}
-                                                    className={`inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-800 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                                >
-                                                    <span aria-hidden>📑</span>
-                                                    {language === 'en' ? 'Index' : 'সূচীপত্র'}
-                                                </button>
-                                                {totalLessons > 0 ? (
-                                                    <span
-                                                        className={`inline-flex items-center rounded-full border border-orange-100 bg-orange-50 px-4 py-2.5 text-sm font-black tabular-nums text-orange-800 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}
-                                                    >
-                                                        {doneStr} / {totalStr}
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-
+                            <div className="relative mx-auto max-w-2xl px-4 pb-8 pt-6 sm:px-2 sm:pt-8">
                                 {/* Journey Container */}
                                 <div className="relative" style={{ height: roadmapHeight }}>
 
@@ -3933,10 +3961,33 @@ export default function Training({
                                                             );
                                                         }
                                                     }}
-                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full border-2 transition-all duration-300 active:scale-95 sm:h-20 sm:w-20 ${item.isCompleted ? 'border-emerald-700/25 bg-emerald-400 text-slate-900 shadow-md hover:shadow-lg' : item.isUnlocked ? `border-slate-900/10 ${item.badge.color} text-slate-900 shadow-md hover:shadow-lg` : 'cursor-not-allowed border-slate-300 bg-slate-200 text-slate-500 opacity-80 shadow-sm grayscale'} ${isNext ? 'animate-float-y border-orange-500 shadow-lg shadow-orange-500/30 ring-4 ring-orange-400/40' : ''} ${scoreClaimReady ? 'ring-2 ring-amber-400/50' : ''}`}
+                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full border-2 transition-all duration-300 active:scale-95 sm:h-20 sm:w-20 ${
+                                                        scoreClaimReady
+                                                            ? 'border-amber-500/80 bg-amber-400 text-slate-900 shadow-md hover:shadow-lg'
+                                                            : item.isCompleted
+                                                              ? 'border-emerald-700/25 bg-emerald-400 text-slate-900 shadow-md hover:shadow-lg'
+                                                              : item.isUnlocked
+                                                                ? `border-slate-900/10 ${item.badge.color} text-slate-900 shadow-md hover:shadow-lg`
+                                                                : 'cursor-not-allowed border-slate-300 bg-slate-200 text-slate-500 opacity-80 shadow-sm grayscale'
+                                                    } ${isNext ? 'animate-float-y border-orange-500 shadow-lg shadow-orange-500/30 ring-4 ring-orange-400/40' : ''}`}
                                                     style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
                                                 >
-                                                    <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
+                                                    {scoreClaimReady ? (
+                                                        <span className="relative flex h-7 w-full items-center justify-center sm:h-8">
+                                                            <span
+                                                                className={`animate-lesson-score-ready-a absolute text-base font-black sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                            >
+                                                                {toBengaliNumber(item.id, language)}
+                                                            </span>
+                                                            <span
+                                                                className={`animate-lesson-score-ready-b absolute text-base font-black tabular-nums sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                            >
+                                                                +{language === 'bn' ? toBengaliNumber(CORE_LESSON_MONTHLY_BONUS_POINTS, 'bn') : CORE_LESSON_MONTHLY_BONUS_POINTS}
+                                                            </span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
+                                                    )}
                                                     {/* Desktop-only hover chip — mobile has no hover; status is on the lesson screen + amber check. */}
                                                     <div className={`pointer-events-none absolute top-full z-50 mt-3 hidden w-max max-w-[11rem] rounded-full bg-slate-900/90 px-3 py-1.5 text-center text-[10px] font-bold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {item.isCompleted ? (
@@ -3955,36 +4006,14 @@ export default function Training({
                                                             language === 'en' ? 'Not so fast! 🔒' : 'ধৈর্য ধরুন! 🔒'
                                                         )}
                                                     </div>
-                                                    {item.isCompleted && (
+                                                    {item.isCompleted && !scoreClaimReady && (
                                                         <div
-                                                            className={`absolute -right-0.5 -top-0.5 flex items-center justify-center overflow-hidden rounded-full border shadow-sm ${
-                                                                scoreClaimReady
-                                                                    ? 'h-5 min-w-[1.35rem] px-0.5 border-amber-400/80 bg-amber-50 text-amber-700 ring-1 ring-amber-300/70 sm:h-6 sm:min-w-[1.55rem]'
-                                                                    : 'h-5 w-5 border-slate-900/20 bg-white text-emerald-600 sm:h-6 sm:w-6'
-                                                            }`}
+                                                            className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border border-slate-900/20 bg-white text-emerald-600 shadow-sm sm:h-6 sm:w-6"
                                                             aria-hidden
                                                         >
-                                                            {scoreClaimReady ? (
-                                                                <>
-                                                                    <svg
-                                                                        className="animate-lesson-score-ready-a absolute h-3 w-3 sm:h-3.5 sm:w-3.5"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        viewBox="0 0 24 24"
-                                                                    >
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                                                    </svg>
-                                                                    <span
-                                                                        className={`animate-lesson-score-ready-b absolute text-[8px] font-black leading-none tracking-tight sm:text-[9px] ${language === 'bn' ? 'font-bengali' : ''}`}
-                                                                    >
-                                                                        +{language === 'bn' ? toBengaliNumber(20, 'bn') : '20'}
-                                                                    </span>
-                                                                </>
-                                                            ) : (
-                                                                <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                            )}
+                                                            <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                                            </svg>
                                                         </div>
                                                     )}
                                                     
@@ -4090,7 +4119,7 @@ export default function Training({
 
 
                         {/* Professional Branding Footer */}
-                        <div className="relative z-10 mb-32 mt-20 animate-fade-in-up text-center">
+                        <div className="relative z-10 mb-24 mt-20 animate-fade-in-up text-center md:mb-12">
                             <div className="flex flex-col items-center gap-4">
                                 <div className="nb-tag inline-flex items-center gap-2 bg-white px-4 py-1.5">
                                     <span className="h-2 w-2 animate-pulse bg-orange-500" />
@@ -4116,10 +4145,11 @@ export default function Training({
                                 </p>
                             </div>
                         </div>
+                    </div>
                     </>
                     ) : (
                         <>
-                            <header className="mx-auto mb-8 max-w-2xl px-4 pt-1 text-center sm:mb-10 sm:pt-2 md:mb-12">
+                            <header className="mx-auto mb-4 w-full max-w-2xl shrink-0 px-4 pt-1 text-center sm:mb-6 sm:pt-2">
                                 <h1
                                     className={`text-[2.25rem] font-black leading-[1.06] tracking-tight text-slate-900 sm:text-5xl md:text-6xl ${language === 'bn' ? 'font-bengali' : ''}`}
                                 >
@@ -4133,6 +4163,7 @@ export default function Training({
                                         : 'কাজের বাইরে কিছু জরুরি জ্ঞান না থাকলে আপনি কখনোই সত্যিকারের স্মার্ট পেশাদার হতে পারবেন না।'}
                                 </p>
                             </header>
+                            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain scrollbar-hide">
                             <div className="mx-auto mb-20 grid max-w-7xl animate-fade-in-up grid-cols-1 gap-4 px-2 py-4 min-[420px]:grid-cols-2 sm:mb-28 sm:gap-5 sm:py-6 md:grid-cols-3 lg:mb-32">
                             {supplementaryModules.map((module) => {
                                 const isCompleted = suppCompleted.includes(module.id);
@@ -4250,6 +4281,7 @@ export default function Training({
                                     </button>
                                 );
                             })}
+                            </div>
                             </div>
                         </>
                     )}
@@ -4396,7 +4428,7 @@ export default function Training({
                 </div>
             ) : selectedChapter && !trainingContent ? (
                 /* Subchapter List View or FAQ View */
-                <div className="text-slate-900">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain text-slate-900">
                     {!selectedChapter.isFAQ && (
                         <button
                             type="button"

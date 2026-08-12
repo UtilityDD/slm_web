@@ -2232,7 +2232,7 @@ export default function SmartLinemanUI() {
             <div
               id="main-scroll-container"
               className={`flex-1 overflow-y-auto overflow-x-hidden relative ${
-                ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden' : ''
+                ['my_ppe', 'safety-library', 'training'].includes(currentView) ? 'overflow-hidden' : ''
               } ${
                 currentView === 'leaderboard'
                   ? 'pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-8'
@@ -2243,7 +2243,7 @@ export default function SmartLinemanUI() {
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
-                  ['my_ppe', 'safety-library'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
+                  ['my_ppe', 'safety-library', 'training'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
                 } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={currentView}
               >

@@ -4285,7 +4285,7 @@ body,
     }
   }
 
-  /* Core lesson +20 claimable badge: swap tick ↔ +20 (mobile-friendly, no hover). */
+  /* Core lesson +20 claimable: swap lesson id ↔ +20 inside the node (no glow / extra chip). */
   @keyframes lesson-score-ready-swap-a {
     0%,
     42% {
@@ -4295,7 +4295,7 @@ body,
     50%,
     92% {
       opacity: 0;
-      transform: scale(0.72);
+      transform: scale(0.85);
     }
     100% {
       opacity: 1;
@@ -4307,7 +4307,7 @@ body,
     0%,
     42% {
       opacity: 0;
-      transform: scale(0.72);
+      transform: scale(0.85);
     }
     50%,
     92% {
@@ -4316,16 +4316,16 @@ body,
     }
     100% {
       opacity: 0;
-      transform: scale(0.72);
+      transform: scale(0.85);
     }
   }
 
   .animate-lesson-score-ready-a {
-    animation: lesson-score-ready-swap-a 2.8s ease-in-out infinite;
+    animation: lesson-score-ready-swap-a 2.6s ease-in-out infinite;
   }
 
   .animate-lesson-score-ready-b {
-    animation: lesson-score-ready-swap-b 2.8s ease-in-out infinite;
+    animation: lesson-score-ready-swap-b 2.6s ease-in-out infinite;
   }
 
   @media (prefers-reduced-motion: reduce) {
