@@ -4,6 +4,8 @@
  * Green seconds from recent accuracy (DB-backed plan), with lifetime fallback.
  */
 
+import { estimateHourlyPacksFromScore } from './hourlyMakeup';
+
 const QUESTIONS_PER_PACK = 5;
 export const HOURLY_POINTS_PER_QUESTION = 10;
 
@@ -42,7 +44,7 @@ export function estimateAccuracyFromAttempts(attempts) {
     let possible = 0;
     for (const row of rows) {
         const score = Math.max(0, Number(row?.score) || 0);
-        const packs = Math.max(1, Math.ceil(score / 50) || 1);
+        const packs = estimateHourlyPacksFromScore(score);
         const maxRaw = packs * 50;
         const capped = Math.min(score, maxRaw);
         correct += Math.round(capped / HOURLY_POINTS_PER_QUESTION);

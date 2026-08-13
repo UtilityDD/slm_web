@@ -12,6 +12,7 @@ import {
     PPE_ITEMS,
 } from '../data/ppeItems';
 import { fetchUserPPE } from './safety/ppe/ppeSave';
+import PpeItemIcon from './safety/ppe/PpeItemIcon';
 import {
     formatHourlyAvgPerDay,
     formatLeaderboardNumber,
@@ -21,6 +22,7 @@ import {
     MONTHLY_SUB_TAB,
 } from '../utils/monthlyEncouragementBoards';
 import { lessonIdFromCoreLessonBonusQuizId } from '../utils/trainingLessonIds';
+import { computePackWeightedHourlyAvg } from '../utils/hourlyMakeup';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -109,8 +111,8 @@ function computeLearningStats(profile, attempts) {
     const avgScorePerAttempt = totalAttempts > 0
         ? attempts.reduce((sum, item) => sum + (Number(item.score) || 0), 0) / totalAttempts
         : 0;
-    const hourlyScoreSum = hourlyAttempts.reduce((sum, item) => sum + (Number(item.score) || 0), 0);
-    const avgHourlyScore = hourlyAttempts.length > 0 ? hourlyScoreSum / hourlyAttempts.length : 0;
+    // Weight multi-pack makeup submits as N hours (ceil(score/50)), not 1 submit.
+    const avgHourlyScore = computePackWeightedHourlyAvg(hourlyAttempts);
 
     return {
         lessonsRead,
@@ -179,7 +181,7 @@ function GearChips({ items, answers, language }) {
                                 : 'bg-red-50 text-red-500 border-red-200 line-through decoration-red-300'
                         }`}
                     >
-                        <span>{item.icon}</span>
+                        <PpeItemIcon item={item} size="xs" rounded="rounded-full" bg="bg-white/70" />
                         <span className={`truncate max-w-[6.5rem] ${language === 'bn' ? 'font-bengali' : ''}`}>{label}</span>
                     </span>
                 );
@@ -335,7 +337,7 @@ export default function LeaderboardUserSheet({
         avgScore: bn ? 'গড় স্কোর' : 'Avg score',
         thisMonth: bn ? 'এই মাসে ঘণ্টার কুইজ' : 'Hourlies this month',
         avgHrs: bn ? 'গড় ঘণ্টা/দিন' : 'Avg hrs/day',
-        core: bn ? 'মূল সরঞ্জাম' : 'Core gear',
+        core: bn ? 'অত্যাবশ্যক' : 'Essential',
         other: bn ? 'অন্যান্য' : 'Other',
         noPrizes: bn ? 'কোনো পুরস্কার নেই' : 'No prizes yet',
         noTools: bn ? 'কোনো সরঞ্জাম নেই' : 'No tools listed',

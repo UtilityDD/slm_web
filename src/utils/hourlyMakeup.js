@@ -12,6 +12,40 @@ export const HOURLY_POINTS_PER_PACK = 50;
 export const HOURLY_MAX_MAKEUP_HOURS = 5;
 
 /**
+ * Infer how many 50-pt packs a stored attempt covered.
+ * Used so profile "Avg score" weights a 4/5-set makeup as 4/5 hours, not 1 submit.
+ * Late half-scores can slightly under-count packs (ceil(score/50)); no pack column in DB.
+ *
+ * @param {number} score gross points stored on quiz_attempts.score
+ * @returns {number} integer packs ≥ 1
+ */
+export function estimateHourlyPacksFromScore(score) {
+    const pts = Math.max(0, Number(score) || 0);
+    return Math.max(1, Math.ceil(pts / HOURLY_POINTS_PER_PACK) || 1);
+}
+
+/**
+ * Pack-weighted average hourly score: sum(score) / sum(packs).
+ * A 200-pt / 4-set makeup counts like four ~50-pt hours.
+ *
+ * @param {Array<{ score?: number }>} attempts
+ * @returns {number} 0 when empty
+ */
+export function computePackWeightedHourlyAvg(attempts) {
+    const rows = Array.isArray(attempts) ? attempts : [];
+    if (rows.length === 0) return 0;
+    let scoreSum = 0;
+    let packSum = 0;
+    for (const row of rows) {
+        const score = Math.max(0, Number(row?.score) || 0);
+        scoreSum += score;
+        packSum += estimateHourlyPacksFromScore(score);
+    }
+    if (packSum <= 0) return 0;
+    return scoreSum / packSum;
+}
+
+/**
  * Count consecutive unplayed hours immediately before the live hour (same day).
  * Stops at the first already-played hour so a completed multi-set session does
  * not keep offering 6→5→4→3 packs for the same night of misses.
