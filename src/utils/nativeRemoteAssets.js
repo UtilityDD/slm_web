@@ -15,6 +15,8 @@ const LOCAL_PACKED = new Set([
   '/assets/emotional/eyes.webp',
   '/images/celebrations/har-ghar-tiranga.webp',
   '/images/celebrations/har-ghar-tiranga-desktop.webp',
+  '/images/celebrations/independence-day-80.webp',
+  '/images/celebrations/independence-day-80-desktop.webp',
   '/images/home-tip-lineman-blank-board.webp',
   '/icon-192.png',
   '/icon-512.png',

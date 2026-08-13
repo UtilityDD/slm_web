@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { App as CapApp } from '@capacitor/app';
 import { supabase } from "./supabaseClient";
@@ -39,7 +39,8 @@ import OnboardingSequence from "./components/safety/OnboardingSequence";
 import AppBootSplash from "./components/AppBootSplash";
 import CelebrationSplash from "./components/CelebrationSplash";
 import {
-  CELEBRATION_SPLASH,
+  getActiveCelebrationSplash,
+  getCelebrationSplashForPreview,
   shouldOfferCelebrationSplash,
 } from "./config/celebrationSplash";
 import PushOptInPrompt from "./components/PushOptInPrompt";
@@ -137,10 +138,14 @@ export default function SmartLinemanUI() {
   const [appLoading, setAppLoading] = useState(true);
   const [nativeBootSplash, setNativeBootSplash] = useState(() => isNativeCapacitorPlatform());
   const [nativeBootExiting, setNativeBootExiting] = useState(false);
+  const celebrationConfig = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return getActiveCelebrationSplash();
+  }, []);
   const [celebrationSplashOpen, setCelebrationSplashOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
-      if (!shouldOfferCelebrationSplash(CELEBRATION_SPLASH)) return false;
+      if (!shouldOfferCelebrationSplash()) return false;
       const hash = window.location.hash.replace('#/', '').split('?')[0];
       if (hash.startsWith('verify') || hash === 'update-password') return false;
       return true;
@@ -225,6 +230,11 @@ export default function SmartLinemanUI() {
   const [ppeNudgePreview, setPpeNudgePreview] = useState(null);
   const [pushOptInOpen, setPushOptInOpen] = useState(false);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
+  const [celebrationPreview, setCelebrationPreview] = useState(null);
+  const celebrationPreviewConfig = useMemo(() => {
+    if (!celebrationPreview?.campaignId) return null;
+    return getCelebrationSplashForPreview(celebrationPreview.campaignId);
+  }, [celebrationPreview]);
   const [onboardingPreview, setOnboardingPreview] = useState(null);
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
   const [cultureSurveyPreview, setCultureSurveyPreview] = useState(false);
@@ -367,7 +377,7 @@ export default function SmartLinemanUI() {
     if (appLoading) return;
     if (nativeBootSplash) return;
     if (celebrationShownThisOpenRef.current) return;
-    if (!shouldOfferCelebrationSplash(CELEBRATION_SPLASH)) return;
+    if (!shouldOfferCelebrationSplash()) return;
     const blockedViews = ['verify', 'update-password'];
     if (blockedViews.includes(currentView)) return;
     celebrationShownThisOpenRef.current = true;
@@ -376,14 +386,14 @@ export default function SmartLinemanUI() {
 
   // Prefetch celebration art during boot when the window is active.
   useEffect(() => {
-    if (!CELEBRATION_SPLASH.enabled) return;
+    if (!celebrationConfig?.image) return;
     const mobile = new Image();
-    mobile.src = CELEBRATION_SPLASH.image;
-    if (CELEBRATION_SPLASH.imageDesktop) {
+    mobile.src = celebrationConfig.image;
+    if (celebrationConfig.imageDesktop && celebrationConfig.imageDesktop !== celebrationConfig.image) {
       const desktop = new Image();
-      desktop.src = CELEBRATION_SPLASH.imageDesktop;
+      desktop.src = celebrationConfig.imageDesktop;
     }
-  }, []);
+  }, [celebrationConfig]);
 
   // Never show ads / soft interrupts while the user is typing (phone, PIN, forms).
   useEffect(() => {
@@ -436,6 +446,10 @@ export default function SmartLinemanUI() {
     const closeShellOverlay = () => {
       if (showSessionEndedModal) return true; // cannot dismiss via back
       if (showUpdateModal && isForceUpdate) return true; // require update action
+      if (celebrationPreview) {
+        setCelebrationPreview(null);
+        return true;
+      }
       if (celebrationSplashOpen) {
         setCelebrationSplashOpen(false);
         return true;
@@ -550,6 +564,7 @@ export default function SmartLinemanUI() {
     monthWinnersRevealOpen,
     sponsorAdOpen,
     celebrationSplashOpen,
+    celebrationPreview,
     user,
     currentView,
   ]);
@@ -1330,7 +1345,7 @@ export default function SmartLinemanUI() {
       ];
       let bgColor;
       let darkContent;
-      if (celebrationSplashOpen) {
+      if (celebrationSplashOpen || celebrationPreview) {
         // Match Tiranga / seasonal splash stage so the Android PWA top bar is not cream over navy art.
         bgColor = '#0c1a2e';
         darkContent = false;
@@ -1367,7 +1382,7 @@ export default function SmartLinemanUI() {
     };
 
     updateStatusBar();
-  }, [currentView, theme, celebrationSplashOpen]);
+  }, [currentView, theme, celebrationSplashOpen, celebrationPreview]);
 
   // Redundancy check for Theme
   useEffect(() => {
@@ -1648,6 +1663,12 @@ export default function SmartLinemanUI() {
                 setCultureSurveyPreview(true);
                 setCurrentView('safety-culture-survey');
               }}
+              onPreviewCelebration={(opts = {}) =>
+                setCelebrationPreview({
+                  campaignId: opts.campaignId,
+                  key: Date.now(),
+                })
+              }
             />
           );
         case 'safety-culture-admin':
@@ -1780,6 +1801,7 @@ export default function SmartLinemanUI() {
     appLoading ||
     globalLoading ||
     celebrationSplashOpen ||
+    celebrationPreview ||
     showLogoutModal ||
     showLanguageModal ||
     !!pushNotification ||
@@ -1820,6 +1842,7 @@ export default function SmartLinemanUI() {
     appLoading ||
     globalLoading ||
     celebrationSplashOpen ||
+    celebrationPreview ||
     showLogoutModal ||
     showLanguageModal ||
     !!pushNotification ||
@@ -1890,8 +1913,8 @@ export default function SmartLinemanUI() {
               : 'bg-[var(--slm-status-bg,#fffdf7)] transition-colors duration-300'
           } ${
             isNativeCapacitorPlatform() && nativeBootExiting ? 'slm-app-reveal' : ''
-          } ${celebrationSplashOpen ? 'invisible pointer-events-none' : ''}`}
-          aria-hidden={celebrationSplashOpen ? true : undefined}
+          } ${celebrationSplashOpen || celebrationPreview ? 'invisible pointer-events-none' : ''}`}
+          aria-hidden={celebrationSplashOpen || celebrationPreview ? true : undefined}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -2522,11 +2545,15 @@ export default function SmartLinemanUI() {
         </div>
         </LifeSkillRadioProvider>
       ) : null}
-      {celebrationSplashOpen && !nativeBootSplash ? (
+      {(celebrationPreviewConfig || (celebrationSplashOpen && celebrationConfig)) && !nativeBootSplash ? (
         <CelebrationSplash
+          key={celebrationPreview?.key || 'live'}
           language={language}
-          config={CELEBRATION_SPLASH}
-          onDismiss={() => setCelebrationSplashOpen(false)}
+          config={celebrationPreviewConfig || celebrationConfig}
+          onDismiss={() => {
+            if (celebrationPreview) setCelebrationPreview(null);
+            else setCelebrationSplashOpen(false);
+          }}
         />
       ) : null}
       {/* Opaque hold while celebration is up during web boot — blocks Landing flash under loader. */}

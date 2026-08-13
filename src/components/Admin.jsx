@@ -14,6 +14,10 @@ import {
 import { PPE_NUDGE_ITEM_ORDER, getPpeItem } from '../data/ppeItems';
 import PpeItemIcon from './safety/ppe/PpeItemIcon';
 import { AWARENESS_STORIES } from '../data/awarenessStories';
+import {
+  CELEBRATION_CAMPAIGNS,
+  getLiveCelebrationCampaignId,
+} from '../config/celebrationSplash';
 
 import SaveSuccessModal from './SaveSuccessModal';
 import AdminAnalytics from './AdminAnalytics';
@@ -841,7 +845,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey, onPreviewCelebration }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -917,6 +921,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [showPpeNudgePreviewSection, setShowPpeNudgePreviewSection] = useState(false);
   const [ppeNudgePreviewRequireMode, setPpeNudgePreviewRequireMode] = useState(false);
   const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
+  const [showCelebrationPreviewSection, setShowCelebrationPreviewSection] = useState(false);
   const [showOnboardingPreviewSection, setShowOnboardingPreviewSection] = useState(false);
   const [showHomeCtaPreviewSection, setShowHomeCtaPreviewSection] = useState(false);
   const [showSponsorAdSection, setShowSponsorAdSection] = useState(false);
@@ -2745,6 +2750,58 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 {isEn
                   ? 'Preview only — Skip / Let’s go will not mark onboarding complete for real users.'
                   : 'শুধু প্রিভিউ — Skip / শুরু করুন আসল ইউজারের অনবোর্ডিং সম্পন্ন করবে না।'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: preview seasonal full-screen celebration splash */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewCelebration === 'function' && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowCelebrationPreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🇮🇳 {isEn ? 'Preview celebration splash' : 'সেলিব্রেশন স্প্ল্যাশ প্রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showCelebrationPreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showCelebrationPreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {CELEBRATION_CAMPAIGNS.map((c) => {
+                  const live = getLiveCelebrationCampaignId() === c.id;
+                  const title = isEn ? c.title?.en : c.title?.bn;
+                  const windowLabel = isEn
+                    ? (c.dateLabel?.en || (c.endDate ? `${c.startDate} – ${c.endDate}` : `From ${c.startDate}`))
+                    : (c.dateLabel?.bn || (c.endDate ? `${c.startDate} – ${c.endDate}` : `${c.startDate} থেকে`));
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => onPreviewCelebration({ campaignId: c.id })}
+                      className={`rounded-full border px-3 py-2 text-xs font-bold shadow-sm transition-all ${
+                        live
+                          ? 'border-orange-300 bg-orange-50 text-orange-900 hover:bg-orange-100'
+                          : 'border-slate-200/80 bg-white text-slate-800 hover:border-orange-300 hover:bg-orange-50'
+                      } ${language === 'bn' ? 'font-bengali' : ''}`}
+                    >
+                      {title}
+                      <span className="ml-1.5 font-semibold text-[10px] text-slate-500">
+                        {windowLabel}
+                        {live ? (isEn ? ' · live' : ' · চলছে') : ''}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Opens the same full-screen splash users see. Dates are IST.'
+                  : 'ব্যবহারকারীরা যে ফুল-স্ক্রিন স্প্ল্যাশ দেখেন, সেটিই খোলে। তারিখ IST।'}
               </p>
             </div>
           )}

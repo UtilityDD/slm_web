@@ -62,6 +62,8 @@ const KEEP_PACKED = [
   'images/ppe-thumbs/torch.webp',
   'images/celebrations/har-ghar-tiranga.webp',
   'images/celebrations/har-ghar-tiranga-desktop.webp',
+  'images/celebrations/independence-day-80.webp',
+  'images/celebrations/independence-day-80-desktop.webp',
   'images/home-tip-lineman-blank-board.webp',
   'assets/emotional/lineman.webp',
   'assets/emotional/child.webp',

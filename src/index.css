@@ -8080,7 +8080,7 @@ html.native-android .lesson-reader-root {
   }
 }
 
-/* —— Seasonal celebration splash (Har Ghar Tiranga etc.) —— */
+/* —— Seasonal celebration splash (Tiranga / Independence Day / share) —— */
 .celebration-splash {
   background: #0c1a2e;
   animation: celebrationSplashIn 0.45s ease both;
@@ -8121,17 +8121,161 @@ html.native-android .lesson-reader-root {
   letter-spacing: 0.04em;
 }
 
-.celebration-splash__cta {
+.celebration-splash__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.15rem;
+  height: 3.15rem;
+  border-radius: 999px;
+  color: #fff;
   background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  box-shadow: none;
-  letter-spacing: 0.02em;
 }
 
-.celebration-splash__cta:hover {
-  background: rgba(255, 255, 255, 0.2);
+.celebration-splash__arrow:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.celebration-splash__arrow:active {
+  transform: scale(0.96);
+}
+
+.celebration-splash--share .celebration-splash__img {
+  object-fit: contain;
+  object-position: center center;
+  background: #0c1a2e;
+}
+
+.celebration-splash--share .celebration-splash__veil {
+  background: linear-gradient(180deg, transparent 0%, transparent 68%, rgba(12, 26, 46, 0.78) 100%);
+}
+
+.celebration-splash--independence .celebration-splash__veil {
+  background: linear-gradient(180deg, transparent 0%, transparent 42%, rgba(8, 18, 34, 0.82) 100%);
+}
+
+.celebration-splash__sparkles {
+  position: absolute;
+  left: 16%;
+  width: 68%;
+  top: 2%;
+  height: 32%;
+  z-index: 6;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .celebration-splash__sparkles {
+    left: 50%;
+    width: min(30rem, 54vw);
+    margin-left: calc(min(30rem, 54vw) / -2);
+    top: 7%;
+    height: 38%;
+  }
+}
+
+.celebration-splash__sparkle {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  margin-left: calc(var(--s) / -2);
+  margin-top: calc(var(--s) / -2);
+  background: #fff;
+  clip-path: polygon(50% 0, 61% 35%, 100% 50%, 61% 65%, 50% 100%, 39% 65%, 0 50%, 39% 35%);
+  opacity: 0;
+  animation: celebrationSparkle 2.2s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+.celebration-splash__sparkle.is-white {
+  background: #fff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.95));
+}
+
+.celebration-splash__sparkle.is-gold {
+  background: #ffe08a;
+  filter: drop-shadow(0 0 7px rgba(255, 210, 122, 0.95));
+}
+
+.celebration-splash__sparkle.is-saffron {
+  background: #ff9933;
+  filter: drop-shadow(0 0 7px rgba(255, 153, 51, 0.9));
+}
+
+@keyframes celebrationSparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.35) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1) rotate(18deg);
+  }
+  55% {
+    opacity: 0.85;
+    transform: scale(0.7) rotate(28deg);
+  }
+  75% {
+    opacity: 0.2;
+    transform: scale(0.4) rotate(40deg);
+  }
+}
+
+.celebration-splash__tiranga {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 26rem;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 1.15rem;
+  box-shadow:
+    0 18px 40px rgba(8, 18, 34, 0.45),
+    0 0 0 3px #fff,
+    0 0 0 6px #ff9933;
+}
+
+.celebration-splash__tiranga-band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.celebration-splash__tiranga-band.is-0 {
+  min-height: 2.55rem;
+  font-size: clamp(1.2rem, 4.6vw, 1.55rem);
+  color: #3b1400;
+  background: linear-gradient(180deg, #ffb347 0%, #ff9933 55%, #e07a1f 100%);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.celebration-splash__tiranga-band.is-1 {
+  min-height: 3.15rem;
+  font-size: clamp(1.35rem, 5.8vw, 1.85rem);
+  color: #0b1a4a;
+  background: #fff;
+}
+
+.celebration-splash__tiranga-band.is-2 {
+  min-height: 3.35rem;
+  font-size: clamp(1.7rem, 7.2vw, 2.35rem);
+  color: #f4fff2;
+  background: linear-gradient(180deg, #1e9d18 0%, #138808 60%, #0d6b06 100%);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 @keyframes celebrationSplashIn {
@@ -8146,5 +8290,11 @@ html.native-android .lesson-reader-root {
 @media (prefers-reduced-motion: reduce) {
   .celebration-splash {
     animation: none;
+  }
+
+  .celebration-splash__sparkle {
+    animation: none;
+    opacity: 0.55;
+    transform: none;
   }
 }
