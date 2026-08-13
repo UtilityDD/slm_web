@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import HallOfFamePrizeImage from './HallOfFamePrizeImage';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 import { getHallOfFamePrizeViewCopy, groupPrizeWinsByUser, collectAllUserPrizeWins } from '../utils/hallOfFamePrizes';
 import { getRankMedal } from '../utils/monthlyEncouragementBoards';
 
@@ -73,7 +75,7 @@ export default function HallOfFameUserPrizesView({
                             >
                                 <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-orange-200/80 bg-orange-50 shadow-sm sm:h-12 sm:w-12">
                                     {user.avatarUrl ? (
-                                        <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                                        <AvatarPhoto url={user.avatarUrl} edge={AVATAR_EDGE.card} alt="" className="h-full w-full object-cover" />
                                     ) : (
                                         <div className="flex h-full w-full items-center justify-center text-sm font-black text-orange-600">
                                             {(user.fullName || '?')[0]}

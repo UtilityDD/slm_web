@@ -12,6 +12,8 @@ import { fetchVisitCount } from '../utils/landingVisitService';
 import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
 import { ANDROID_DOWNLOAD_PAGE_URL } from '../config';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 
 /** Community proof figures shown on landing (marketing display). */
 const LANDING_MEMBERS_DISPLAY = 500;
@@ -333,8 +335,9 @@ function MonthToppers({
                     ?
                   </div>
                 ) : player.avatarUrl ? (
-                  <img
-                    src={player.avatarUrl}
+                  <AvatarPhoto
+                    url={player.avatarUrl}
+                    edge={AVATAR_EDGE.podium}
                     alt={player.name}
                     className={`landing-podium-avatar landing-month-topper__avatar object-cover ${isFirst ? 'landing-podium-avatar--champ' : ''}`}
                   />

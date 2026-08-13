@@ -3,6 +3,8 @@
  * Stores a small JPEG data-URL in localStorage keyed by user id.
  */
 
+import { AVATAR_EDGE, avatarDisplayUrl } from './avatarImage';
+
 const KEY_PREFIX = 'slm_avatar_v1_';
 const MAX_EDGE = 192;
 const JPEG_QUALITY = 0.72;
@@ -51,7 +53,7 @@ function loadImage(src) {
 }
 
 async function compressToDataUrl(remoteUrl) {
-  const img = await loadImage(remoteUrl);
+  const img = await loadImage(avatarDisplayUrl(remoteUrl, AVATAR_EDGE.full) || remoteUrl);
   const w = img.naturalWidth || img.width || MAX_EDGE;
   const h = img.naturalHeight || img.height || MAX_EDGE;
   const scale = Math.min(1, MAX_EDGE / Math.max(w, h));

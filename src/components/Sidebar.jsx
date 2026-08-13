@@ -4,6 +4,8 @@ import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../co
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { openExternalUrl } from '../utils/nativeAndroidUx';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -145,7 +147,7 @@ export default function Sidebar({
             <div className="relative shrink-0">
               <div className="app-sidebar__avatar">
                 {userProfile?.avatar_url ? (
-                  <img src={userProfile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
+                  <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.card} alt={displayName} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center p-2 text-slate-900">
                     <UserIcon className="h-full w-full" />

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import HallOfFamePrizeImage from './HallOfFamePrizeImage';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 import {
     buildMonthWinnerRevealSlides,
     getLatestDeclaredPrizeMonth,
@@ -137,12 +139,12 @@ function WinnerAvatar({ name, src }) {
     }
 
     return (
-        <img
-            src={src}
+        <AvatarPhoto
+            url={src}
+            edge={AVATAR_EDGE.podium}
             alt=""
             className="month-winners-reveal__avatar-img"
             loading="eager"
-            decoding="async"
             onError={() => setFailed(true)}
         />
     );

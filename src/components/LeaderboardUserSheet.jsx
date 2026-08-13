@@ -13,6 +13,8 @@ import {
 } from '../data/ppeItems';
 import { fetchUserPPE } from './safety/ppe/ppeSave';
 import PpeItemIcon from './safety/ppe/PpeItemIcon';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 import {
     formatHourlyAvgPerDay,
     formatLeaderboardNumber,
@@ -364,7 +366,7 @@ export default function LeaderboardUserSheet({
                         <div className="relative shrink-0">
                             <div className="h-14 w-14 overflow-hidden rounded-full border border-orange-200/80 bg-orange-50 shadow-sm sm:h-16 sm:w-16">
                                 {merged.avatar_url ? (
-                                    <img src={merged.avatar_url} alt="" className="h-full w-full object-cover" />
+                                    <AvatarPhoto url={merged.avatar_url} edge={AVATAR_EDGE.card} alt="" className="h-full w-full object-cover" />
                                 ) : (
                                     <div className="flex h-full w-full items-center justify-center text-lg font-black text-orange-600">
                                         {merged.full_name?.[0] || '?'}

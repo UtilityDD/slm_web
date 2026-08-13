@@ -7,6 +7,8 @@ import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { hapticImpact, openExternalUrl, shareContent } from '../utils/nativeAndroidUx';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
 import AndroidAppDownloadCta from './AndroidAppDownloadCta';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -110,7 +112,7 @@ export default function MorePage({
           <div className="relative shrink-0">
             <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-orange-200/80 bg-orange-400 text-slate-900 shadow-sm">
               {userProfile?.avatar_url ? (
-                <img src={userProfile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
+                <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.card} alt={displayName} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center p-2 text-slate-900">
                   <UserIcon className="h-full w-full" />

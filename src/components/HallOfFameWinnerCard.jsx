@@ -13,6 +13,8 @@ import {
     resolvePrizeDisplay,
 } from '../utils/hallOfFamePrizes';
 import HallOfFamePrizeImage from './HallOfFamePrizeImage';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 
 const RANK_STYLES = {
     1: {
@@ -215,7 +217,7 @@ export default function HallOfFameWinnerCard({
                         className={`h-11 w-11 cursor-zoom-in overflow-hidden rounded-full border border-orange-200/80 bg-orange-50 shadow-sm transition-transform active:scale-95 sm:h-12 sm:w-12 ${superseded ? 'opacity-40 grayscale' : ''}`}
                     >
                         {winner.avatar_url ? (
-                            <img src={winner.avatar_url} alt="" className="h-full w-full object-cover" />
+                            <AvatarPhoto url={winner.avatar_url} edge={AVATAR_EDGE.card} alt="" className="h-full w-full object-cover" />
                         ) : (
                             <div className="flex h-full w-full items-center justify-center text-sm font-black text-orange-600">
                                 {(winner.full_name || '?')[0]}

@@ -13,6 +13,9 @@ import {
 } from '../data/profileFieldOptions';
 import { PPE_NUDGE_ITEM_ORDER, getPpeItem } from '../data/ppeItems';
 import PpeItemIcon from './safety/ppe/PpeItemIcon';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE, AVATAR_PICK_MAX_BYTES, removeStoredAvatar, uploadCompressedAvatar } from '../utils/avatarImage';
+import { clearCachedAvatar } from '../utils/avatarCache';
 import { AWARENESS_STORIES } from '../data/awarenessStories';
 import {
   CELEBRATION_CAMPAIGNS,
@@ -210,15 +213,15 @@ function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
       className={`${sizeClass} rounded-full overflow-hidden shrink-0 border border-orange-200/80 bg-orange-50 shadow-sm ${className}`}
     >
       {showPhoto ? (
-        <img
+        <AvatarPhoto
           key={avatarUrl}
-          src={avatarUrl}
+          url={avatarUrl}
+          edge={size === 'md' ? AVATAR_EDGE.card : AVATAR_EDGE.podium}
           alt={name ? `${name}` : 'Profile'}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
-          onError={() => setFailed(true)}
           loading="eager"
-          decoding="async"
+          onError={() => setFailed(true)}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center font-bold text-[#ea580c]">
@@ -269,6 +272,45 @@ function CameraIcon({ className = 'w-3.5 h-3.5' }) {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
+  );
+}
+
+function AvatarManageButtons({ canChange, canRemove, uploading, inputRef, onPick, onRemove, isEn }) {
+  if (!canChange && !canRemove) return null;
+  return (
+    <>
+      {canRemove && (
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={onRemove}
+          aria-label={isEn ? 'Remove photo' : 'ছবি মুছুন'}
+          title={isEn ? 'Remove photo' : 'ছবি মুছুন'}
+          className={`${iconBtnBase} absolute -top-1 -right-1 w-7 h-7 rounded-full bg-rose-600 text-white shadow-md hover:bg-rose-700`}
+        >
+          <TrashIcon className="w-3.5 h-3.5" />
+        </button>
+      )}
+      {canChange && (
+        <>
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+            aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
+            title={isEn ? 'Change photo' : 'ছবি বদলান'}
+            className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
+          >
+            {uploading ? (
+              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
+            ) : (
+              <CameraIcon />
+            )}
+          </button>
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onPick} />
+        </>
+      )}
+    </>
   );
 }
 
@@ -505,8 +547,8 @@ function UserProfileCard({
   const handleAvatarPick = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert(isEn ? 'Photo must be under 2MB.' : 'ছবি ২MB-এর নিচে হতে হবে।');
+    if (file.size > AVATAR_PICK_MAX_BYTES) {
+      alert(isEn ? 'Photo must be under 12MB.' : 'ছবি ১২MB-এর নিচে হতে হবে।');
       return;
     }
     setAvatarUploading(true);
@@ -515,6 +557,20 @@ function UserProfileCard({
     } finally {
       setAvatarUploading(false);
       e.target.value = '';
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    if (!targetUser.avatar_url || avatarUploading) return;
+    const ok = window.confirm(
+      isEn ? 'Remove this photo from the profile?' : 'প্রোফাইল থেকে এই ছবি মুছবেন?'
+    );
+    if (!ok) return;
+    setAvatarUploading(true);
+    try {
+      await onSaveField(targetUser.id, { avatar_url: null });
+    } finally {
+      setAvatarUploading(false);
     }
   };
 
@@ -650,25 +706,15 @@ function UserProfileCard({
           <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:gap-4">
             <div className="relative shrink-0">
               <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size={avatarSize} />
-              {canManage && (
-                <>
-                  <button
-                    type="button"
-                    disabled={avatarUploading}
-                    onClick={() => avatarInputRef.current?.click()}
-                    aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
-                    title={isEn ? 'Change photo' : 'ছবি বদলান'}
-                    className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
-                  >
-                    {avatarUploading ? (
-                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
-                    ) : (
-                      <CameraIcon />
-                    )}
-                  </button>
-                  <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
-                </>
-              )}
+              <AvatarManageButtons
+                canChange={canManage}
+                canRemove={isAdmin && !!targetUser.avatar_url}
+                uploading={avatarUploading}
+                inputRef={avatarInputRef}
+                onPick={handleAvatarPick}
+                onRemove={handleAvatarRemove}
+                isEn={isEn}
+              />
             </div>
             <div className="min-w-0 flex-1 mt-3 sm:mt-0">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
@@ -694,25 +740,15 @@ function UserProfileCard({
             <div className="px-4 pt-2 pb-1 flex items-center gap-3 border-t border-slate-100 bg-gradient-to-b from-orange-50/40 to-transparent">
               <div className="relative shrink-0">
                 <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="lg" />
-                {canManage && (
-                  <>
-                    <button
-                      type="button"
-                      disabled={avatarUploading}
-                      onClick={() => avatarInputRef.current?.click()}
-                      aria-label={isEn ? 'Change photo' : 'ছবি বদলান'}
-                      title={isEn ? 'Change photo' : 'ছবি বদলান'}
-                      className={`${iconBtnBase} absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-orange-600 text-white shadow-md`}
-                    >
-                      {avatarUploading ? (
-                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden />
-                      ) : (
-                        <CameraIcon />
-                      )}
-                    </button>
-                    <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarPick} />
-                  </>
-                )}
+                <AvatarManageButtons
+                  canChange={canManage}
+                  canRemove={isAdmin && !!targetUser.avatar_url}
+                  uploading={avatarUploading}
+                  inputRef={avatarInputRef}
+                  onPick={handleAvatarPick}
+                  onRemove={handleAvatarRemove}
+                  isEn={isEn}
+                />
               </div>
               <div className="min-w-0">
                 {targetUser.slm_id && (
@@ -1708,31 +1744,27 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
     if (!avatarFile && Object.keys(payload).length === 0) return;
 
-    let avatar_url = targetUser.avatar_url;
+    const clearingAvatar = !avatarFile && Object.prototype.hasOwnProperty.call(payload, 'avatar_url') && !payload.avatar_url;
+
     if (avatarFile) {
-      if (targetUser.avatar_url) {
-        try {
-          const oldFileName = targetUser.avatar_url.split('/').pop().split('?')[0];
-          if (oldFileName && !targetUser.avatar_url.includes('googleusercontent')) {
-            await supabase.storage.from('avatars').remove([oldFileName]);
-          }
-        } catch (err) {
-          console.error('Error deleting old avatar:', err);
-        }
-      }
-      const fileExt = avatarFile.name.split('.').pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, avatarFile, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-      if (uploadError) {
-        alert(`Failed to upload photo: ${uploadError.message}`);
+      try {
+        payload.avatar_url = await uploadCompressedAvatar(supabase, userId, avatarFile, targetUser.avatar_url);
+      } catch (err) {
+        const code = err?.code;
+        const msg = code === 'photo_too_big'
+          ? (language === 'en' ? 'Photo must be under 12MB.' : 'ছবি ১২MB-এর নিচে হতে হবে।')
+          : code === 'photo_unreadable'
+            ? (language === 'en' ? 'Could not read this photo. Try a JPEG or PNG.' : 'এই ছবি পড়া গেল না। JPEG বা PNG দিয়ে চেষ্টা করুন।')
+            : (err.message || 'Failed to upload photo');
+        alert(`Failed to upload photo: ${msg}`);
         return;
       }
-      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
-      avatar_url = publicUrlData?.publicUrl || avatar_url;
-      payload.avatar_url = avatar_url;
+    } else if (clearingAvatar) {
+      if (userProfile?.role !== 'admin') {
+        alert(language === 'en' ? 'Only an admin can remove a photo.' : 'শুধু অ্যাডমিন ছবি মুছতে পারেন।');
+        return;
+      }
+      payload.avatar_url = null;
     }
 
     delete payload.points;
@@ -1744,11 +1776,18 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       return;
     }
 
+    if (clearingAvatar) {
+      await removeStoredAvatar(supabase, targetUser.avatar_url);
+      clearCachedAvatar(userId);
+    }
+
     clearAdminUserCaches();
     await fetchUsers(currentPage, debouncedSearch, teamSortMode);
     setSuccessMessage({
       title: language === 'en' ? 'Saved' : 'সংরক্ষিত',
-      message: language === 'en' ? 'Profile updated.' : 'প্রোফাইল আপডেট হয়েছে।',
+      message: clearingAvatar
+        ? (language === 'en' ? 'Photo removed.' : 'ছবি মুছে ফেলা হয়েছে।')
+        : (language === 'en' ? 'Profile updated.' : 'প্রোফাইল আপডেট হয়েছে।'),
     });
     setShowSuccessModal(true);
   };

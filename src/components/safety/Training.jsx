@@ -16,6 +16,8 @@ import LessonCompleteHero from './LessonCompleteHero';
 import LessonScoreStatusFlip from './LessonScoreStatusFlip';
 import LessonContinueStrip from './LessonContinueStrip';
 import LessonRadioOverlay from './LessonRadioOverlay';
+import AvatarPhoto from '../AvatarPhoto';
+import { AVATAR_EDGE } from '../../utils/avatarImage';
 import PPESurveyModal from './PPESurveyModal';
 import OnboardingSequence from './OnboardingSequence';
 import { DotLottiePlayer } from '@dotlottie/react-player';
@@ -578,8 +580,9 @@ function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight,
                         <div className="absolute inset-0 rounded-full bg-orange-400/15 blur-md" aria-hidden />
                         <div className="relative h-full w-full overflow-hidden rounded-full ring-2 ring-orange-400/70 ring-offset-2 ring-offset-[#fffdf7]">
                             {showProfilePhoto ? (
-                                <img
-                                    src={resolvedAvatarUrl}
+                                <AvatarPhoto
+                                    url={resolvedAvatarUrl}
+                                    edge={AVATAR_EDGE.card}
                                     alt=""
                                     className="h-full w-full object-cover"
                                     loading="lazy"

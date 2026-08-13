@@ -72,6 +72,8 @@ import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
 import LeaderboardRankChip from './LeaderboardRankChip';
 import ReadingLevelAvatarFrame from './ReadingLevelAvatarFrame';
 import LeaderboardUserSheet from './LeaderboardUserSheet';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 
 /** Sync peek of SWR monthly cache so Rank can paint before network. */
 function peekCachedMonthlyLeaderboard() {
@@ -2472,6 +2474,7 @@ export default function Competitions({
                                                                         language={language}
                                                                         sizeClass={avatarSize}
                                                                         avatarUrl={player.avatar_url}
+                                                                        displayEdge={AVATAR_EDGE.card}
                                                                         fallbackLetter={displayName?.[0] || '?'}
                                                                         faded={superseded}
                                                                         onAvatarClick={(e) => {
@@ -2551,7 +2554,7 @@ export default function Competitions({
                                                                     className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''}`}
                                                                 >
                                                                     {player.avatar_url ? (
-                                                                        <img src={player.avatar_url} className="h-full w-full object-cover" alt="" />
+                                                                        <AvatarPhoto url={player.avatar_url} edge={AVATAR_EDGE.podium} className="h-full w-full object-cover" alt="" />
                                                                     ) : (
                                                                         <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-2xl font-black text-slate-500 sm:text-3xl">
                                                                             {displayName?.[0] || '?'}
@@ -2790,7 +2793,7 @@ export default function Competitions({
                                             }}
                                             className="flex h-11 w-11 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white font-black text-orange-600 shadow-lg shadow-orange-500/30 ring-2 ring-orange-400 transition-transform active:scale-95 sm:h-12 sm:w-12"
                                         >
-                                            {userProfile?.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
+                                            {userProfile?.avatar_url ? <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.card} alt="Avatar" className="w-full h-full object-cover" /> : (userProfile?.full_name?.[0] || 'U')}
                                         </div>
                                     </div>
                                     </div>
@@ -2814,7 +2817,7 @@ export default function Competitions({
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
-                        <img src={maximizedAvatar} className="h-full w-full object-cover" alt="Maximized Avatar" />
+                        <AvatarPhoto url={maximizedAvatar} edge={AVATAR_EDGE.full} className="h-full w-full object-cover" alt="Maximized Avatar" />
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent px-4 pb-5 pt-16 sm:px-6 sm:pb-6">
                             <div className="avatar-slm-badge mx-auto flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-2">
                                 <img

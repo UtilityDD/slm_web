@@ -24,8 +24,7 @@ import { isGuestUser } from '../utils/guestPreview';
 import { claimSoftInterrupt, SOFT_INTERRUPT_IDS } from '../utils/sessionInterruptBudget';
 import NativeSheetHandle from './NativeSheetHandle';
 import { hapticImpact, hapticNotification } from '../utils/nativeAndroidUx';
-
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+import { AVATAR_PICK_MAX_BYTES, uploadCompressedAvatar } from '../utils/avatarImage';
 
 const FIELD_META = {
   avatar_url: {
@@ -73,7 +72,8 @@ const UI_COPY = {
     no: 'No',
     choosePhoto: 'Choose photo',
     changePhoto: 'Change',
-    photoTooBig: 'Photo must be under 2MB.',
+    photoTooBig: 'Photo must be under 12MB.',
+    photoUnreadable: 'Could not read this photo. Try a JPEG or PNG.',
     searchDistrict: 'Search…',
     searchBlock: 'Search…',
     preview: 'Preview',
@@ -88,7 +88,8 @@ const UI_COPY = {
     no: 'না',
     choosePhoto: 'ছবি বেছে নিন',
     changePhoto: 'বদলান',
-    photoTooBig: 'ছবি ২MB-এর নিচে হতে হবে।',
+    photoTooBig: 'ছবি ১২MB-এর নিচে হতে হবে।',
+    photoUnreadable: 'এই ছবি পড়া গেল না। JPEG বা PNG দিয়ে চেষ্টা করুন।',
     searchDistrict: 'খুঁজুন…',
     searchBlock: 'খুঁজুন…',
     preview: 'প্রিভিউ',
@@ -372,7 +373,7 @@ export default function ProfileFieldNudge({
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > MAX_PHOTO_BYTES) {
+    if (file.size > AVATAR_PICK_MAX_BYTES) {
       setError(t.photoTooBig);
       return;
     }
@@ -384,15 +385,7 @@ export default function ProfileFieldNudge({
   };
 
   const uploadAvatar = async (file) => {
-    const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: true,
-    });
-    if (uploadError) throw uploadError;
-    const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
-    return data?.publicUrl;
+    return uploadCompressedAvatar(supabase, user.id, file, profileRef.current?.avatar_url || userProfile?.avatar_url);
   };
 
   const handleSkip = async () => {
@@ -464,7 +457,11 @@ export default function ProfileFieldNudge({
       window.setTimeout(() => closeUi(), 420);
     } catch (err) {
       console.error('Profile nudge save failed:', err);
-      setError(err.message || 'Failed');
+      setError(err.code === 'photo_too_big'
+        ? t.photoTooBig
+        : err.code === 'photo_unreadable'
+          ? t.photoUnreadable
+          : (err.message || 'Failed'));
       void hapticNotification('Error');
     } finally {
       setBusy(false);

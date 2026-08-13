@@ -1,5 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { getBadgeByLevel } from '../utils/badgeUtils';
+import AvatarPhoto from './AvatarPhoto';
+import { AVATAR_EDGE } from '../utils/avatarImage';
 
 /** Quiet metal rim — upgrades subtly with stage. */
 export function getReadingFrameRingClass(level) {
@@ -21,6 +23,7 @@ export default function ReadingLevelAvatarFrame({
     language = 'bn',
     sizeClass = 'h-9 w-9',
     avatarUrl,
+    displayEdge = AVATAR_EDGE.list,
     fallbackLetter = '?',
     onAvatarClick,
     onlineSlot = null,
@@ -64,7 +67,7 @@ export default function ReadingLevelAvatarFrame({
                     className={`h-full w-full overflow-hidden rounded-full border-2 border-white bg-white shadow-sm ${getReadingFrameRingClass(stage)} ${onAvatarClick ? 'cursor-zoom-in transition-transform active:scale-95' : ''}`}
                 >
                     {avatarUrl ? (
-                        <img src={avatarUrl} alt="" className="h-full w-full object-cover" draggable={false} />
+                        <AvatarPhoto url={avatarUrl} edge={displayEdge} alt="" className="h-full w-full object-cover" draggable={false} />
                     ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-sm font-black text-slate-500">
                             {fallbackLetter}

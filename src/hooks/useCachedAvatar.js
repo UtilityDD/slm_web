@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { clearCachedAvatar, ensureAvatarCached, readCachedAvatar } from '../utils/avatarCache';
+import { AVATAR_EDGE, avatarDisplayUrl } from '../utils/avatarImage';
 
 /**
  * Instant avatar from local cache, then quietly sync when remote URL arrives.
@@ -37,7 +38,7 @@ export function useCachedAvatar(userId, remoteUrl, profileReady = false) {
     if (cached?.dataUrl) {
       setSrc(cached.dataUrl);
     } else {
-      setSrc(remoteUrl);
+      setSrc(avatarDisplayUrl(remoteUrl, AVATAR_EDGE.full) || remoteUrl);
     }
 
     ensureAvatarCached(userId, remoteUrl).then((next) => {
