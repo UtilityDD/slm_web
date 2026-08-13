@@ -145,8 +145,8 @@ export default function LinemanPPEView({
                 <div className="mb-1.5 flex items-center justify-between gap-2">
                     <span className={`text-[11px] font-bold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                         {language === 'en'
-                            ? `${equipped}/${CORE_PPE_ITEMS.length} core gear`
-                            : `মূল সরঞ্জাম ${equipped}/${CORE_PPE_ITEMS.length}`}
+                            ? `${equipped}/${CORE_PPE_ITEMS.length} essentials`
+                            : `অত্যাবশ্যক ${equipped}/${CORE_PPE_ITEMS.length}`}
                     </span>
                     <span className="text-[11px] font-black tabular-nums text-orange-600">{pct}%</span>
                 </div>
@@ -193,7 +193,7 @@ export default function LinemanPPEView({
                     <span className="flex min-w-0 items-center gap-2">
                         <span className="shrink-0 text-sm">🧰</span>
                         <span className={`truncate text-xs font-bold text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                            {language === 'en' ? 'Other gear' : 'অন্যান্য সরঞ্জাম'}
+                            {language === 'en' ? 'Others' : 'অন্যান্য'}
                         </span>
                         <span className="shrink-0 text-[11px] font-black tabular-nums text-orange-600">
                             {otherEquipped}/{OTHER_PPE_ITEMS.length}

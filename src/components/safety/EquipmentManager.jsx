@@ -2,20 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { cacheHelper } from '../../utils/cacheHelper';
 import SaveSuccessModal from '../SaveSuccessModal';
+import { PPE_ITEMS as SHARED_PPE_ITEMS } from '../../data/ppeItems';
 
-const PPE_ITEMS = [
-    { name: "Safety Helmet", icon: "🪖", essential: true },
-    { name: "Safety Shoes/Boots", icon: "🥾", essential: true },
-    { name: "Insulated Gloves", icon: "🧤", essential: true },
-    { name: "Reflective Jacket", icon: "🦺", essential: true },
-    { name: "Safety Belt", icon: "🧗", essential: true },
-    { name: "Full Body Harness", icon: "🧗‍♂️", essential: true },
-    { name: "Voltage Detector", icon: "🔌", essential: true },
-    { name: "Discharge Rod", icon: "🦯", essential: true },
-    { name: "Safety Goggles", icon: "🥽", essential: true },
-    { name: "Raincoat", icon: "🧥", essential: false },
-    { name: "Torch/Emergency Light", icon: "🔦", essential: false }
-];
+const PPE_ITEMS = SHARED_PPE_ITEMS.map(({ name, icon, essential }) => ({ name, icon, essential }));
 
 const TOOLS_ITEMS = [
     { name: "Pliers", icon: "🔧", essential: true },

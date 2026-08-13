@@ -8,6 +8,7 @@ import {
   isWebPushSupported,
   wasPushOptInDismissedRecently,
 } from '../utils/webPush';
+import { claimSoftInterrupt, SOFT_INTERRUPT_IDS } from '../utils/sessionInterruptBudget';
 
 /** Delay so login / profile nudge / ads settle first. */
 const SHOW_AFTER_MS = 22000;
@@ -66,6 +67,10 @@ export default function PushOptInPrompt({
       return;
     }
     if (!eligible || !delayDone || dismissedRef.current || open) return;
+    if (!claimSoftInterrupt(SOFT_INTERRUPT_IDS.pushOptIn)) {
+      dismissedRef.current = true;
+      return;
+    }
     setOpen(true);
   }, [eligible, delayDone, blocked, open]);
 

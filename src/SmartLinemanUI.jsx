@@ -34,6 +34,7 @@ import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } fr
 import IdleStoryReminder from "./components/IdleStoryReminder";
 import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
+import PpeFieldNudge from "./components/PpeFieldNudge";
 import OnboardingSequence from "./components/safety/OnboardingSequence";
 import AppBootSplash from "./components/AppBootSplash";
 import CelebrationSplash from "./components/CelebrationSplash";
@@ -60,6 +61,11 @@ import {
   shouldSuppressOverlay,
   isShellInterruptBusy,
 } from "./utils/overlayQueue";
+import {
+  claimSoftInterrupt,
+  hasSoftInterruptClaimed,
+  SOFT_INTERRUPT_IDS,
+} from "./utils/sessionInterruptBudget";
 
 // Lazy load heavy components for code splitting
 const Competitions = lazy(() => import("./components/Competitions"));
@@ -215,6 +221,8 @@ export default function SmartLinemanUI() {
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
   const [profileNudgeOpen, setProfileNudgeOpen] = useState(false);
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
+  const [ppeNudgeOpen, setPpeNudgeOpen] = useState(false);
+  const [ppeNudgePreview, setPpeNudgePreview] = useState(null);
   const [pushOptInOpen, setPushOptInOpen] = useState(false);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
   const [onboardingPreview, setOnboardingPreview] = useState(null);
@@ -460,6 +468,10 @@ export default function SmartLinemanUI() {
         setProfileNudgeOpen(false);
         return true;
       }
+      if (ppeNudgeOpen) {
+        setPpeNudgeOpen(false);
+        return true;
+      }
       if (pushOptInOpen) {
         setPushOptInOpen(false);
         return true;
@@ -533,6 +545,7 @@ export default function SmartLinemanUI() {
     pushNotification,
     adContactOpen,
     profileNudgeOpen,
+    ppeNudgeOpen,
     pushOptInOpen,
     monthWinnersRevealOpen,
     sponsorAdOpen,
@@ -664,14 +677,14 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state, ppe_nudge_state')
             .eq('id', targetUser.id)
             .single();
 
           if (error) {
-            // Migration not applied yet: retry without nudge column so login still works.
+            // Migration not applied yet: retry without nudge columns so login still works.
             const missingNudgeCol =
-              /profile_nudge_state/i.test(error.message || '') ||
+              /profile_nudge_state|ppe_nudge_state/i.test(error.message || '') ||
               error.code === '42703';
             if (missingNudgeCol) {
               const retry = await supabase
@@ -680,11 +693,15 @@ export default function SmartLinemanUI() {
                 .eq('id', targetUser.id)
                 .single();
               if (retry.error) throw retry.error;
-              return { ...retry.data, profile_nudge_state: {} };
+              return { ...retry.data, profile_nudge_state: {}, ppe_nudge_state: {} };
             }
             throw error;
           }
-          return data;
+          return {
+            ...data,
+            profile_nudge_state: data.profile_nudge_state ?? {},
+            ppe_nudge_state: data.ppe_nudge_state ?? {},
+          };
         },
         { ttl: 10, swr: true, forceRefresh: forceRefresh }
       );
@@ -1480,11 +1497,28 @@ export default function SmartLinemanUI() {
       view !== 'login' &&
       view !== 'landing';
     if (escapingSurvey) {
+      // Soft budget: if another soft interrupt already ran this session, open Home.
+      if (hasSoftInterruptClaimed()) {
+        setCurrentView(view);
+        return;
+      }
+      if (!claimSoftInterrupt(SOFT_INTERRUPT_IDS.cultureSurvey)) {
+        setCurrentView(view);
+        return;
+      }
       setCultureSurveyPreview(false);
       setCurrentView('safety-culture-survey');
       return;
     }
     setCurrentView(view);
+  };
+
+  const tryOpenCultureSurvey = () => {
+    if (!cultureSurveyPending || cultureSurveyPreview) return false;
+    if (hasSoftInterruptClaimed()) return false;
+    if (!claimSoftInterrupt(SOFT_INTERRUPT_IDS.cultureSurvey)) return false;
+    setCurrentView('safety-culture-survey');
+    return true;
   };
 
   const renderContent = () => {
@@ -1597,6 +1631,7 @@ export default function SmartLinemanUI() {
               userProfile={userProfile}
               setCurrentView={setCurrentView}
               onPreviewProfileNudge={setProfileNudgePreview}
+              onPreviewPpeNudge={setPpeNudgePreview}
               onPreviewIdleStory={(opts = {}) =>
                 setIdleStoryPreview({
                   storyId: opts.storyId || undefined,
@@ -1708,10 +1743,7 @@ export default function SmartLinemanUI() {
             <Home
               setCurrentView={(view) => {
                 if (view === 'my-progress') {
-                  if (cultureSurveyPending && !cultureSurveyPreview) {
-                    setCurrentView('safety-culture-survey');
-                    return;
-                  }
+                  if (tryOpenCultureSurvey()) return;
                   openMyProgress(user?.id, 'home');
                   return;
                 }
@@ -1768,6 +1800,7 @@ export default function SmartLinemanUI() {
     pushBanner: !!pushNotification,
     adContact: adContactOpen,
     profileNudge: profileNudgeOpen,
+    ppeNudge: ppeNudgeOpen,
     pushOptIn: pushOptInOpen,
     monthWinners: monthWinnersRevealOpen,
     sponsor: sponsorAdOpen,
@@ -1778,6 +1811,7 @@ export default function SmartLinemanUI() {
   const idleReminderBlocked =
     overlayBlocked ||
     profileNudgeOpen ||
+    ppeNudgeOpen ||
     pushOptInOpen ||
     shellInterruptBusy;
 
@@ -1793,6 +1827,7 @@ export default function SmartLinemanUI() {
     showUpdateModal ||
     showSessionEndedModal ||
     profileNudgeOpen ||
+    ppeNudgeOpen ||
     pushOptInOpen ||
     sidebarOpen ||
     monthWinnersRevealOpen ||
@@ -1806,14 +1841,25 @@ export default function SmartLinemanUI() {
       : currentView !== 'landing');
 
   // Give Training / first Supabase lesson path time before full-screen ad.
-  const sponsorAdMinDwellMs = 12000;
+  // After profile/PPE delays (12s/14s) so data nudges can claim first when due.
+  const sponsorAdMinDwellMs = 18000;
 
   const profileNudgeBlocked =
     overlayBlocked ||
     sidebarOpen ||
     sponsorAdOpen ||
     pushOptInOpen ||
+    ppeNudgeOpen ||
     shouldSuppressOverlay('profileNudge', activeShellOverlay) ||
+    authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
+
+  const ppeNudgeBlocked =
+    overlayBlocked ||
+    sidebarOpen ||
+    sponsorAdOpen ||
+    pushOptInOpen ||
+    profileNudgeOpen ||
+    shouldSuppressOverlay('ppeNudge', activeShellOverlay) ||
     authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 
   const pushOptInBlocked =
@@ -1821,6 +1867,7 @@ export default function SmartLinemanUI() {
     sidebarOpen ||
     sponsorAdOpen ||
     profileNudgeOpen ||
+    ppeNudgeOpen ||
     shouldSuppressOverlay('pushOptIn', activeShellOverlay) ||
     authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 
@@ -1865,10 +1912,7 @@ export default function SmartLinemanUI() {
               currentView={currentView}
               setCurrentView={(view) => {
                 if (view === 'my-progress') {
-                  if (cultureSurveyPending && !cultureSurveyPreview) {
-                    setCurrentView('safety-culture-survey');
-                    return;
-                  }
+                  if (tryOpenCultureSurvey()) return;
                   openMyProgress(user?.id, 'home');
                   return;
                 }
@@ -2271,7 +2315,10 @@ export default function SmartLinemanUI() {
               minDwellMs={sponsorAdMinDwellMs}
               preview={sponsorAdPreview}
               onPreviewClose={() => setSponsorAdPreview(null)}
-              onOpenChange={setSponsorAdOpen}
+              onOpenChange={(open) => {
+                if (open) claimSoftInterrupt(SOFT_INTERRUPT_IDS.sponsor);
+                setSponsorAdOpen(open);
+              }}
               onOpenLandingContact={() => {
                 setSponsorAdPreview(null);
                 if (user) {
@@ -2319,7 +2366,25 @@ export default function SmartLinemanUI() {
                 blocked={profileNudgeBlocked && !profileNudgePreview}
                 preview={profileNudgePreview}
                 onPreviewClose={() => setProfileNudgePreview(null)}
-                onOpenChange={setProfileNudgeOpen}
+                onOpenChange={(open) => {
+                  if (open) claimSoftInterrupt(SOFT_INTERRUPT_IDS.profileNudge);
+                  setProfileNudgeOpen(open);
+                }}
+                onSaved={() => fetchProfile(user, true)}
+              />
+            )}
+            {user && !isGuestUser(userProfile) && (
+              <PpeFieldNudge
+                user={user}
+                userProfile={userProfile}
+                language={language}
+                blocked={ppeNudgeBlocked && !ppeNudgePreview}
+                preview={ppeNudgePreview}
+                onPreviewClose={() => setPpeNudgePreview(null)}
+                onOpenChange={(open) => {
+                  if (open) claimSoftInterrupt(SOFT_INTERRUPT_IDS.ppeNudge);
+                  setPpeNudgeOpen(open);
+                }}
                 onSaved={() => fetchProfile(user, true)}
               />
             )}
@@ -2336,7 +2401,10 @@ export default function SmartLinemanUI() {
                 user={user}
                 language={language}
                 blocked={pushOptInBlocked}
-                onOpenChange={setPushOptInOpen}
+                onOpenChange={(open) => {
+                  if (open) claimSoftInterrupt(SOFT_INTERRUPT_IDS.pushOptIn);
+                  setPushOptInOpen(open);
+                }}
               />
             )}
             <NetworkStatusListener language={language} />

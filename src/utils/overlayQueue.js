@@ -3,6 +3,9 @@
  * Auto-triggered surfaces (update, broadcast, nudge, ads…) share one screen;
  * the highest priority open flag wins until dismissed, then the next shows.
  * User-critical flows (session ended, logout) sit at the top.
+ * Soft session budget (at most one soft prompt per open) lives in
+ * sessionInterruptBudget.js — priority here is who wins if two flags are true;
+ * the budget decides who may even try.
  * Does not touch scoring, leaderboards, or quiz logic.
  */
 
@@ -15,6 +18,7 @@ export const OVERLAY_PRIORITY = {
   pushBanner: 60,
   adContact: 55,
   profileNudge: 50,
+  ppeNudge: 45,
   pushOptIn: 40,
   monthWinners: 30,
   sponsor: 20,

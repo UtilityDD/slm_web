@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fetchActiveSponsorAd, hasSeenSponsorAd, markSponsorAdSeen } from '../utils/sponsorAdService';
+import { claimSoftInterrupt, SOFT_INTERRUPT_IDS } from '../utils/sessionInterruptBudget';
 import SponsorSolarStoryMorph, { SOLAR_STORY_MORPH_IMAGE, SOLAR_STORY_DURATION_SEC } from './SponsorSolarStoryMorph';
 
 /**
@@ -104,6 +105,9 @@ export default function SponsorAdOverlay({
     const startShow = useCallback(
         (row, { isPreview }) => {
             if (!row) return;
+            if (!isPreview && !claimSoftInterrupt(SOFT_INTERRUPT_IDS.sponsor)) {
+                return;
+            }
             clearTimers();
             previewModeRef.current = isPreview;
             let seconds = Math.max(2, Math.min(30, Number(row.display_seconds) || 5));

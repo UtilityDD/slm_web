@@ -2,205 +2,245 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { PPE_ITEMS, CONDITIONS, AGE_OPTIONS } from '../../../data/ppeItems';
+import PpeItemIcon from './PpeItemIcon';
 
-const choiceBtn = 'py-3 border-2 border-slate-900 bg-white font-bold text-sm text-slate-800 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0_#0f172a] transition-transform';
-const choiceBtnActive = 'py-3 border-2 border-slate-900 bg-orange-500 text-white font-bold text-sm shadow-[2px_2px_0_#0f172a]';
+const arrowBtnBase =
+  'flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl font-black leading-none transition active:scale-95 disabled:pointer-events-none';
+const arrowBtnActive =
+  `${arrowBtnBase} border-2 border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/35`;
+const arrowBtnIdle =
+  `${arrowBtnBase} border-2 border-slate-200 bg-slate-100 text-slate-300 shadow-none`;
+const choiceIdle =
+  'min-h-[48px] rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-800 transition active:scale-[0.98]';
+const choiceOn =
+  'min-h-[48px] rounded-2xl border border-orange-500 bg-orange-500 px-3 py-3 text-sm font-bold text-white transition active:scale-[0.98]';
 
 /**
- * Bottom sheet — quick tap-to-answer editor for one PPE item.
+ * Bottom sheet — image-first editor. Have it? required; nav is ← →.
  */
 export default function PPEItemSheet({ itemName, answer, language = 'bn', onSave, onClose, isSaving }) {
-    const item = PPE_ITEMS.find((p) => p.name === itemName);
-    const [draft, setDraft] = useState(() => ({
-        available: answer?.available ?? false,
-        count: answer?.count ?? 1,
-        condition: answer?.condition ?? 'Good',
-        age_months: answer?.age_months ?? 3,
-        usage: answer?.usage ?? 'Personal'
-    }));
-    const [step, setStep] = useState(answer?.available ? 1 : 0);
+  const item = PPE_ITEMS.find((p) => p.name === itemName);
+  const bn = language === 'bn';
 
-    if (!item) return null;
+  const [step, setStep] = useState(0);
+  const [haveChoice, setHaveChoice] = useState(answer?.available ? true : null);
+  const [draft, setDraft] = useState(() => ({
+    count: answer?.available ? answer.count ?? 1 : null,
+    countPlus: false,
+    condition: answer?.available ? answer.condition ?? null : null,
+    age_months: answer?.available ? answer.age_months ?? null : null,
+    usage: answer?.available ? answer.usage ?? null : null,
+  }));
 
-    const label = language === 'bn' ? item.bn : item.name;
+  if (!item) return null;
 
-    const handleConfirm = async (finalDraft) => {
-        await onSave({
-            name: item.name,
-            id: answer?.id || null,
-            ...finalDraft
-        });
-    };
+  const label = bn ? item.bn : item.name;
 
-    const sheet = (
-        <div className="neo-brutal fixed inset-0 z-[200] flex items-end justify-center bg-slate-900/55 backdrop-blur-sm animate-fade-in">
-            <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
+  const handleConfirm = async (finalDraft) => {
+    await onSave({
+      name: item.name,
+      id: answer?.id || null,
+      ...finalDraft,
+    });
+  };
 
-            <div className="relative w-full max-w-lg bg-[#fffdf7] border-t-[2.5px] border-x-[2.5px] border-slate-900 shadow-[0_-4px_0_#0f172a] animate-slide-up-fade max-h-[85vh] overflow-y-auto">
-                <div className="nb-hazard shrink-0" aria-hidden="true" />
+  const canGoNext = (() => {
+    if (step === 0) return haveChoice !== null;
+    if (step === 1) return !!draft.condition;
+    if (step === 2) return draft.count != null;
+    if (step === 3) return !!draft.usage;
+    if (step === 4) return draft.age_months != null;
+    return false;
+  })();
 
-                <div className="sticky top-0 z-10 bg-[#fffdf7] border-b-2 border-slate-900 px-4 sm:px-6 pt-3 pb-3">
-                    <div className="w-10 h-1.5 bg-slate-900 mx-auto mb-3" />
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 border-2 border-slate-900 bg-orange-50 flex items-center justify-center text-2xl shrink-0 shadow-[2px_2px_0_#0f172a]">
-                            {item.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h2 className={`text-base font-black text-slate-900 truncate ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {label}
-                            </h2>
-                            <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
-                                {item.tip[language]}
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex h-9 w-9 items-center justify-center border-2 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 shrink-0"
-                            aria-label={language === 'en' ? 'Close' : 'বন্ধ'}
-                        >
-                            ✕
-                        </button>
-                    </div>
-                </div>
+  const goBack = () => {
+    if (step <= 0) return;
+    setStep((s) => s - 1);
+  };
 
-                <div className="px-4 sm:px-6 py-5 pb-8 space-y-5">
-                    {step === 0 && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <h3 className="text-sm font-black text-center text-slate-900">
-                                {language === 'en' ? 'Do you have this?' : 'এটি আপনার কাছে আছে?'}
-                            </h3>
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => { setDraft((d) => ({ ...d, available: true })); setStep(1); }}
-                                    className="flex-1 py-4 border-2 border-slate-900 bg-emerald-50 font-black text-emerald-800 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5"
-                                >
-                                    <span className="text-2xl block mb-1">✅</span>
-                                    {language === 'en' ? 'Yes' : 'হ্যাঁ'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleConfirm({ ...draft, available: false })}
-                                    disabled={isSaving}
-                                    className="flex-1 py-4 border-2 border-slate-900 bg-red-50 font-black text-red-800 shadow-[3px_3px_0_#0f172a] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
-                                >
-                                    <span className="text-2xl block mb-1">❌</span>
-                                    {language === 'en' ? "Don't have" : 'নেই'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
+  const goNext = async () => {
+    if (!canGoNext || isSaving) return;
+    if (step === 0) {
+      if (haveChoice === false) {
+        await handleConfirm({ available: false });
+        return;
+      }
+      setStep(1);
+      return;
+    }
+    if (step < 4) {
+      setStep((s) => s + 1);
+      return;
+    }
+    await handleConfirm({
+      available: true,
+      count: draft.count || 1,
+      condition: draft.condition || 'Good',
+      age_months: draft.age_months || 3,
+      usage: draft.usage || 'Personal',
+    });
+  };
 
-                    {step === 1 && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <h3 className="text-sm font-black text-center text-slate-900">
-                                {language === 'en' ? 'Condition?' : 'অবস্থা কেমন?'}
-                            </h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                {CONDITIONS.map((c) => (
-                                    <button
-                                        key={c.value}
-                                        type="button"
-                                        onClick={() => { setDraft((d) => ({ ...d, condition: c.value })); setStep(2); }}
-                                        className={`flex flex-col items-center gap-1 active:scale-[0.98] transition-transform ${
-                                            draft.condition === c.value
-                                                ? `${c.color} text-white border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] py-3 font-bold text-sm`
-                                                : choiceBtn
-                                        }`}
-                                    >
-                                        <span>{c.emoji}</span>
-                                        <span>{language === 'bn' ? c.bn : c.en}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+  const stepHint = (() => {
+    if (step === 0) return bn ? 'আছে?' : 'Have it?';
+    if (step === 1) return bn ? 'অবস্থা' : 'Condition';
+    if (step === 2) return item.pair ? (bn ? 'জোড়া' : 'Pairs') : bn ? 'সংখ্যা' : 'Qty';
+    if (step === 3) return bn ? 'মালিকানা' : 'Owner';
+    return bn ? 'বয়স' : 'Age';
+  })();
 
-                    {step === 2 && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <h3 className="text-sm font-black text-center text-slate-900">
-                                {language === 'en' ? 'How many?' : 'কতগুলো?'}
-                            </h3>
-                            <div className="flex gap-2 justify-center">
-                                {[1, 2, 3, 4].map((n) => (
-                                    <button
-                                        key={n}
-                                        type="button"
-                                        onClick={() => { setDraft((d) => ({ ...d, count: n })); setStep(3); }}
-                                        className={`w-14 h-14 font-black text-lg ${
-                                            draft.count === n ? choiceBtnActive : choiceBtn
-                                        }`}
-                                    >
-                                        {n === 4 ? '3+' : n}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+  const sheet = (
+    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-slate-900/50 animate-fade-in">
+      <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
 
-                    {step === 3 && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <h3 className="text-sm font-black text-center text-slate-900">
-                                {language === 'en' ? 'Personal or shared?' : 'ব্যক্তিগত নাকি যৌথ?'}
-                            </h3>
-                            <div className="flex gap-3">
-                                {['Personal', 'Shared'].map((u) => (
-                                    <button
-                                        key={u}
-                                        type="button"
-                                        onClick={() => { setDraft((d) => ({ ...d, usage: u })); setStep(4); }}
-                                        className={`flex-1 ${draft.usage === u ? choiceBtnActive : choiceBtn}`}
-                                    >
-                                        {u === 'Personal' ? '👤' : '👥'}{' '}
-                                        {language === 'en' ? u : u === 'Personal' ? 'ব্যক্তিগত' : 'যৌথ'}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 4 && (
-                        <div className="space-y-4 animate-fadeIn">
-                            <h3 className="text-sm font-black text-center text-slate-900">
-                                {language === 'en' ? 'How old is it?' : 'বয়স কত?'}
-                            </h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                {AGE_OPTIONS.map((a) => (
-                                    <button
-                                        key={a.value}
-                                        type="button"
-                                        onClick={() => handleConfirm({ ...draft, available: true, age_months: a.value })}
-                                        disabled={isSaving}
-                                        className={`flex flex-col items-center gap-1 disabled:opacity-50 ${choiceBtn}`}
-                                    >
-                                        <span>{a.emoji}</span>
-                                        <span>{language === 'bn' ? a.bn : a.en}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {step > 0 && step < 4 && (
-                        <button
-                            type="button"
-                            onClick={() => setStep((s) => Math.max(0, s - 1))}
-                            className="w-full py-2 text-sm font-bold text-slate-500 hover:text-slate-800"
-                        >
-                            ← {language === 'en' ? 'Back' : 'পিছনে'}
-                        </button>
-                    )}
-
-                    {isSaving && (
-                        <div className="text-center text-sm font-bold text-orange-600 animate-pulse">
-                            {language === 'en' ? 'Saving...' : 'সংরক্ষণ হচ্ছে...'}
-                        </div>
-                    )}
-                </div>
-            </div>
+      <div
+        className="relative w-full max-w-sm rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl animate-slide-up-fade max-h-[85vh] overflow-y-auto sm:mb-6 sm:rounded-2xl"
+        style={{ colorScheme: 'light' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 bg-[#fffdf7] px-5 pt-3 pb-4">
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-slate-300" />
+          <div className="relative flex flex-col items-center text-center">
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute right-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500"
+              aria-label={bn ? 'বন্ধ' : 'Close'}
+            >
+              ✕
+            </button>
+            <PpeItemIcon
+              item={item}
+              size="hero"
+              rounded="rounded-3xl"
+              bg="bg-white"
+              className="border border-slate-200/80 shadow-sm"
+            />
+            <h2 className={`mt-3 text-lg font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+              {label}
+            </h2>
+            <p className={`mt-0.5 text-[11px] font-semibold text-slate-400 ${bn ? 'font-bengali' : ''}`}>
+              {stepHint}
+              {item.essential ? (bn ? ' · অত্যাবশ্যক' : ' · Essential') : ''}
+            </p>
+          </div>
         </div>
-    );
 
-    return createPortal(sheet, document.body);
+        <div className="space-y-4 px-5 pb-3">
+          {step === 0 && (
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setHaveChoice(true)}
+                className={`${haveChoice === true ? choiceOn : `${choiceIdle} border-emerald-200 bg-emerald-50 text-emerald-800`} ${bn ? 'font-bengali' : ''}`}
+              >
+                {bn ? 'আছে' : 'Yes'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setHaveChoice(false)}
+                className={`${haveChoice === false ? choiceOn : `${choiceIdle} border-rose-200 bg-rose-50 text-rose-800`} ${bn ? 'font-bengali' : ''}`}
+              >
+                {bn ? 'নেই' : 'No'}
+              </button>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="grid grid-cols-2 gap-2">
+              {CONDITIONS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, condition: c.value }))}
+                  className={draft.condition === c.value ? choiceOn : choiceIdle}
+                >
+                  {bn ? c.bn : c.en}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4].map((n) => {
+                const val = n === 4 ? 3 : n;
+                const isSel = n === 4 ? draft.countPlus === true : draft.count === n && !draft.countPlus;
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setDraft((d) => ({ ...d, count: val, countPlus: n === 4 }))}
+                    className={`flex h-14 w-14 items-center justify-center text-lg font-black ${isSel ? choiceOn : choiceIdle}`}
+                  >
+                    {n === 4 ? '3+' : n}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="grid grid-cols-2 gap-2.5">
+              {['Personal', 'Shared'].map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, usage: u }))}
+                  className={`${draft.usage === u ? choiceOn : choiceIdle} ${bn ? 'font-bengali' : ''}`}
+                >
+                  {bn ? (u === 'Personal' ? 'ব্যক্তিগত' : 'যৌথ') : u}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="grid grid-cols-2 gap-2">
+              {AGE_OPTIONS.map((a) => (
+                <button
+                  key={a.value}
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, age_months: a.value }))}
+                  className={`${draft.age_months === a.value ? choiceOn : choiceIdle} ${bn ? 'font-bengali' : ''}`}
+                >
+                  {bn ? a.bn : a.en}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isSaving ? (
+            <p className={`text-center text-sm font-bold text-orange-600 ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'সেভ হচ্ছে…' : 'Saving…'}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 border-t border-slate-200/80 px-5 py-4 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
+          <button
+            type="button"
+            disabled={isSaving || step === 0}
+            onClick={goBack}
+            className={step === 0 || isSaving ? arrowBtnIdle : arrowBtnActive}
+            aria-label={bn ? 'পিছনে' : 'Back'}
+          >
+            ←
+          </button>
+          <span className="text-[11px] font-bold tabular-nums text-slate-400">{step + 1}/5</span>
+          <button
+            type="button"
+            disabled={isSaving || !canGoNext}
+            onClick={() => void goNext()}
+            className={!canGoNext || isSaving ? arrowBtnIdle : arrowBtnActive}
+            aria-label={bn ? 'এগিয়ে' : 'Next'}
+          >
+            →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(sheet, document.body);
 }

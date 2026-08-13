@@ -14,7 +14,6 @@ import {
   ageFromDob,
   buildSaveNudgePatch,
   buildSkipNudgePatch,
-  canSkipField,
   countFilledNudgeFields,
   getNextNudgeField,
   isNudgeDue,
@@ -22,6 +21,7 @@ import {
   todayDateString,
 } from '../utils/profileNudge';
 import { isGuestUser } from '../utils/guestPreview';
+import { claimSoftInterrupt, SOFT_INTERRUPT_IDS } from '../utils/sessionInterruptBudget';
 import NativeSheetHandle from './NativeSheetHandle';
 import { hapticImpact, hapticNotification } from '../utils/nativeAndroidUx';
 
@@ -29,132 +29,68 @@ const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
 const FIELD_META = {
   avatar_url: {
-    icon: '📷',
-    en: {
-      title: 'Put a face to your name',
-      why: 'Helps friends recognise you on Rank and the Forum.',
-    },
-    bn: {
-      title: 'নিজের ছবি যোগ করুন',
-      why: 'র‍্যাঙ্ক ও ফোরামে সহকর্মীরা আপনাকে চিনতে পারবে।',
-    },
+    en: { title: 'Your photo' },
+    bn: { title: 'আপনার ছবি' },
   },
   district: {
-    icon: '📍',
-    en: {
-      title: 'Where do you work?',
-      why: 'District tips and weather alerts stay relevant to you.',
-    },
-    bn: {
-      title: 'আপনি কোন জেলায় কাজ করেন?',
-      why: 'জেলাভিত্তিক টিপস ও আবহাওয়া সতর্কতা মিলবে।',
-    },
+    en: { title: 'District' },
+    bn: { title: 'জেলা' },
   },
   block: {
-    icon: '🗺️',
-    en: {
-      title: 'Your block',
-      why: 'Fine-tunes local tips for your work area.',
-    },
-    bn: {
-      title: 'আপনার ব্লক',
-      why: 'আপনার কাজের এলাকার টিপস আরও মিলবে।',
-    },
+    en: { title: 'Block' },
+    bn: { title: 'ব্লক' },
   },
   job: {
-    icon: '⚡',
-    en: {
-      title: 'What kind of line work?',
-      why: 'Training suggestions follow your job type.',
-    },
-    bn: {
-      title: 'কী ধরনের লাইন কাজ করেন?',
-      why: 'কাজের ধরন অনুযায়ী প্রশিক্ষণ সাজানো যায়।',
-    },
+    en: { title: 'Job type' },
+    bn: { title: 'কাজের ধরন' },
   },
   dob: {
-    icon: '🎂',
-    en: {
-      title: 'Date of birth',
-      why: 'Used only for your profile age — never shared publicly.',
-    },
-    bn: {
-      title: 'জন্ম তারিখ',
-      why: 'শুধু প্রোফাইলের বয়সের জন্য — প্রকাশ্যে দেখানো হয় না।',
-    },
+    en: { title: 'Date of birth' },
+    bn: { title: 'জন্ম তারিখ' },
   },
   education: {
-    icon: '🎓',
-    en: {
-      title: 'Education background',
-      why: 'Helps us pitch lessons at the right level.',
-    },
-    bn: {
-      title: 'শিক্ষাগতগত',
-      why: 'পাঠের স্তর ঠিক রাখতে সাহায্য করে।',
-    },
+    en: { title: 'Education' },
+    bn: { title: 'শিক্ষা' },
   },
   blood_group: {
-    icon: '🩸',
-    en: {
-      title: 'Blood group',
-      why: 'Critical in field emergencies — keep it on your ID.',
-    },
-    bn: {
-      title: 'রক্তের গ্রুপ',
-      why: 'জরুরি অবস্থায় খুব দরকার — আইডিতে রাখুন।',
-    },
+    en: { title: 'Blood group' },
+    bn: { title: 'রক্তের গ্রুপ' },
   },
   is_donor: {
-    icon: '❤️',
-    en: {
-      title: 'Are you a blood donor?',
-      why: 'Optional — helps the community know if you can help.',
-    },
-    bn: {
-      title: 'আপনি কি রক্তদাতা?',
-      why: 'ঐচ্ছিক — প্রয়োজনে সাহায্য করতে পারবেন কিনা জানা যায়।',
-    },
+    en: { title: 'Blood donor?' },
+    bn: { title: 'রক্তদাতা?' },
   },
 };
 
 const UI_COPY = {
   en: {
-    badge: 'SmartLineman ID',
-    progress: (f, t) => `${f} of ${t} ready`,
-    save: 'Save & continue',
+    save: 'Save',
     skip: 'Later',
     mustFill: 'Pick one to continue.',
     mustPhoto: 'Choose a photo to continue.',
     saving: 'Saving…',
-    yes: 'Yes, I donate',
-    no: 'Not now',
+    yes: 'Yes',
+    no: 'No',
     choosePhoto: 'Choose photo',
-    changePhoto: 'Change photo',
-    photoHint: 'Under 2MB · clear face works best',
+    changePhoto: 'Change',
     photoTooBig: 'Photo must be under 2MB.',
-    searchDistrict: 'Search district…',
-    searchBlock: 'Search block…',
-    required: 'Required this time',
+    searchDistrict: 'Search…',
+    searchBlock: 'Search…',
     preview: 'Preview',
   },
   bn: {
-    badge: 'স্মার্টলাইনম্যান আইডি',
-    progress: (f, t) => `${f} / ${t} সম্পন্ন`,
-    save: 'সেভ করে এগোও',
+    save: 'সেভ',
     skip: 'পরে',
     mustFill: 'এগোতে একটি বেছে নিন।',
     mustPhoto: 'এগোতে একটি ছবি বেছে নিন।',
     saving: 'সেভ হচ্ছে…',
-    yes: 'হ্যাঁ, দিই',
-    no: 'এখন নয়',
+    yes: 'হ্যাঁ',
+    no: 'না',
     choosePhoto: 'ছবি বেছে নিন',
-    changePhoto: 'ছবি বদলান',
-    photoHint: '২MB-এর নিচে · মুখ স্পষ্ট হলে ভালো',
+    changePhoto: 'বদলান',
     photoTooBig: 'ছবি ২MB-এর নিচে হতে হবে।',
-    searchDistrict: 'জেলা খুঁজুন…',
-    searchBlock: 'ব্লক খুঁজুন…',
-    required: 'এবার আবশ্যক',
+    searchDistrict: 'খুঁজুন…',
+    searchBlock: 'খুঁজুন…',
     preview: 'প্রিভিউ',
   },
 };
@@ -236,8 +172,8 @@ function SearchableChipList({ options, value, onChange, placeholder, bn }) {
 }
 
 /**
- * Soft progressive “SmartLineman ID” prompt: one missing profile field every few days.
- * First skip allowed per field; second time the same field is required.
+ * Progressive “SmartLineman ID” prompt: one missing profile field every few days.
+ * Required like PPE — must answer; no Later / scrim dismiss in production.
  *
  * preview: { field, allowSkip } — admin review only; no DB writes.
  */
@@ -275,11 +211,8 @@ export default function ProfileFieldNudge({
   }, [userProfile]);
 
   const nudgeState = userProfile?.profile_nudge_state;
-  const allowSkip = isPreview
-    ? preview?.allowSkip !== false
-    : field
-      ? canSkipField(nudgeState, field)
-      : true;
+  // Production: always required (like PPE). Preview may optionally show Later.
+  const allowSkip = isPreview && preview?.allowSkip !== false;
 
   const progress = useMemo(
     () => countFilledNudgeFields(profileRef.current || userProfile, nudgeState),
@@ -318,6 +251,10 @@ export default function ProfileFieldNudge({
 
   const openForField = useCallback(
     (nextField) => {
+      if (!isPreview && !claimSoftInterrupt(SOFT_INTERRUPT_IDS.profileNudge)) {
+        shownForSessionRef.current = true;
+        return;
+      }
       shownForSessionRef.current = true;
       setField(nextField);
       setValue('');
@@ -331,7 +268,7 @@ export default function ProfileFieldNudge({
       requestAnimationFrame(() => setVisible(true));
       void hapticImpact('Light');
     },
-    [onOpenChange]
+    [onOpenChange, isPreview]
   );
 
   useEffect(() => {
@@ -541,11 +478,7 @@ export default function ProfileFieldNudge({
           <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-2 border-orange-200/80 bg-orange-50 shadow-sm">
             {photoPreview ? (
               <img src={photoPreview} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-4xl" aria-hidden>
-                📷
-              </span>
-            )}
+            ) : null}
           </div>
           <input
             ref={photoInputRef}
@@ -561,14 +494,13 @@ export default function ProfileFieldNudge({
           >
             {photoPreview ? t.changePhoto : t.choosePhoto}
           </button>
-          <p className={`text-xs font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>{t.photoHint}</p>
         </div>
       );
     }
 
     if (field === 'is_donor') {
       return (
-        <div className="grid grid-cols-1 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5">
           {[true, false].map((choice) => (
             <OptionChip
               key={String(choice)}
@@ -692,46 +624,40 @@ export default function ProfileFieldNudge({
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl" aria-hidden>
                 ✓
               </span>
-              <p className={`text-lg font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
-                {bn ? 'সেভ হয়েছে!' : 'Saved!'}
+              <p className={`text-base font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+                {bn ? 'সেভ হয়েছে' : 'Saved'}
               </p>
             </div>
           ) : (
             <>
-              <div className="space-y-4 px-5 pb-4 pt-1 sm:px-6">
-                <div className="flex items-start gap-3">
-                  <span
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-2xl shadow-sm"
-                    aria-hidden
+              <div className="relative space-y-4 px-5 pb-3 pt-1 sm:px-6">
+                {allowSkip ? (
+                  <button
+                    type="button"
+                    onClick={handleSkip}
+                    disabled={busy}
+                    className="absolute right-4 top-1 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 disabled:opacity-60"
+                    aria-label={bn ? 'বন্ধ' : 'Close'}
                   >
-                    {meta.icon}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-[10px] font-bold uppercase tracking-wider text-orange-600 ${bn ? 'font-bengali normal-case tracking-normal' : ''}`}>
-                      {t.badge}
-                      {isPreview ? ` · ${t.preview}` : ''}
-                      {!allowSkip ? ` · ${t.required}` : ''}
-                    </p>
-                    <h2
-                      id="profile-field-nudge-title"
-                      className={`mt-0.5 text-lg font-black leading-snug text-slate-900 sm:text-xl ${bn ? 'font-bengali' : ''}`}
-                    >
-                      {fieldCopy.title}
-                    </h2>
-                    <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${bn ? 'font-bengali' : ''}`}>
-                      {fieldCopy.why}
-                    </p>
-                  </div>
-                </div>
+                    ✕
+                  </button>
+                ) : null}
 
-                <div>
-                  <div className="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-bold text-slate-500">
-                    <span className={bn ? 'font-bengali' : ''}>{t.progress(progress.filled, progress.total)}</span>
-                    <span className="tabular-nums text-orange-600">{pct}%</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-orange-100">
+                <div className="flex flex-col items-center text-center">
+                  <h2
+                    id="profile-field-nudge-title"
+                    className={`text-lg font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}
+                  >
+                    {fieldCopy.title}
+                  </h2>
+                  {isPreview ? (
+                    <p className={`mt-0.5 text-[11px] font-semibold text-slate-400 ${bn ? 'font-bengali' : ''}`}>
+                      {t.preview}
+                    </p>
+                  ) : null}
+                  <div className="mt-3 h-1.5 w-full max-w-[12rem] overflow-hidden rounded-full bg-orange-100">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 transition-[width] duration-500"
+                      className="h-full rounded-full bg-orange-500 transition-[width] duration-500"
                       style={{ width: `${Math.max(pct, 6)}%` }}
                     />
                   </div>
@@ -739,7 +665,7 @@ export default function ProfileFieldNudge({
 
                 {renderControl()}
                 {error ? (
-                  <p className={`text-sm font-bold text-rose-600 ${bn ? 'font-bengali' : ''}`}>{error}</p>
+                  <p className={`text-center text-sm font-bold text-rose-600 ${bn ? 'font-bengali' : ''}`}>{error}</p>
                 ) : null}
               </div>
 

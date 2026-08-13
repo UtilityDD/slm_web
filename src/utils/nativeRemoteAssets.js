@@ -22,7 +22,7 @@ const LOCAL_PACKED = new Set([
   '/favicon.ico',
 ]);
 
-const LOCAL_PACKED_PREFIXES = ['/assets/emotional/'];
+const LOCAL_PACKED_PREFIXES = ['/assets/emotional/', '/images/ppe-thumbs/'];
 
 /** Paths removed from the APK and served from the live site. */
 const REMOTE_PREFIXES = [

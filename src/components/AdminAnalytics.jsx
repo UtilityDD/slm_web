@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { requestManager } from '../utils/requestManager';
+import { PPE_ITEMS as SHARED_PPE_ITEMS } from '../data/ppeItems';
 
 const StatCard = ({ title, value, subValue, icon, color, delay }) => (
     <div
@@ -52,15 +53,11 @@ export default function AdminAnalytics({ language, userRole }) {
     });
     const [loading, setLoading] = useState(true);
 
-    const PPE_ITEMS = [
-        { name: "Safety Helmet", icon: "🪖", color: "bg-orange-500" },
-        { name: "Safety Shoes/Boots", icon: "🥾", color: "bg-orange-500" },
-        { name: "Insulated Gloves", icon: "🧤", color: "bg-orange-500" },
-        { name: "Reflective Jacket", icon: "🦺", color: "bg-orange-500" },
-        { name: "Safety Belt", icon: "🧗", color: "bg-orange-500" },
-        { name: "Voltage Detector", icon: "🔌", color: "bg-orange-500" },
-        { name: "Discharge Rod", icon: "🦯", color: "bg-orange-500" }
-    ];
+    const PPE_ITEMS = SHARED_PPE_ITEMS.map((item) => ({
+        name: item.name,
+        icon: item.icon,
+        color: item.essential ? 'bg-orange-500' : 'bg-slate-400',
+    }));
 
     const TOOLS_ITEMS = [
         { name: "Pliers", icon: "🔧", color: "bg-blue-500" },

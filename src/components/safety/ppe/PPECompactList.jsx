@@ -2,6 +2,7 @@
 import React from 'react';
 import { PPE_ITEMS, CORE_PPE_ITEMS, OTHER_PPE_ITEMS } from '../../../data/ppeItems';
 import PpeViewSegment from './PpeViewSegment';
+import PpeItemIcon from './PpeItemIcon';
 
 function CompactRow({ item, answer, language, onSelect }) {
     const label = language === 'bn' ? item.bn : item.name;
@@ -16,7 +17,7 @@ function CompactRow({ item, answer, language, onSelect }) {
                 onSelect ? 'transition-colors hover:bg-orange-50 active:bg-orange-100' : ''
             }`}
         >
-            <span className="w-7 shrink-0 text-center text-lg">{item.icon}</span>
+            <PpeItemIcon item={item} size="sm" rounded="rounded-lg" />
             <div className="min-w-0 flex-1">
                 <p className={`truncate text-xs font-bold ${has ? 'text-slate-900' : 'text-slate-400'}`}>
                     {label}
@@ -118,7 +119,7 @@ export default function PPECompactList({
 
             <div className="min-h-0 flex-1 overflow-y-auto py-1 pb-4">
                 <Section
-                    title={language === 'en' ? 'Core gear' : 'মূল সরঞ্জাম'}
+                    title={language === 'en' ? 'Essential' : 'অত্যাবশ্যক'}
                     items={CORE_PPE_ITEMS}
                     answers={answers}
                     language={language}
@@ -126,7 +127,7 @@ export default function PPECompactList({
                 />
                 {OTHER_PPE_ITEMS.length > 0 && (
                     <Section
-                        title={language === 'en' ? 'Other gear' : 'অন্যান্য সরঞ্জাম'}
+                        title={language === 'en' ? 'Others' : 'অন্যান্য'}
                         items={OTHER_PPE_ITEMS}
                         answers={answers}
                         language={language}

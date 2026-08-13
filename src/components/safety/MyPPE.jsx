@@ -5,6 +5,7 @@ import { supabase } from '../../supabaseClient';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { PPE_ITEMS, CONDITIONS, AGE_OPTIONS, buildAnswersFromRows } from '../../data/ppeItems';
 import LinemanPPEView from './ppe/LinemanPPEView';
+import PpeItemIcon from './ppe/PpeItemIcon';
 
 // Phase: 'character' | 'welcome' | 'wizard' | 'summary'
 const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = false }) => {
@@ -296,7 +297,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                     <div className="flex flex-wrap justify-center gap-2">
                         {PPE_ITEMS.slice(0, 6).map(item => (
                             <div key={item.name} className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 rounded-full text-xs font-bold text-orange-700 dark:text-orange-300 flex items-center gap-1.5 border border-orange-100 dark:border-orange-800/30">
-                                <span>{item.icon}</span>
+                                <PpeItemIcon item={item} size="xs" rounded="rounded-full" bg="bg-white/80" />
                                 <span>{language === 'bn' ? item.bn : item.name}</span>
                             </div>
                         ))}
@@ -377,23 +378,17 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                         className="flex-1 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col animate-slide-up-fade"
                     >
                         {/* Item Header */}
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-700 p-6 text-white text-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
-                            <div className="relative">
-                                <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-3 backdrop-blur-md border border-white/30 text-5xl">
-                                    {currentItem.icon}
-                                </div>
-                                <h2 className="text-xl font-black">
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-700 px-6 pt-6 pb-5 text-white text-center relative overflow-hidden">
+                            <div className="relative flex flex-col items-center">
+                                <PpeItemIcon item={currentItem} size="hero" rounded="rounded-3xl" bg="bg-white" className="shadow-md" />
+                                <h2 className={`mt-3 text-xl font-black ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {language === 'bn' ? currentItem.bn : currentItem.name}
                                 </h2>
-                                <p className="text-orange-100 text-xs mt-1 font-medium opacity-90 italic">
-                                    {currentItem.tip[language]}
-                                </p>
-                                {currentItem.essential && (
-                                    <span className="inline-block mt-2 px-2 py-0.5 bg-red-500/80 text-[9px] font-black uppercase tracking-wider rounded-full">
-                                        {language === 'en' ? '★ Essential' : '★ অত্যাবশ্যক'}
+                                {currentItem.essential ? (
+                                    <span className={`mt-1 text-[10px] font-bold uppercase tracking-wide text-orange-100 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
+                                        {language === 'en' ? 'Essential' : 'অত্যাবশ্যক'}
                                     </span>
-                                )}
+                                ) : null}
                             </div>
                         </div>
 
@@ -401,25 +396,21 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                         <div className="flex-1 p-6 flex flex-col justify-center">
                             {subStep === 0 && (
                                 <div className="space-y-4 text-center animate-fadeIn">
-                                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
-                                        {language === 'en'
-                                            ? `Do you have a ${currentItem.name}?`
-                                            : `আপনার কাছে ${currentItem.bn} আছে?`}
+                                    <h3 className={`text-base font-black text-slate-700 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Have it?' : 'আছে?'}
                                     </h3>
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => handleHave(true)}
-                                            className="flex-1 py-5 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border-2 border-emerald-200 dark:border-emerald-800 rounded-2xl font-black text-emerald-700 dark:text-emerald-400 text-lg active:scale-95 transition-all flex flex-col items-center gap-1"
+                                            className={`flex-1 min-h-[52px] rounded-2xl border-2 border-emerald-200 bg-emerald-50 font-black text-emerald-700 active:scale-95 transition-all ${language === 'bn' ? 'font-bengali' : ''}`}
                                         >
-                                            <span className="text-3xl">✅</span>
-                                            <span>{language === 'en' ? 'Yes!' : 'হ্যাঁ!'}</span>
+                                            {language === 'en' ? 'Yes' : 'হ্যাঁ'}
                                         </button>
                                         <button
                                             onClick={() => handleHave(false)}
-                                            className="flex-1 py-5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border-2 border-red-200 dark:border-red-800 rounded-2xl font-black text-red-700 dark:text-red-400 text-lg active:scale-95 transition-all flex flex-col items-center gap-1"
+                                            className={`flex-1 min-h-[52px] rounded-2xl border-2 border-red-200 bg-red-50 font-black text-red-700 active:scale-95 transition-all ${language === 'bn' ? 'font-bengali' : ''}`}
                                         >
-                                            <span className="text-3xl">❌</span>
-                                            <span>{language === 'en' ? 'No' : 'না'}</span>
+                                            {language === 'en' ? 'No' : 'না'}
                                         </button>
                                     </div>
                                 </div>
@@ -427,21 +418,20 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
 
                             {subStep === 1 && (
                                 <div className="space-y-4 animate-fadeIn">
-                                    <h3 className="text-base font-black text-slate-800 dark:text-slate-100 text-center">
-                                        {language === 'en' ? 'What condition is it in?' : 'এটির অবস্থা কেমন?'}
+                                    <h3 className={`text-base font-black text-slate-700 dark:text-slate-200 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Condition' : 'অবস্থা'}
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
                                         {CONDITIONS.map(c => (
                                             <button
                                                 key={c.value}
                                                 onClick={() => handleCondition(c.value)}
-                                                className={`py-4 rounded-2xl font-bold text-sm border-2 active:scale-95 transition-all flex flex-col items-center gap-1 ${answers[currentStep]?.condition === c.value
-                                                    ? `${c.color} text-white border-transparent shadow-lg`
-                                                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-orange-300'
-                                                    }`}
+                                                className={`min-h-[48px] rounded-2xl font-bold text-sm border-2 active:scale-95 transition-all ${answers[currentStep]?.condition === c.value
+                                                    ? `${c.color} text-white border-transparent`
+                                                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                                                    } ${language === 'bn' ? 'font-bengali' : ''}`}
                                             >
-                                                <span className="text-2xl">{c.emoji}</span>
-                                                <span>{language === 'bn' ? c.bn : c.en}</span>
+                                                {language === 'bn' ? c.bn : c.en}
                                             </button>
                                         ))}
                                     </div>
@@ -450,8 +440,10 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
 
                             {subStep === 2 && (
                                 <div className="space-y-4 animate-fadeIn">
-                                    <h3 className="text-base font-black text-slate-800 dark:text-slate-100 text-center">
-                                        {language === 'en' ? 'How many do you have?' : 'আপনার কাছে কতগুলো আছে?'}
+                                    <h3 className={`text-base font-black text-slate-700 dark:text-slate-200 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {currentItem.pair
+                                            ? (language === 'en' ? 'Pairs' : 'জোড়া')
+                                            : (language === 'en' ? 'Qty' : 'সংখ্যা')}
                                     </h3>
                                     <div className="flex gap-3 justify-center">
                                         {[1, 2, 3, 4, 5].map(n => (
@@ -459,37 +451,33 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                                                 key={n}
                                                 onClick={() => handleQuantity(n)}
                                                 className={`w-14 h-14 rounded-2xl font-black text-xl border-2 active:scale-90 transition-all ${answers[currentStep]?.count === n
-                                                    ? 'bg-orange-600 text-white border-orange-600 shadow-lg shadow-orange-600/20'
-                                                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-orange-400'
+                                                    ? 'bg-orange-600 text-white border-orange-600'
+                                                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                                                     }`}
                                             >
                                                 {n}
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-center text-xs text-slate-400 mt-2">
-                                        {language === 'en' ? 'Tap a number' : 'একটি সংখ্যায় ট্যাপ করুন'}
-                                    </p>
                                 </div>
                             )}
 
                             {subStep === 3 && (
                                 <div className="space-y-4 animate-fadeIn">
-                                    <h3 className="text-base font-black text-slate-800 dark:text-slate-100 text-center">
-                                        {language === 'en' ? 'How old is it?' : 'এটি কত পুরনো?'}
+                                    <h3 className={`text-base font-black text-slate-700 dark:text-slate-200 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Age' : 'বয়স'}
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
                                         {AGE_OPTIONS.map(a => (
                                             <button
                                                 key={a.value}
                                                 onClick={() => handleAge(a.value)}
-                                                className={`py-4 rounded-2xl font-bold text-sm border-2 active:scale-95 transition-all flex flex-col items-center gap-1 ${answers[currentStep]?.age_months === a.value
-                                                    ? 'bg-orange-600 text-white border-orange-600 shadow-lg'
-                                                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-orange-300'
-                                                    }`}
+                                                className={`min-h-[48px] rounded-2xl font-bold text-sm border-2 active:scale-95 transition-all ${answers[currentStep]?.age_months === a.value
+                                                    ? 'bg-orange-600 text-white border-orange-600'
+                                                    : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                                                    } ${language === 'bn' ? 'font-bengali' : ''}`}
                                             >
-                                                <span className="text-2xl">{a.emoji}</span>
-                                                <span>{language === 'bn' ? a.bn : a.en}</span>
+                                                {language === 'bn' ? a.bn : a.en}
                                             </button>
                                         ))}
                                     </div>
@@ -498,25 +486,21 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
 
                             {subStep === 4 && (
                                 <div className="space-y-4 animate-fadeIn">
-                                    <h3 className="text-base font-black text-slate-800 dark:text-slate-100 text-center">
-                                        {language === 'en' ? 'Is it personal or shared?' : 'এটি ব্যক্তিগত না শেয়ারড?'}
+                                    <h3 className={`text-base font-black text-slate-700 dark:text-slate-200 text-center ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en' ? 'Owner' : 'মালিকানা'}
                                     </h3>
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => handleUsage('Personal')}
-                                            className="flex-1 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-sm active:scale-95 transition-all flex flex-col items-center gap-2 hover:border-orange-400"
+                                            className={`flex-1 min-h-[52px] rounded-2xl border-2 border-slate-200 bg-white font-bold text-sm text-slate-800 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}
                                         >
-                                            <span className="text-3xl">👤</span>
-                                            <span className="text-slate-800 dark:text-slate-200">{language === 'en' ? 'Personal' : 'ব্যক্তিগত'}</span>
-                                            <span className="text-[10px] text-slate-400">{language === 'en' ? 'Only mine' : 'শুধু আমার'}</span>
+                                            {language === 'en' ? 'Personal' : 'ব্যক্তিগত'}
                                         </button>
                                         <button
                                             onClick={() => handleUsage('Shared')}
-                                            className="flex-1 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-sm active:scale-95 transition-all flex flex-col items-center gap-2 hover:border-orange-400"
+                                            className={`flex-1 min-h-[52px] rounded-2xl border-2 border-slate-200 bg-white font-bold text-sm text-slate-800 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 ${language === 'bn' ? 'font-bengali' : ''}`}
                                         >
-                                            <span className="text-3xl">👥</span>
-                                            <span className="text-slate-800 dark:text-slate-200">{language === 'en' ? 'Shared' : 'শেয়ারড'}</span>
-                                            <span className="text-[10px] text-slate-400">{language === 'en' ? 'Team use' : 'টিম ব্যবহার'}</span>
+                                            {language === 'en' ? 'Shared' : 'যৌথ'}
                                         </button>
                                     </div>
                                 </div>
@@ -526,62 +510,54 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                                 <div className="space-y-5 text-center animate-fadeIn">
                                     {answers[currentStep]?.available ? (
                                         <>
-                                            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce" style={{ animationDuration: '1.5s', animationIterationCount: 1 }}>
-                                                ✅
-                                            </div>
-                                            <h3 className="text-lg font-black text-emerald-700 dark:text-emerald-400">
-                                                {language === 'en' ? 'Recorded!' : 'রেকর্ড হয়েছে!'}
+                                            <h3 className={`text-lg font-black text-emerald-700 dark:text-emerald-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {language === 'en' ? 'Saved' : 'সেভ হয়েছে'}
                                             </h3>
-                                            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 space-y-2 text-left border border-slate-100 dark:border-slate-700">
+                                            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-left dark:border-slate-700 dark:bg-slate-900">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="text-2xl">{currentItem.icon}</span>
-                                                    <span className="font-black text-slate-800 dark:text-slate-100">
+                                                    <PpeItemIcon item={currentItem} size="md" />
+                                                    <span className={`font-black text-slate-800 dark:text-slate-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {language === 'bn' ? currentItem.bn : currentItem.name}
                                                     </span>
                                                 </div>
-                                                <div className="flex flex-wrap gap-2 pl-10">
-                                                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${answers[currentStep]?.condition === 'Good' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                                                        answers[currentStep]?.condition === 'Fair' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                                                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                        }`}>
+                                                <div className="mt-2 flex flex-wrap gap-2 pl-[3.25rem]">
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                                                         {answers[currentStep]?.condition}
                                                     </span>
-                                                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                                                         ×{answers[currentStep]?.count}
                                                     </span>
-                                                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400">
+                                                    <span className="rounded-full bg-orange-50 px-2 py-1 text-[10px] font-bold text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
                                                         {AGE_OPTIONS.find(a => a.value === answers[currentStep]?.age_months)?.[language] || AGE_OPTIONS[0][language]}
                                                     </span>
-                                                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                                                        {answers[currentStep]?.usage === 'Shared' ? '👥' : '👤'} {answers[currentStep]?.usage}
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                                        {answers[currentStep]?.usage}
                                                     </span>
                                                 </div>
                                             </div>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto text-3xl">
-                                                ❌
-                                            </div>
-                                            <h3 className="text-lg font-black text-red-600 dark:text-red-400">
-                                                {language === 'en' ? 'Not Available' : 'নেই'}
+                                            <h3 className={`text-lg font-black text-red-600 dark:text-red-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                {language === 'en' ? 'Not available' : 'নেই'}
                                             </h3>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400">
-                                                {currentItem.essential
-                                                    ? (language === 'en' ? '⚠️ This is an essential safety item!' : '⚠️ এটি একটি অত্যাবশ্যক সুরক্ষা সরঞ্জাম!')
-                                                    : (language === 'en' ? 'No worries, this is optional.' : 'চিন্তার কিছু নেই, এটি ঐচ্ছিক।')
-                                                }
-                                            </p>
+                                            {currentItem.essential ? (
+                                                <p className={`text-sm text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                    {language === 'en' ? 'This is an essential item.' : 'এটি অত্যাবশ্যক।'}
+                                                </p>
+                                            ) : null}
                                         </>
                                     )}
                                     <button
                                         onClick={goToNextItem}
-                                        className="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black text-sm shadow-lg shadow-orange-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        {currentStep < PPE_ITEMS.length - 1
-                                            ? (language === 'en' ? 'Next Item →' : 'পরেরটি →')
-                                            : (language === 'en' ? 'Finish & Save ✨' : 'শেষ করুন ও সংরক্ষণ করুন ✨')
+                                        className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border-2 border-orange-500 bg-orange-500 text-2xl font-black leading-none text-white shadow-md shadow-orange-500/35 active:scale-95 transition-all"
+                                        aria-label={
+                                          currentStep < PPE_ITEMS.length - 1
+                                            ? (language === 'en' ? 'Next' : 'পরেরটি')
+                                            : (language === 'en' ? 'Finish' : 'শেষ')
                                         }
+                                    >
+                                        →
                                     </button>
                                 </div>
                             )}
@@ -589,13 +565,33 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                     </div>
 
                     {/* Navigation */}
-                    <div className="flex items-center justify-center mt-4 px-2">
+                    <div className="mt-4 flex items-center justify-center gap-6 px-2">
                         <button
                             onClick={goToPrevItem}
                             disabled={currentStep === 0}
-                            className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl font-black leading-none transition active:scale-95 disabled:pointer-events-none ${
+                              currentStep === 0
+                                ? 'border-2 border-slate-200 bg-slate-100 text-slate-300'
+                                : 'border-2 border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/35'
+                            }`}
+                            aria-label={language === 'en' ? 'Back' : 'পিছনে'}
                         >
-                            ← {language === 'en' ? 'Back' : 'পিছনে'}
+                            ←
+                        </button>
+                        <span className="text-[11px] font-bold tabular-nums text-slate-400">
+                            {currentStep + 1}/{PPE_ITEMS.length}
+                        </span>
+                        <button
+                            onClick={goToNextItem}
+                            disabled={currentStep >= PPE_ITEMS.length - 1 && subStep < 5}
+                            className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl font-black leading-none transition active:scale-95 disabled:pointer-events-none ${
+                              currentStep >= PPE_ITEMS.length - 1 && subStep < 5
+                                ? 'border-2 border-slate-200 bg-slate-100 text-slate-300'
+                                : 'border-2 border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/35'
+                            }`}
+                            aria-label={language === 'en' ? 'Next' : 'এগিয়ে'}
+                        >
+                            →
                         </button>
                     </div>
                 </div>
@@ -643,20 +639,20 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                         </p>
                         <div className="flex justify-center gap-4 text-xs">
                             <div className="bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                                ✅ {haveItems.length} {language === 'en' ? 'Have' : 'আছে'}
+                                {haveItems.length} {language === 'en' ? 'Have' : 'আছে'}
                             </div>
                             <div className="bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
-                                ❌ {missingItems.length} {language === 'en' ? 'Missing' : 'নেই'}
+                                {missingItems.length} {language === 'en' ? 'Missing' : 'নেই'}
                             </div>
                         </div>
                         {essentialMissing.length > 0 && (
-                            <div className="mt-3 bg-red-600/50 px-4 py-2 rounded-xl text-xs font-bold backdrop-blur-sm animate-pulse">
-                                ⚠️ {essentialMissing.length} {language === 'en' ? 'essential items missing!' : 'টি অত্যাবশ্যক সরঞ্জাম নেই!'}
+                            <div className="mt-3 bg-red-600/50 px-4 py-2 rounded-xl text-xs font-bold backdrop-blur-sm">
+                                {essentialMissing.length} {language === 'en' ? 'essential missing' : 'টি অত্যাবশ্যক নেই'}
                             </div>
                         )}
                         {essentialMissing.length === 0 && haveItems.length > 0 && (
                             <div className="mt-3 bg-emerald-600/50 px-4 py-2 rounded-xl text-xs font-bold backdrop-blur-sm">
-                                🎉 {language === 'en' ? 'All essential items covered!' : 'সব অত্যাবশ্যক সরঞ্জাম আছে!'}
+                                {language === 'en' ? 'All essentials covered' : 'সব অত্যাবশ্যক আছে'}
                             </div>
                         )}
                     </div>
@@ -665,8 +661,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                 {/* You Have Section */}
                 {haveItems.length > 0 && (
                     <div className="mb-6">
-                        <h3 className="text-sm font-black text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-2 uppercase tracking-wide px-1">
-                            <span className="text-lg">✅</span>
+                        <h3 className="text-sm font-black text-emerald-700 dark:text-emerald-400 mb-3 uppercase tracking-wide px-1">
                             {language === 'en' ? 'You Have' : 'আপনার কাছে আছে'} ({haveItems.length})
                         </h3>
                         <div className="space-y-2">
@@ -677,9 +672,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                                         'text-red-600 bg-red-50 dark:bg-red-900/20';
                                 return (
                                     <div key={a.name} onClick={() => editItem(a.name)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-3 shadow-sm cursor-pointer hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md active:scale-[0.98] transition-all">
-                                        <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center text-2xl shrink-0">
-                                            {item?.icon}
-                                        </div>
+                                        <PpeItemIcon item={item} size="md" bg="bg-emerald-50 dark:bg-emerald-900/20" />
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
                                                 {language === 'bn' ? item?.bn : a.name}
@@ -692,7 +685,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                                                     ×{a.count}
                                                 </span>
                                                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
-                                                    {a.usage === 'Shared' ? '👥' : '👤'} {a.usage}
+                                                    {a.usage}
                                                 </span>
                                             </div>
                                         </div>
@@ -707,8 +700,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                 {/* You Don't Have Section */}
                 {missingItems.length > 0 && (
                     <div className="mb-6">
-                        <h3 className="text-sm font-black text-red-700 dark:text-red-400 mb-3 flex items-center gap-2 uppercase tracking-wide px-1">
-                            <span className="text-lg">❌</span>
+                        <h3 className="text-sm font-black text-red-700 dark:text-red-400 mb-3 uppercase tracking-wide px-1">
                             {language === 'en' ? "You Don't Have" : 'আপনার কাছে নেই'} ({missingItems.length})
                         </h3>
                         <div className="space-y-2">
@@ -716,16 +708,14 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                                 const item = PPE_ITEMS.find(p => p.name === a.name);
                                 return (
                                     <div key={a.name} onClick={() => editItem(a.name)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-red-100 dark:border-red-900/30 flex items-center gap-3 shadow-sm opacity-70 cursor-pointer hover:opacity-100 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md active:scale-[0.98] transition-all">
-                                        <div className="w-11 h-11 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center text-2xl shrink-0 grayscale">
-                                            {item?.icon}
-                                        </div>
+                                        <PpeItemIcon item={item} size="md" bg="bg-red-50 dark:bg-red-900/20" className="grayscale" />
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
                                                 {language === 'bn' ? item?.bn : a.name}
                                             </h4>
                                             {item?.essential && (
                                                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-50 dark:bg-red-900/20 text-red-600 mt-1 inline-block">
-                                                    ⚠️ {language === 'en' ? 'Required' : 'প্রয়োজনীয়'}
+                                                    {language === 'en' ? 'Required' : 'প্রয়োজনীয়'}
                                                 </span>
                                             )}
                                         </div>

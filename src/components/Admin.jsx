@@ -11,6 +11,8 @@ import {
   JOB_TYPES,
   PROFILE_NUDGE_FIELD_ORDER,
 } from '../data/profileFieldOptions';
+import { PPE_NUDGE_ITEM_ORDER, getPpeItem } from '../data/ppeItems';
+import PpeItemIcon from './safety/ppe/PpeItemIcon';
 import { AWARENESS_STORIES } from '../data/awarenessStories';
 
 import SaveSuccessModal from './SaveSuccessModal';
@@ -20,6 +22,8 @@ import HomePrimaryActionCards from './HomePrimaryActionCards';
 import MyPPE from './safety/MyPPE';
 import MyTools from './safety/MyTools';
 import SafetyCultureAdminPanel from './safety/SafetyCultureAdminPanel';
+import ProfileNudgeStatusPanel from './ProfileNudgeStatusPanel';
+import PpeNudgeStatusPanel from './PpeNudgeStatusPanel';
 import {
   describeUserAgent,
   describeWebPushBlockReason,
@@ -837,7 +841,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -909,7 +913,9 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [pushTestTargetPhone, setPushTestTargetPhone] = useState('');
   const [showSystemCheckSection, setShowSystemCheckSection] = useState(false);
   const [showProfileNudgePreviewSection, setShowProfileNudgePreviewSection] = useState(false);
-  const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(false);
+  const [nudgePreviewRequireMode, setNudgePreviewRequireMode] = useState(true);
+  const [showPpeNudgePreviewSection, setShowPpeNudgePreviewSection] = useState(false);
+  const [ppeNudgePreviewRequireMode, setPpeNudgePreviewRequireMode] = useState(false);
   const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
   const [showOnboardingPreviewSection, setShowOnboardingPreviewSection] = useState(false);
   const [showHomeCtaPreviewSection, setShowHomeCtaPreviewSection] = useState(false);
@@ -2566,6 +2572,16 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
         </div>
       )}
 
+      {/* Admin: essential profile (nudge) collection summary + pending */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <ProfileNudgeStatusPanel language={language} />
+      )}
+
+      {/* Admin: field PPE collection summary + pending */}
+      {isAdmin && !showAnalytics && showManageMenu && (
+        <PpeNudgeStatusPanel language={language} />
+      )}
+
       {/* Admin: review progressive profile prompt modals (preview only — no DB write) */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewProfileNudge === 'function' && (
         <div className={`mb-5 ${ADMIN_THEME.card}`}>
@@ -2588,7 +2604,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   onChange={(e) => setNudgePreviewRequireMode(e.target.checked)}
                   className="w-4 h-4 rounded"
                 />
-                {isEn ? 'Simulate 2nd visit (no Skip)' : '২য় ভিজিট সিমুলেট (Skip নেই)'}
+                {isEn ? 'Required (no Later) — matches live' : 'আবশ্যক (Later নেই) — লাইভের মতো'}
               </label>
               <div className="flex flex-wrap gap-2">
                 {PROFILE_NUDGE_FIELD_ORDER.map((fieldKey) => {
@@ -2621,8 +2637,74 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               </div>
               <p className="text-[11px] text-slate-400">
                 {isEn
-                  ? 'Preview only — Save / Not now will not change your profile.'
-                  : 'শুধু প্রিভিউ — Save / Not now আপনার প্রোফাইল বদলাবে না।'}
+                  ? 'Preview only — Save / Later will not change your profile. Live users must answer (no Later).'
+                  : 'শুধু প্রিভিউ — Save / Later আপনার প্রোফাইল বদলাবে না। লাইভে উত্তর আবশ্যক (Later নেই)।'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: review progressive PPE prompt modals (preview only — no DB write) */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewPpeNudge === 'function' && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowPpeNudgePreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🦺 {isEn ? 'Review PPE prompts' : 'PPE প্রম্পট রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showPpeNudgePreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showPpeNudgePreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={ppeNudgePreviewRequireMode}
+                  onChange={(e) => setPpeNudgePreviewRequireMode(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                />
+                {isEn ? 'Show close (✕) in preview' : 'প্রিভিউতে বন্ধ (✕) দেখাও'}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PPE_NUDGE_ITEM_ORDER.map((itemName) => {
+                  const item = getPpeItem(itemName);
+                  const label = isEn ? item?.name : item?.bn;
+                  return (
+                    <button
+                      key={itemName}
+                      type="button"
+                      onClick={() =>
+                        onPreviewPpeNudge({
+                          itemName,
+                          allowSkip: !ppeNudgePreviewRequireMode,
+                        })
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                    >
+                      <PpeItemIcon item={item} size="xs" rounded="rounded-full" bg="bg-orange-50" />
+                      {label || itemName}
+                      {item?.essential ? (
+                        <span className="ml-1 text-[9px] text-orange-600">
+                          {isEn ? 'ESS' : 'অত্যাবশ্যক'}
+                        </span>
+                      ) : null}
+                      {item?.pair ? (
+                        <span className="ml-1 text-[9px] text-slate-400">
+                          {isEn ? 'pair' : 'জোড়া'}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Preview only — answers will not write to user_ppe.'
+                  : 'শুধু প্রিভিউ — উত্তর user_ppe-তে লেখা হবে না।'}
               </p>
             </div>
           )}
