@@ -7,6 +7,7 @@ import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
 import { openExternalUrl } from '../utils/nativeAndroidUx';
 import { supabase } from '../supabaseClient';
+import { storageUtils } from '../utils/storageUtils';
 import { requestManager } from '../utils/requestManager';
 import {
   buildMakeupSession,
@@ -115,6 +116,33 @@ export default function Home({
     window.scrollTo({ top: 0, behavior: 'instant' });
     setLoading(false);
   }, [userProfile, user]);
+
+  // Match Rank/Training/PPE: keep cream chrome while Home is open (desktop defaults to html.dark).
+  useEffect(() => {
+    const html = document.documentElement;
+    html.classList.remove('dark');
+
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const previousThemeColor = metaThemeColor?.getAttribute('content') || null;
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(metaThemeColor);
+    }
+    metaThemeColor.setAttribute('content', '#fffdf7');
+
+    return () => {
+      const savedTheme = storageUtils.getItem('appTheme') || 'dark';
+      if (savedTheme === 'dark') {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+      if (previousThemeColor) {
+        metaThemeColor.setAttribute('content', previousThemeColor);
+      }
+    };
+  }, []);
 
   // Warm tip-board art while Home is open so tap opens instantly.
   useEffect(() => {

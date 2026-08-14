@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.123";
+export const CURRENT_APP_VERSION = "1.3.124";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update — bug fix: admin culture survey summary can now see submitted answers.",
-  bn: "নতুন ভার্সন আপডেট করুন—বাগ ঠিক: অ্যাডমিন জরিপ সারসংক্ষেপে জমা দেওয়া উত্তর দেখা যাবে।",
+  en: "Please update — calmer desktop Home bar, and login photos no longer flash a dark line.",
+  bn: "নতুন ভার্সন আপডেট করুন—ডেস্কটপ হোম বার এখন অন্য পেজের মতো, লগইনে কালো রেখা আসবে না।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
@@ -18,7 +18,7 @@ export const SUPPORT_EMAIL = "support@smartlineman.in";
  * Keep ANDROID_VERSION_CODE / CURRENT_APP_VERSION in sync with android/app/build.gradle
  * and public/android-latest.json on every APK release. PWA uses CURRENT_APP_VERSION only.
  */
-export const ANDROID_VERSION_CODE = 121;
+export const ANDROID_VERSION_CODE = 122;
 /** Absolute URL so the APK checks the live site, not bundled localhost assets. */
 export const ANDROID_LATEST_MANIFEST_URL = `${WEBSITE_ORIGIN_WWW}/android-latest.json`;
 export const ANDROID_DOWNLOAD_PAGE_URL = `${WEBSITE_ORIGIN_WWW}/download`;

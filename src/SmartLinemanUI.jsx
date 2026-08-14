@@ -2268,20 +2268,20 @@ export default function SmartLinemanUI() {
             </div>
 
             {((user && !['login', 'accident-stories', 'verify'].includes(currentView))) && (
-              <header className={`${currentView === 'home' ? 'bg-[#ea580c] dark:bg-[#c2410c] border-transparent shadow-none' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 elevation-2'} sticky top-0 z-[80] border-b safe-area-inset-top transition-all duration-300 hidden md:block`}>
+              <header className="sticky top-0 z-[80] hidden border-b border-slate-200/80 bg-[#fffdf7] md:block">
                 <div className="max-w-7xl mx-auto mobile-container">
                   <div className="flex justify-between items-center h-14 md:h-16">
                     <div className="flex items-center gap-2 relative z-[110]">
                       {user && (
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`p-2 ${currentView === 'home' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'} rounded-lg transition-colors`} title="Menu" aria-label="Toggle menu"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-orange-50 text-slate-700 rounded-lg transition-colors" title="Menu" aria-label="Toggle menu"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg></button>
                       )}
-                      <div className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95" onClick={() => setCurrentView('home')}><div className="flex items-baseline gap-0.5 select-none"><span className={`text-xl sm:text-2xl logo-text ${currentView === 'home' ? 'logo-text-home' : 'logo-text-default'}`}>SmartLineMan</span><span className="text-[10px] sm:text-xs font-black bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/20 shadow-sm ml-0.5 transform -translate-y-1">.in</span></div></div>
+                      <div className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95" onClick={() => setCurrentView('home')}><div className="flex items-baseline gap-0.5 select-none"><span className="text-xl sm:text-2xl logo-text logo-text-default">SmartLineMan</span><span className="text-[10px] sm:text-xs font-black bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/20 shadow-sm ml-0.5 transform -translate-y-1">.in</span></div></div>
                     </div>
                     <div className="flex-grow"></div>
                     <div className="flex items-center gap-1 sm:gap-2">
                       {user && <RadioDesktopLaunch language={language} currentView={currentView} />}
                       {user ? (
-                        <div className="flex items-center gap-2 pl-1 sm:pl-2"><button onClick={handleLogout} className="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all touch-target border border-slate-200 dark:border-slate-600 shadow-sm" title="Logout"><div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">{userProfile?.avatar_url ? <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.list} alt="Profile" className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-white" />}</div></button></div>
+                        <div className="flex items-center gap-2 pl-1 sm:pl-2"><button onClick={handleLogout} className="flex items-center justify-center p-1 bg-white hover:bg-orange-50 rounded-full transition-all touch-target border border-slate-200/80 shadow-sm" title="Logout"><div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">{userProfile?.avatar_url ? <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.list} alt="Profile" className="w-full h-full object-cover" /> : <UserIcon className="w-5 h-5 text-white" />}</div></button></div>
                       ) : (
                         <button onClick={() => setCurrentView('login')} className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-all shadow-md shadow-orange-500/20 touch-target" title={t.nav.login} aria-label="Login"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button>
                       )}
@@ -2305,12 +2305,12 @@ export default function SmartLinemanUI() {
                     : user
                       ? 'pb-20 md:pb-0'
                       : 'pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:pb-0'
-              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+              } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools', 'login', 'landing'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
             >
               <div
                 className={`h-full relative z-10 w-full view-transition ${
                   ['my_ppe', 'safety-library', 'training'].includes(currentView) ? 'overflow-hidden flex flex-col min-h-0' : 'min-h-full'
-                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
+                } ${['accident-stories', 'leaderboard', 'prizes', 'training', 'competitions', 'video-guide', 'aro-janun', 'amader-kotha', 'admin', 'my_ppe', 'safety-library', 'menu', 'community', 'my-progress', 'home', 'notifications', 'emergency', 'sops', 'my_tools', 'login', 'landing'].includes(currentView) ? 'bg-[#fffdf7]' : ''}`}
                 key={currentView}
               >
                 {renderContent()}

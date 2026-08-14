@@ -221,7 +221,7 @@ function FilmCrossfade({ images, activeIndex }) {
                         alt=""
                         decoding="async"
                         loading={isActive || isLeaving || i === (shownIndex + 1) % images.length ? 'eager' : 'lazy'}
-                        className={`login-film__img${isActive ? ' login-film__img--active' : ''}${isLeaving ? ' login-film__img--leaving' : ''}`}
+                        className={`login-film__img${isActive ? ' login-film__img--active' : ''}${isLeaving ? ' login-film__img--leaving' : ''}${leavingIndex != null ? ' login-film__img--xfade' : ''}`}
                         style={{ objectPosition: HERO_IMAGE_FOCUS[src] || 'center 18%' }}
                     />
                 );
