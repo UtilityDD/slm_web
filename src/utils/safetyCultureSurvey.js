@@ -358,17 +358,10 @@ export async function fetchAllCultureWaves() {
 
 /**
  * Upsert all item answers + mark completion.
- * Creates a per-user auto cycle wave when waveId is omitted.
+ * Prefers SECURITY DEFINER RPC (avoids client RLS 42501 on responses/completions).
  */
 export async function submitCultureSurvey({ userId, waveId, answers }) {
   if (!userId) throw new Error('missing user');
-
-  let resolvedWaveId = waveId;
-  if (!resolvedWaveId) {
-    const wave = await ensureCultureCycleWave(userId);
-    resolvedWaveId = wave.id;
-  }
-  if (!resolvedWaveId) throw new Error('wave create failed');
 
   const missing = SAFETY_CULTURE_ITEMS.filter((item) => {
     const a = answers[item.id];
@@ -378,29 +371,56 @@ export async function submitCultureSurvey({ userId, waveId, answers }) {
     throw new Error(`incomplete:${missing.join(',')}`);
   }
 
-  const rows = SAFETY_CULTURE_ITEMS.map((item) => {
+  const answerPayload = {};
+  for (const item of SAFETY_CULTURE_ITEMS) {
     const a = answers[item.id];
-    return {
-      wave_id: resolvedWaveId,
-      user_id: userId,
-      item_id: item.id,
-      answer_uchit: String(a.uchit).toUpperCase(),
-      answer_hoy: String(a.hoy).toUpperCase(),
-      item_set_version: ITEM_SET_VERSION,
-      submitted_at: new Date().toISOString(),
-    };
-  });
-
-  for (const row of rows) {
-    if (!['A', 'B', 'C'].includes(row.answer_uchit) || !['A', 'B', 'C'].includes(row.answer_hoy)) {
-      throw new Error(`incomplete:${row.item_id}`);
+    const uchit = String(a.uchit).toUpperCase();
+    const hoy = String(a.hoy).toUpperCase();
+    if (!['A', 'B', 'C'].includes(uchit) || !['A', 'B', 'C'].includes(hoy)) {
+      throw new Error(`incomplete:${item.id}`);
     }
+    answerPayload[item.id] = { uchit, hoy };
   }
 
-  // Prefer insert for first completion; fall back to upsert if a partial save exists.
+  const waveCode = buildUserCycleWaveCode(userId);
+
+  // Primary path: one RPC (wave + responses + completion) as SECURITY DEFINER.
+  const { data: rpcWaveId, error: rpcErr } = await supabase.rpc('submit_safety_culture_survey', {
+    p_wave_code: waveCode,
+    p_answers: answerPayload,
+    p_item_set_version: ITEM_SET_VERSION,
+  });
+
+  if (!rpcErr) {
+    const resolvedWaveId =
+      typeof rpcWaveId === 'string' ? rpcWaveId : rpcWaveId?.id || waveId || null;
+    clearCultureDraft(userId, DUE_DRAFT_SUFFIX);
+    if (resolvedWaveId) clearCultureDraft(userId, resolvedWaveId);
+    return { waveId: resolvedWaveId || waveId || null };
+  }
+
+  console.warn('submit_safety_culture_survey rpc', rpcErr);
+
+  // Fallback: older direct table writes (needs working RLS + session JWT).
+  let resolvedWaveId = waveId;
+  if (!resolvedWaveId) {
+    const wave = await ensureCultureCycleWave(userId);
+    resolvedWaveId = wave.id;
+  }
+  if (!resolvedWaveId) throw rpcErr;
+
+  const rows = SAFETY_CULTURE_ITEMS.map((item) => ({
+    wave_id: resolvedWaveId,
+    user_id: userId,
+    item_id: item.id,
+    answer_uchit: answerPayload[item.id].uchit,
+    answer_hoy: answerPayload[item.id].hoy,
+    item_set_version: ITEM_SET_VERSION,
+    submitted_at: new Date().toISOString(),
+  }));
+
   const { error: insertErr } = await supabase.from('safety_culture_responses').insert(rows);
   if (insertErr) {
-    console.warn('culture responses insert', insertErr);
     const { error: respErr } = await supabase
       .from('safety_culture_responses')
       .upsert(rows, { onConflict: 'wave_id,user_id,item_id' });

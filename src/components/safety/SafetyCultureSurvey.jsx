@@ -155,10 +155,12 @@ export default function SafetyCultureSurvey({
         }
       }
 
-      const authUserId = session?.user?.id || userId;
-      if (!authUserId) {
+      // RLS / SECURITY DEFINER RPCs need a real JWT — do not submit with React user id alone.
+      if (!session?.access_token || !session?.user?.id) {
         throw new Error('not authenticated — please log in again');
       }
+
+      const authUserId = session.user.id;
 
       await submitCultureSurvey({
         userId: authUserId,
@@ -180,7 +182,7 @@ export default function SafetyCultureSurvey({
       } else if (/auth session missing|not authenticated|please log in/i.test(rawLower)) {
         friendly = t('errorAuth');
       } else if (
-        /get_or_create_safety_culture_wave|could not find the function|schema cache/i.test(
+        /submit_safety_culture_survey|get_or_create_safety_culture_wave|could not find the function|schema cache/i.test(
           raw
         )
       ) {
