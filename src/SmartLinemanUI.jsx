@@ -66,7 +66,6 @@ import {
 } from "./utils/overlayQueue";
 import {
   claimSoftInterrupt,
-  hasSoftInterruptClaimed,
   SOFT_INTERRUPT_IDS,
 } from "./utils/sessionInterruptBudget";
 
@@ -1514,15 +1513,9 @@ export default function SmartLinemanUI() {
       view !== 'login' &&
       view !== 'landing';
     if (escapingSurvey) {
-      // Soft budget: if another soft interrupt already ran this session, open Home.
-      if (hasSoftInterruptClaimed()) {
-        setCurrentView(view);
-        return;
-      }
-      if (!claimSoftInterrupt(SOFT_INTERRUPT_IDS.cultureSurvey)) {
-        setCurrentView(view);
-        return;
-      }
+      // Hard gate until submit — soft-interrupt budget must not let users skip by backing out.
+      // Best-effort claim so other soft nudges don't also stack in this session.
+      claimSoftInterrupt(SOFT_INTERRUPT_IDS.cultureSurvey);
       setCultureSurveyPreview(false);
       setCurrentView('safety-culture-survey');
       return;
@@ -1532,8 +1525,7 @@ export default function SmartLinemanUI() {
 
   const tryOpenCultureSurvey = () => {
     if (!cultureSurveyPending || cultureSurveyPreview) return false;
-    if (hasSoftInterruptClaimed()) return false;
-    if (!claimSoftInterrupt(SOFT_INTERRUPT_IDS.cultureSurvey)) return false;
+    claimSoftInterrupt(SOFT_INTERRUPT_IDS.cultureSurvey);
     setCurrentView('safety-culture-survey');
     return true;
   };
