@@ -55,6 +55,7 @@ const PERIODS = [
 
 export default function SafetyCultureAdminPanel({
   language = 'bn',
+  callerId,
   onPreviewFlow,
   defaultOpen = false,
   standalone = false,
@@ -74,6 +75,10 @@ export default function SafetyCultureAdminPanel({
   const demoPack = useMemo(() => buildPeriodAdminReport(buildDemoWaveRows()), []);
 
   const loadPeriod = useCallback(async () => {
+    if (!callerId) {
+      setMessage(bn ? 'অ্যাডমিন লগইন নেই।' : 'Admin login missing.');
+      return;
+    }
     setLoading(true);
     setMessage('');
     try {
@@ -81,6 +86,7 @@ export default function SafetyCultureAdminPanel({
       const rows = await fetchCultureResponsesInRange({
         since: range.since,
         until: range.until,
+        callerId,
       });
       const pack = buildPeriodAdminReport(rows);
       const map = await fetchProfilesByIds(pack.users.map((u) => u.userId));
@@ -97,7 +103,7 @@ export default function SafetyCultureAdminPanel({
     } finally {
       setLoading(false);
     }
-  }, [period, bn, selectedUserId]);
+  }, [period, bn, selectedUserId, callerId]);
 
   useEffect(() => {
     if (open && !showDemoReport && !showQuestions && !showConcept) loadPeriod();

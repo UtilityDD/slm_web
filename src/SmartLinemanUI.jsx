@@ -1673,6 +1673,7 @@ export default function SmartLinemanUI() {
           return (
             <SafetyCultureAdminPage
               language={language}
+              callerId={user?.id}
               setCurrentView={setCurrentView}
               onPreviewFlow={() => {
                 setCultureSurveyPreview(true);

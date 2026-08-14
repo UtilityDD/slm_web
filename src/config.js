@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.122";
+export const CURRENT_APP_VERSION = "1.3.123";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update — bug fix: safety culture survey submit now uses your app login (not a missing Auth session).",
-  bn: "নতুন ভার্সন আপডেট করুন—বাগ ঠিক: নিরাপত্তা জরিপ এখন অ্যাপ লগইন দিয়ে জমা হয় (Auth session missing আসবে না)।",
+  en: "Please update — bug fix: admin culture survey summary can now see submitted answers.",
+  bn: "নতুন ভার্সন আপডেট করুন—বাগ ঠিক: অ্যাডমিন জরিপ সারসংক্ষেপে জমা দেওয়া উত্তর দেখা যাবে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */

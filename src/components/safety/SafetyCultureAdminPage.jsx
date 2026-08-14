@@ -8,6 +8,7 @@ import SafetyCultureAdminPanel from './SafetyCultureAdminPanel';
  */
 export default function SafetyCultureAdminPage({
   language = 'bn',
+  callerId,
   setCurrentView,
   onPreviewFlow,
 }) {
@@ -31,6 +32,7 @@ export default function SafetyCultureAdminPage({
 
         <SafetyCultureAdminPanel
           language={language}
+          callerId={callerId}
           onPreviewFlow={onPreviewFlow}
           defaultOpen
           standalone

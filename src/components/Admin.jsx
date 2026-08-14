@@ -2759,6 +2759,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       {isAdmin && !showAnalytics && showManageMenu && (
         <SafetyCultureAdminPanel
           language={language}
+          callerId={user?.id}
           onPreviewFlow={() => onPreviewCultureSurvey?.()}
         />
       )}

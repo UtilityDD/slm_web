@@ -312,16 +312,19 @@ export async function fetchCultureResponsesForWave(waveId) {
 }
 
 /** All responses in a time window (admin period summary). */
-export async function fetchCultureResponsesInRange({ since = null, until = null } = {}) {
-  let query = supabase
-    .from('safety_culture_responses')
-    .select('user_id, item_id, answer_uchit, answer_hoy, submitted_at, wave_id')
-    .order('submitted_at', { ascending: false });
+export async function fetchCultureResponsesInRange({
+  since = null,
+  until = null,
+  callerId,
+} = {}) {
+  if (!callerId) throw new Error('missing admin');
 
-  if (since) query = query.gte('submitted_at', since);
-  if (until) query = query.lte('submitted_at', until);
-
-  const { data, error } = await query;
+  // Custom auth: table RLS hides all rows (auth.uid() is null). Admin RPC bypasses RLS.
+  const { data, error } = await supabase.rpc('get_safety_culture_responses_admin', {
+    p_caller_id: callerId,
+    p_since: since || null,
+    p_until: until || null,
+  });
   if (error) throw error;
   return data || [];
 }
