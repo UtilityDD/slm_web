@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   SAFETY_CULTURE_COPY,
   SAFETY_CULTURE_ITEMS,
@@ -42,6 +42,8 @@ export default function SafetyCultureSurvey({
   const [answers, setAnswers] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
 
   useEffect(() => {
     if (preview || !userId) return;
@@ -55,6 +57,11 @@ export default function SafetyCultureSurvey({
 
   useEffect(() => {
     if (preview || !userId || phase !== 'survey') return;
+    // Never overwrite a richer draft with an empty in-memory answers object.
+    const existing = loadCultureDraft(userId, draftSlot);
+    const existingCount = existing?.answers ? Object.keys(existing.answers).length : 0;
+    const nextCount = Object.keys(answers || {}).length;
+    if (nextCount === 0 && existingCount > 0) return;
     saveCultureDraft(userId, draftSlot, { answers, index, step, phase: 'survey' });
   }, [answers, index, step, phase, preview, userId, draftSlot]);
 
@@ -107,27 +114,68 @@ export default function SafetyCultureSurvey({
       return;
     }
 
-    // submit
+    // submit — merge current selection so last hoy is never lost to stale state
     if (preview) {
       clearCultureDraft(userId, draftSlot);
       setPhase('thank');
       return;
     }
 
+    // Merge draft + in-memory answers so a wiped/stale React state cannot drop completed quizzes.
+    const fromDraft = (!preview && userId && loadCultureDraft(userId, draftSlot)?.answers) || {};
+    const payload = { ...fromDraft, ...answersRef.current };
+    if (item && currentKey) {
+      const prevItem = payload[item.id] || {};
+      payload[item.id] =
+        step === 'uchit'
+          ? { ...prevItem, uchit: currentKey }
+          : { ...prevItem, hoy: currentKey };
+    }
+    // Keep React state in sync with what we are about to submit.
+    setAnswers(payload);
+    answersRef.current = payload;
+
     setSaving(true);
     setError('');
     try {
+      // Keep auth fresh — long surveys can hit a stale session on submit.
+      const { supabase } = await import('../../supabaseClient');
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
+      const authUserId = userData?.user?.id;
+      if (!authUserId) {
+        throw new Error('not authenticated — please log in again');
+      }
+      await supabase.auth.refreshSession();
+
       await submitCultureSurvey({
-        userId,
+        userId: authUserId,
         waveId: waveProp?.id || undefined,
-        answers,
+        answers: payload,
       });
       clearCultureDraft(userId, draftSlot);
       setPhase('thank');
       onCompleted?.();
     } catch (e) {
-      console.error(e);
-      setError(t('error'));
+      console.error('culture survey submit', e);
+      const raw = [e?.message, e?.code, e?.details, e?.hint]
+        .filter(Boolean)
+        .join(' | ');
+      const rawLower = String(raw).toLowerCase();
+      let friendly = t('error');
+      if (String(e?.message || '').startsWith('incomplete:')) {
+        friendly = t('errorIncomplete');
+      } else if (
+        /get_or_create_safety_culture_wave|could not find the function|schema cache|not authenticated/i.test(
+          raw
+        )
+      ) {
+        friendly = t('errorSetup');
+      } else if (/row-level security|42501|permission denied/i.test(rawLower)) {
+        friendly = t('errorSetup');
+      }
+      // Show real DB/API reason so Test User / admin can report the exact failure.
+      setError(raw ? `${friendly}\n${raw}` : friendly);
     } finally {
       setSaving(false);
     }
@@ -295,7 +343,9 @@ export default function SafetyCultureSurvey({
           </div>
         </div>
 
-        {error ? <p className="mt-3 text-center text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p className="mt-3 whitespace-pre-wrap text-center text-sm text-red-600">{error}</p>
+        ) : null}
 
         <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-[#fffdf7]/80 p-4 backdrop-blur">
           <div className="mx-auto max-w-lg">

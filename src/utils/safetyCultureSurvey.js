@@ -246,14 +246,42 @@ export async function isCultureSurveyPending(userId) {
 export async function ensureCultureCycleWave(userId) {
   if (!userId) throw new Error('missing user');
   const waveCode = buildUserCycleWaveCode(userId);
+
   const { data, error } = await supabase.rpc('get_or_create_safety_culture_wave', {
     p_wave_code: waveCode,
     p_item_set_version: ITEM_SET_VERSION,
   });
-  if (error) throw error;
-  const id = typeof data === 'string' ? data : data?.id;
-  if (!id) throw new Error('wave create failed');
-  return { id, wave_code: waveCode };
+
+  if (!error) {
+    const id = typeof data === 'string' ? data : data?.id;
+    if (id) return { id, wave_code: waveCode };
+  } else {
+    console.warn('get_or_create_safety_culture_wave', error);
+  }
+
+  // Fallback when RPC missing / fails: reuse existing auto wave or insert one.
+  const { data: existing, error: selErr } = await supabase
+    .from('safety_culture_waves')
+    .select('id, wave_code')
+    .eq('wave_code', waveCode)
+    .maybeSingle();
+  if (selErr) throw selErr;
+  if (existing?.id) return { id: existing.id, wave_code: waveCode };
+
+  const { data: created, error: insErr } = await supabase
+    .from('safety_culture_waves')
+    .insert({
+      wave_code: waveCode,
+      opens_at: new Date().toISOString(),
+      closes_at: null,
+      item_set_version: ITEM_SET_VERSION,
+      is_active: false,
+      created_by: userId,
+    })
+    .select('id, wave_code')
+    .single();
+  if (insErr) throw insErr || error;
+  return { id: created.id, wave_code: waveCode };
 }
 
 export async function fetchCultureResponsesForWave(waveId) {
@@ -340,39 +368,54 @@ export async function submitCultureSurvey({ userId, waveId, answers }) {
     const wave = await ensureCultureCycleWave(userId);
     resolvedWaveId = wave.id;
   }
+  if (!resolvedWaveId) throw new Error('wave create failed');
+
+  const missing = SAFETY_CULTURE_ITEMS.filter((item) => {
+    const a = answers[item.id];
+    return !a?.uchit || !a?.hoy;
+  }).map((item) => item.id);
+  if (missing.length) {
+    throw new Error(`incomplete:${missing.join(',')}`);
+  }
 
   const rows = SAFETY_CULTURE_ITEMS.map((item) => {
     const a = answers[item.id];
-    if (!a?.uchit || !a?.hoy) {
-      throw new Error(`incomplete:${item.id}`);
-    }
     return {
       wave_id: resolvedWaveId,
       user_id: userId,
       item_id: item.id,
-      answer_uchit: a.uchit,
-      answer_hoy: a.hoy,
+      answer_uchit: String(a.uchit).toUpperCase(),
+      answer_hoy: String(a.hoy).toUpperCase(),
       item_set_version: ITEM_SET_VERSION,
       submitted_at: new Date().toISOString(),
     };
   });
 
-  const { error: respErr } = await supabase
-    .from('safety_culture_responses')
-    .upsert(rows, { onConflict: 'wave_id,user_id,item_id' });
-  if (respErr) throw respErr;
+  for (const row of rows) {
+    if (!['A', 'B', 'C'].includes(row.answer_uchit) || !['A', 'B', 'C'].includes(row.answer_hoy)) {
+      throw new Error(`incomplete:${row.item_id}`);
+    }
+  }
 
-  const { error: doneErr } = await supabase
-    .from('safety_culture_completions')
-    .upsert(
-      {
-        wave_id: resolvedWaveId,
-        user_id: userId,
-        completed_at: new Date().toISOString(),
-        item_set_version: ITEM_SET_VERSION,
-      },
-      { onConflict: 'wave_id,user_id' }
-    );
+  // Prefer insert for first completion; fall back to upsert if a partial save exists.
+  const { error: insertErr } = await supabase.from('safety_culture_responses').insert(rows);
+  if (insertErr) {
+    console.warn('culture responses insert', insertErr);
+    const { error: respErr } = await supabase
+      .from('safety_culture_responses')
+      .upsert(rows, { onConflict: 'wave_id,user_id,item_id' });
+    if (respErr) throw respErr;
+  }
+
+  const { error: doneErr } = await supabase.from('safety_culture_completions').upsert(
+    {
+      wave_id: resolvedWaveId,
+      user_id: userId,
+      completed_at: new Date().toISOString(),
+      item_set_version: ITEM_SET_VERSION,
+    },
+    { onConflict: 'wave_id,user_id' }
+  );
   if (doneErr) throw doneErr;
 
   clearCultureDraft(userId, DUE_DRAFT_SUFFIX);
