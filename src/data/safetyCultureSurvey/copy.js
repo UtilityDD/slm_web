@@ -35,6 +35,8 @@ export const SAFETY_CULTURE_COPY = {
   errorIncomplete_en: 'Some answers are missing. Go back through questions and submit again.',
   errorSetup_bn: 'জরিপ সেটআপ সম্পূর্ণ নয় (ডেটাবেস)। অ্যাডমিনকে SQL চালাতে বলুন।',
   errorSetup_en: 'Survey database setup incomplete. Ask admin to run the SQL migrations.',
+  errorAuth_bn: 'লগইন সেশন নেই। বেরিয়ে আবার লগইন করে জরিপ জমা দিন।',
+  errorAuth_en: 'Login session missing. Please log out, log in again, then submit the survey.',
   stepUchitLabel_bn: 'প্রশ্ন ১ — নিয়ম',
   stepUchitLabel_en: 'Q1 — Rule',
   stepHoyLabel_bn: 'প্রশ্ন ২ — মাঠ',

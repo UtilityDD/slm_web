@@ -138,22 +138,34 @@ export default function SafetyCultureSurvey({
     setSaving(true);
     setError('');
     try {
-      // Keep auth fresh — long surveys can hit a stale session on submit.
       const { supabase } = await import('../../supabaseClient');
-      const { data: userData, error: userErr } = await supabase.auth.getUser();
-      if (userErr) throw userErr;
-      const authUserId = userData?.user?.id;
+
+      // Prefer local session + best-effort refresh.
+      // Do NOT use getUser() first — it throws "Auth session missing" when the
+      // access token is stale, even though getSession()/refresh can recover.
+      const { data: sessionData } = await supabase.auth.getSession();
+      let session = sessionData?.session || null;
+
+      if (session?.refresh_token) {
+        const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
+        if (!refreshErr && refreshed?.session) {
+          session = refreshed.session;
+        } else if (refreshErr) {
+          console.warn('culture survey refreshSession', refreshErr);
+        }
+      }
+
+      const authUserId = session?.user?.id || userId;
       if (!authUserId) {
         throw new Error('not authenticated — please log in again');
       }
-      await supabase.auth.refreshSession();
 
       await submitCultureSurvey({
         userId: authUserId,
         waveId: waveProp?.id || undefined,
         answers: payload,
       });
-      clearCultureDraft(userId, draftSlot);
+      clearCultureDraft(userId || authUserId, draftSlot);
       setPhase('thank');
       onCompleted?.();
     } catch (e) {
@@ -165,8 +177,10 @@ export default function SafetyCultureSurvey({
       let friendly = t('error');
       if (String(e?.message || '').startsWith('incomplete:')) {
         friendly = t('errorIncomplete');
+      } else if (/auth session missing|not authenticated|please log in/i.test(rawLower)) {
+        friendly = t('errorAuth');
       } else if (
-        /get_or_create_safety_culture_wave|could not find the function|schema cache|not authenticated/i.test(
+        /get_or_create_safety_culture_wave|could not find the function|schema cache/i.test(
           raw
         )
       ) {
@@ -174,7 +188,6 @@ export default function SafetyCultureSurvey({
       } else if (/row-level security|42501|permission denied/i.test(rawLower)) {
         friendly = t('errorSetup');
       }
-      // Show real DB/API reason so Test User / admin can report the exact failure.
       setError(raw ? `${friendly}\n${raw}` : friendly);
     } finally {
       setSaving(false);
