@@ -113,6 +113,23 @@ export function buildUserCycleWaveCode(userId, date = new Date()) {
 
 export async function fetchLatestCultureCompletion(userId) {
   if (!userId) return null;
+
+  // Custom auth: table RLS uses auth.uid() so a direct select is empty/denied.
+  const { data: rpcData, error: rpcErr } = await supabase.rpc(
+    'get_latest_safety_culture_completion',
+    { p_user_id: userId }
+  );
+  if (!rpcErr) {
+    const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+    if (!row?.completed_at) return null;
+    return {
+      id: row.id,
+      completed_at: row.completed_at,
+      wave_id: row.wave_id,
+    };
+  }
+  console.warn('get_latest_safety_culture_completion', rpcErr);
+
   const { data, error } = await supabase
     .from('safety_culture_completions')
     .select('id, completed_at, wave_id')
@@ -250,6 +267,7 @@ export async function ensureCultureCycleWave(userId) {
   const { data, error } = await supabase.rpc('get_or_create_safety_culture_wave', {
     p_wave_code: waveCode,
     p_item_set_version: ITEM_SET_VERSION,
+    p_user_id: userId,
   });
 
   if (!error) {
@@ -357,8 +375,8 @@ export async function fetchAllCultureWaves() {
 }
 
 /**
- * Upsert all item answers + mark completion.
- * Prefers SECURITY DEFINER RPC (avoids client RLS 42501 on responses/completions).
+ * Upsert all item answers + mark completion via SECURITY DEFINER RPC.
+ * Passes p_user_id because this app uses custom phone/PIN auth (no JWT / auth.uid()).
  */
 export async function submitCultureSurvey({ userId, waveId, answers }) {
   if (!userId) throw new Error('missing user');
@@ -384,63 +402,21 @@ export async function submitCultureSurvey({ userId, waveId, answers }) {
 
   const waveCode = buildUserCycleWaveCode(userId);
 
-  // Primary path: one RPC (wave + responses + completion) as SECURITY DEFINER.
+  // Custom phone/PIN auth: pass p_user_id. Do not use supabase.auth / auth.uid().
   const { data: rpcWaveId, error: rpcErr } = await supabase.rpc('submit_safety_culture_survey', {
+    p_user_id: userId,
     p_wave_code: waveCode,
     p_answers: answerPayload,
     p_item_set_version: ITEM_SET_VERSION,
   });
 
-  if (!rpcErr) {
-    const resolvedWaveId =
-      typeof rpcWaveId === 'string' ? rpcWaveId : rpcWaveId?.id || waveId || null;
-    clearCultureDraft(userId, DUE_DRAFT_SUFFIX);
-    if (resolvedWaveId) clearCultureDraft(userId, resolvedWaveId);
-    return { waveId: resolvedWaveId || waveId || null };
-  }
+  if (rpcErr) throw rpcErr;
 
-  console.warn('submit_safety_culture_survey rpc', rpcErr);
-
-  // Fallback: older direct table writes (needs working RLS + session JWT).
-  let resolvedWaveId = waveId;
-  if (!resolvedWaveId) {
-    const wave = await ensureCultureCycleWave(userId);
-    resolvedWaveId = wave.id;
-  }
-  if (!resolvedWaveId) throw rpcErr;
-
-  const rows = SAFETY_CULTURE_ITEMS.map((item) => ({
-    wave_id: resolvedWaveId,
-    user_id: userId,
-    item_id: item.id,
-    answer_uchit: answerPayload[item.id].uchit,
-    answer_hoy: answerPayload[item.id].hoy,
-    item_set_version: ITEM_SET_VERSION,
-    submitted_at: new Date().toISOString(),
-  }));
-
-  const { error: insertErr } = await supabase.from('safety_culture_responses').insert(rows);
-  if (insertErr) {
-    const { error: respErr } = await supabase
-      .from('safety_culture_responses')
-      .upsert(rows, { onConflict: 'wave_id,user_id,item_id' });
-    if (respErr) throw respErr;
-  }
-
-  const { error: doneErr } = await supabase.from('safety_culture_completions').upsert(
-    {
-      wave_id: resolvedWaveId,
-      user_id: userId,
-      completed_at: new Date().toISOString(),
-      item_set_version: ITEM_SET_VERSION,
-    },
-    { onConflict: 'wave_id,user_id' }
-  );
-  if (doneErr) throw doneErr;
-
+  const resolvedWaveId =
+    typeof rpcWaveId === 'string' ? rpcWaveId : rpcWaveId?.id || waveId || null;
   clearCultureDraft(userId, DUE_DRAFT_SUFFIX);
-  clearCultureDraft(userId, resolvedWaveId);
-  return { waveId: resolvedWaveId };
+  if (resolvedWaveId) clearCultureDraft(userId, resolvedWaveId);
+  return { waveId: resolvedWaveId || waveId || null };
 }
 
 export async function adminCreateOrActivateWave({

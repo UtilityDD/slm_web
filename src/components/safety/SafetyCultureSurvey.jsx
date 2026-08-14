@@ -138,36 +138,17 @@ export default function SafetyCultureSurvey({
     setSaving(true);
     setError('');
     try {
-      const { supabase } = await import('../../supabaseClient');
-
-      // Prefer local session + best-effort refresh.
-      // Do NOT use getUser() first — it throws "Auth session missing" when the
-      // access token is stale, even though getSession()/refresh can recover.
-      const { data: sessionData } = await supabase.auth.getSession();
-      let session = sessionData?.session || null;
-
-      if (session?.refresh_token) {
-        const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
-        if (!refreshErr && refreshed?.session) {
-          session = refreshed.session;
-        } else if (refreshErr) {
-          console.warn('culture survey refreshSession', refreshErr);
-        }
-      }
-
-      // RLS / SECURITY DEFINER RPCs need a real JWT — do not submit with React user id alone.
-      if (!session?.access_token || !session?.user?.id) {
+      // Custom phone/PIN login — there is no supabase.auth JWT (auth.uid() is always null).
+      if (!userId) {
         throw new Error('not authenticated — please log in again');
       }
 
-      const authUserId = session.user.id;
-
       await submitCultureSurvey({
-        userId: authUserId,
+        userId,
         waveId: waveProp?.id || undefined,
         answers: payload,
       });
-      clearCultureDraft(userId || authUserId, draftSlot);
+      clearCultureDraft(userId, draftSlot);
       setPhase('thank');
       onCompleted?.();
     } catch (e) {
@@ -179,7 +160,7 @@ export default function SafetyCultureSurvey({
       let friendly = t('error');
       if (String(e?.message || '').startsWith('incomplete:')) {
         friendly = t('errorIncomplete');
-      } else if (/auth session missing|not authenticated|please log in/i.test(rawLower)) {
+      } else if (/auth session missing|please log in|missing user/i.test(rawLower)) {
         friendly = t('errorAuth');
       } else if (
         /submit_safety_culture_survey|get_or_create_safety_culture_wave|could not find the function|schema cache/i.test(
