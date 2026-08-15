@@ -199,6 +199,8 @@ export default function AdminServices({ language = 'en', userProfile }) {
             }
 
             cacheHelper.clear('emergency_services');
+            cacheHelper.clear('emergency_services_v4');
+            cacheHelper.clear('emergency_services_v5');
             setShowServiceModal(false);
             fetchServices();
         } catch (error) {
@@ -222,6 +224,8 @@ export default function AdminServices({ language = 'en', userProfile }) {
             if (error) throw error;
 
             cacheHelper.clear('emergency_services');
+            cacheHelper.clear('emergency_services_v4');
+            cacheHelper.clear('emergency_services_v5');
             setSuccessModal({
                 isOpen: true,
                 title: 'Service Deleted',

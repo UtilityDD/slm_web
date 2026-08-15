@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { cacheHelper } from '../utils/cacheHelper';
 import wbLocations from '../data/wb_locations.json';
+import { BLOOD_GROUPS } from '../data/profileFieldOptions';
+import { emergencyTel, mergeOfficialEmergencyServices, serviceMatchesPlace } from '../data/officialEmergencyServices';
 
 // Reliable, static color maps for service categories (avoids dynamic Tailwind classes)
 const SERVICE_COLORS = {
@@ -18,49 +20,91 @@ const SERVICE_EMOJI = {
     hospital: '🏥', ambulance: '🚑', fire: '🚒', police: '👮', power: '⚡', grid: '🧭', other: '🏢',
 };
 
+/** Canonical A+ / AB- from messy stored values; empty if unknown. */
+function normalizeBloodGroup(raw) {
+    if (raw == null) return '';
+    const s = String(raw)
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '')
+        .replace(/[＋﹢]/g, '+')
+        .replace(/[－﹣]/g, '-');
+    if (!s) return '';
+    if (BLOOD_GROUPS.includes(s)) return s;
+    const compact = s.replace(/[^ABO+\-]/g, '');
+    return BLOOD_GROUPS.includes(compact) ? compact : '';
+}
+
+function donorPhone(donor) {
+    const raw = donor?.phone || donor?.phone_number || '';
+    const digits = String(raw).replace(/\D/g, '');
+    if (digits.length >= 10) return digits.slice(-10);
+    return digits;
+}
+
+function formatDonationDate(raw, language) {
+    if (!raw) return language === 'bn' ? 'জানা নেই' : 'Unknown';
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return String(raw);
+    return d.toLocaleDateString(language === 'bn' ? 'bn-IN' : 'en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+}
+
+function sortByLabel(items, key, language) {
+    const locales = language === 'bn' ? ['bn', 'en'] : ['en', 'bn'];
+    return [...(items || [])].sort((a, b) =>
+        String(a?.[key] || '').localeCompare(String(b?.[key] || ''), locales, {
+            sensitivity: 'base',
+            numeric: true,
+            ignorePunctuation: true,
+        })
+    );
+}
+
+const SERVICE_TYPES = {
+    hospitals: { icon: 'hospital', color: 'blue' },
+    ambulance: { icon: 'ambulance', color: 'red' },
+    fire: { icon: 'fire', color: 'orange' },
+    police: { icon: 'police', color: 'slate' },
+    power: { icon: 'power', color: 'yellow' },
+};
+
 // Skeleton Loaders
 const DonorCardSkeleton = () => (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-slate-200 shimmer"></div>
-                <div className="space-y-2">
-                    <div className="h-4 w-24 bg-slate-200 rounded shimmer"></div>
-                    <div className="h-3 w-16 bg-slate-200 rounded shimmer"></div>
+    <div className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2.5">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-200 shimmer" />
+                <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-slate-200 shimmer" />
+                    <div className="h-2.5 w-16 rounded bg-slate-200 shimmer" />
                 </div>
             </div>
-            <div className="w-8 h-8 rounded-full bg-slate-200 shimmer"></div>
+            <div className="h-9 w-9 rounded-full bg-slate-200 shimmer" />
         </div>
     </div>
 );
 
 const ServiceCardSkeleton = () => (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-slate-200 shimmer"></div>
-                <div className="space-y-2">
-                    <div className="h-5 w-32 bg-slate-200 rounded shimmer"></div>
-                    <div className="h-3 w-24 bg-slate-200 rounded shimmer"></div>
+    <div className="rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2.5">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-200 shimmer" />
+                <div className="space-y-1.5">
+                    <div className="h-3.5 w-28 rounded bg-slate-200 shimmer" />
+                    <div className="h-2.5 w-16 rounded bg-slate-200 shimmer" />
                 </div>
             </div>
+            <div className="h-9 w-9 rounded-full bg-slate-200 shimmer" />
         </div>
-        <div className="space-y-2">
-            <div className="flex items-center gap-2">
-                <div className="h-4 w-4 bg-slate-200 rounded shimmer"></div>
-                <div className="h-3 flex-1 bg-slate-200 rounded shimmer"></div>
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="h-4 w-4 bg-slate-200 rounded shimmer"></div>
-                <div className="h-3 flex-1 bg-slate-200 rounded shimmer"></div>
-            </div>
-        </div>
-        <div className="h-10 w-full bg-slate-200 rounded-xl shimmer mt-4"></div>
     </div>
 );
 
 const EmptyState = ({ icon, title, message, language }) => (
-    <div className="text-center py-12 px-4">
+    <div className="px-4 py-8 text-center">
         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center text-3xl shadow-sm">
             {icon}
         </div>
@@ -92,125 +136,123 @@ const Toast = ({ message, type, show, onDismiss }) => {
 
 
 
-const DonorCard = React.memo(({ donor, isExpanded, onToggle, t }) => (
-    <div
-        onClick={onToggle}
-        className={`rounded-2xl bg-white p-3.5 border shadow-sm transition-all cursor-pointer ${isExpanded ? 'border-red-300 ring-2 ring-red-200/60' : 'border-slate-200/80 hover:-translate-y-0.5 hover:shadow-md'}`}
-    >
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-                <div className="w-11 h-11 rounded-2xl bg-red-100 flex-shrink-0 flex items-center justify-center shadow-sm">
-                    <span className="text-red-600 font-black text-sm">{donor.blood_group}</span>
-                </div>
-                <div className="min-w-0">
-                    <h3 className="font-black text-slate-900 text-sm truncate">{donor.full_name || 'Unknown'}</h3>
-                    <p className="text-xs text-slate-500 font-semibold truncate">{donor.block ? `${donor.block}, ` : ''}{donor.district}</p>
-                </div>
-            </div>
-            <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-green-100"></span>
-                <a
-                    href={`tel:${donor.phone}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-shrink-0"
-                >
-                    <button className="w-9 h-9 rounded-full bg-red-100 text-red-600 flex items-center justify-center shadow-sm transition-all hover:bg-red-600 hover:text-white active:scale-95">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                    </button>
-                </a>
-            </div>
-        </div>
+const DonorCard = React.memo(({ donor, isExpanded, onToggle, language, t }) => {
+    const group = normalizeBloodGroup(donor.blood_group);
+    const phone = donorPhone(donor);
+    const place = [donor.block, donor.district].filter(Boolean).join(', ');
 
-        {isExpanded && (
-            <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-2 animate-fade-in">
-                <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-semibold">{t.blood.lastDonated}:</span>
-                    <span className="font-black text-slate-700">{donor.last_donation_date || 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-semibold">Contact:</span>
-                    <span className="font-black text-slate-700">{donor.phone}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-semibold">Status:</span>
-                    <span className="text-green-600 font-black">Available</span>
-                </div>
-            </div>
-        )}
-    </div>
-));
-
-const ServiceCard = React.memo(({ service, config, isExpanded, onToggle }) => {
-    const colors = getServiceColor(config.color);
     return (
         <div
             onClick={onToggle}
-            className={`rounded-2xl bg-white p-3.5 border shadow-sm transition-all cursor-pointer ${isExpanded ? 'border-orange-300 ring-2 ring-orange-200/60' : 'border-slate-200/80 hover:-translate-y-0.5 hover:shadow-md'}`}
+            className={`cursor-pointer rounded-2xl border bg-white px-3 py-2.5 shadow-sm transition-all ${
+                isExpanded ? 'border-red-300 ring-2 ring-red-200/60' : 'border-slate-200/80 hover:shadow-md active:scale-[0.99]'
+            }`}
         >
-            <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-11 h-11 rounded-2xl flex-shrink-0 flex items-center justify-center text-xl shadow-sm ${colors.iconBg}`}>
-                        {SERVICE_EMOJI[config.icon] || SERVICE_EMOJI.other}
-                    </div>
-                    <div className="min-w-0">
-                        <h4 className="font-black text-slate-900 text-sm truncate">{service.name}</h4>
-                        <p className="text-xs text-slate-500 font-semibold truncate">{service.location}</p>
-                    </div>
+            <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 ring-1 ring-red-100">
+                    <span className="font-sans text-[12px] font-black leading-none tracking-tight text-red-600">
+                        {group || '—'}
+                    </span>
                 </div>
-                <a
-                    href={`tel:${service.phone}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-shrink-0"
-                    aria-label="Call"
-                >
-                    <button
-                        type="button"
-                        className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition-all active:scale-95 ${colors.call}`}
+                <div className="min-w-0 flex-1">
+                    <h3 className={`truncate text-[13px] font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {donor.full_name || (language === 'bn' ? 'নাম নেই' : 'No name')}
+                    </h3>
+                    <p className={`truncate text-[11px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {place || (language === 'bn' ? 'এলাকা নেই' : 'Location unknown')}
+                    </p>
+                </div>
+                {phone ? (
+                    <a
+                        href={`tel:${phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-white shadow-sm shadow-red-500/25 transition-all hover:bg-red-600 active:scale-95"
+                        aria-label={t.blood.call}
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
-                    </button>
-                </a>
+                    </a>
+                ) : (
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-400">
+                        —
+                    </span>
+                )}
             </div>
 
             {isExpanded && (
-                <div className="mt-3 pt-3 border-t border-slate-200/80 animate-fade-in space-y-2">
-                    <div className="flex items-start gap-2">
-                        <svg className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <p className="text-xs text-slate-600 font-medium leading-relaxed">{service.address || service.location || 'Address not available'}</p>
+                <div className={`mt-2.5 space-y-1.5 border-t border-slate-100 pt-2.5 text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-slate-500">{t.blood.lastDonated}</span>
+                        <span className="font-bold text-slate-800">{formatDonationDate(donor.last_donation_date, language)}</span>
                     </div>
-                    {service.description && (
-                        <div className="flex items-start gap-2">
-                            <svg className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p className="text-xs text-slate-600 font-medium leading-relaxed">{service.description}</p>
+                    {phone ? (
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-slate-500">{language === 'bn' ? 'ফোন' : 'Phone'}</span>
+                            <span className="font-sans font-bold tabular-nums text-slate-800">{phone}</span>
                         </div>
+                    ) : null}
+                </div>
+            )}
+        </div>
+    );
+});
+
+const ServiceCard = React.memo(({ service, config, isExpanded, onToggle, language }) => {
+    const colors = getServiceColor(config.color);
+    const tel = emergencyTel(service.phone);
+    const place = [service.block, service.district || service.location].filter(Boolean).join(' · ')
+        || service.address
+        || '';
+
+    return (
+        <div
+            onClick={onToggle}
+            className={`cursor-pointer rounded-2xl border bg-white px-3 py-2.5 shadow-sm transition-all ${
+                isExpanded ? 'border-orange-300 ring-2 ring-orange-200/60' : 'border-slate-200/80 hover:shadow-md active:scale-[0.99]'
+            }`}
+        >
+            <div className="flex items-center gap-2.5">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg ${colors.iconBg}`}>
+                    {SERVICE_EMOJI[config.icon] || SERVICE_EMOJI.other}
+                </div>
+                <div className="min-w-0 flex-1">
+                    <h4 className={`truncate text-[13px] font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {service.name}
+                    </h4>
+                    <p className={`truncate text-[11px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {place || (language === 'bn' ? 'এলাকা নেই' : 'Location unknown')}
+                    </p>
+                </div>
+                {tel ? (
+                    <a
+                        href={`tel:${tel}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm shadow-orange-500/25 transition-all hover:bg-orange-600 active:scale-95"
+                        aria-label={language === 'bn' ? 'কল করুন' : 'Call'}
+                    >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                    </a>
+                ) : (
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-400">
+                        —
+                    </span>
+                )}
+            </div>
+
+            {isExpanded && (
+                <div className={`mt-2.5 space-y-1.5 border-t border-slate-100 pt-2.5 text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    {(service.address || service.location) && (
+                        <p className="font-semibold leading-relaxed text-slate-600">{service.address || service.location}</p>
                     )}
-                    {service.phone && (
-                        <a
-                            href={`tel:${service.phone}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className={`mt-1 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full text-sm font-black text-white shadow-md transition-all active:scale-[0.98] ${
-                                config.color === 'red' ? 'bg-red-500 shadow-red-500/30' :
-                                config.color === 'blue' ? 'bg-blue-600 shadow-blue-500/30' :
-                                config.color === 'yellow' ? 'bg-amber-500 shadow-amber-500/30' :
-                                config.color === 'orange' ? 'bg-orange-500 shadow-orange-500/30' :
-                                'bg-slate-800 shadow-slate-800/30'
-                            }`}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            {service.phone}
-                        </a>
-                    )}
+                    {service.description ? (
+                        <p className="leading-relaxed text-slate-500">{service.description}</p>
+                    ) : null}
+                    {service.phone ? (
+                        <p className="font-sans font-bold tabular-nums text-slate-800">{service.phone}</p>
+                    ) : null}
                 </div>
             )}
         </div>
@@ -229,6 +271,8 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
     const [toast, setToast] = useState({ message: '', type: 'info', show: false });
     const toastHideTimerRef = useRef(null);
     const [serviceSearch, setServiceSearch] = useState('');
+    const [serviceDistrict, setServiceDistrict] = useState('All');
+    const [serviceBlock, setServiceBlock] = useState('All');
     const [expandedServiceId, setExpandedServiceId] = useState(null);
     const [expandedDonorId, setExpandedDonorId] = useState(null);
 
@@ -285,11 +329,11 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                 setIsDonor(true);
                 setRegForm({
                     fullName: data.full_name || '',
-                    bloodGroup: data.blood_group || '',
+                    bloodGroup: normalizeBloodGroup(data.blood_group) || data.blood_group || '',
                     lastDonated: data.last_donation_date || '',
                     district: data.district || '',
                     block: data.block || '',
-                    phone: data.phone || ''
+                    phone: data.phone || data.phone_number || ''
                 });
             }
         } catch (error) {
@@ -306,12 +350,13 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         } else if (activeTab === 'services') {
             fetchServices();
         }
-    }, [activeTab, selectedBloodGroup, selectedDistrict, selectedBlock]);
+    }, [activeTab, selectedBloodGroup, selectedDistrict, selectedBlock, language]);
 
     const fetchServices = async () => {
-        const cachedServices = cacheHelper.get('emergency_services');
+        const cachedServices = cacheHelper.get('emergency_services_v5');
         if (cachedServices) {
-            setServices(cachedServices);
+            setServices(mergeOfficialEmergencyServices(cachedServices));
+            setLoading(false);
             return;
         }
 
@@ -322,17 +367,19 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                 .select('*');
 
             if (error) throw error;
-            setServices(data || []);
-            cacheHelper.set('emergency_services', data || [], 30); // Cache for 30 mins
+            const merged = mergeOfficialEmergencyServices(data || []);
+            setServices(merged);
+            cacheHelper.set('emergency_services_v5', data || [], 30);
         } catch (error) {
             console.error('Error fetching services:', error);
+            setServices(mergeOfficialEmergencyServices([]));
         } finally {
             setLoading(false);
         }
     };
 
     const fetchDonors = async () => {
-        const cacheKey = `donors_${selectedBloodGroup}_${selectedDistrict}_${selectedBlock}`;
+        const cacheKey = `donors_v3_${selectedBloodGroup}_${selectedDistrict}_${selectedBlock}_${language}`;
         const cachedDonors = cacheHelper.get(cacheKey);
         if (cachedDonors) {
             setDonors(cachedDonors);
@@ -343,12 +390,9 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         try {
             let query = supabase
                 .from('profiles')
-                .select('*')
+                .select('id, full_name, blood_group, district, block, phone, phone_number, last_donation_date')
                 .eq('is_donor', true);
 
-            if (selectedBloodGroup !== 'All') {
-                query = query.eq('blood_group', selectedBloodGroup);
-            }
             if (selectedDistrict !== 'All') {
                 query = query.eq('district', selectedDistrict);
             }
@@ -358,8 +402,16 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
             const { data, error } = await query;
             if (error) throw error;
-            setDonors(data || []);
-            cacheHelper.set(cacheKey, data || [], 5); // Cache for 5 mins
+            const rows = (data || [])
+                .map((row) => ({ ...row, blood_group: normalizeBloodGroup(row.blood_group) }))
+                .filter((row) => row.blood_group);
+            const filtered =
+                selectedBloodGroup === 'All'
+                    ? rows
+                    : rows.filter((row) => row.blood_group === selectedBloodGroup);
+            const sorted = sortByLabel(filtered, 'full_name', language);
+            setDonors(sorted);
+            cacheHelper.set(cacheKey, sorted, 5);
         } catch (error) {
             console.error('Error fetching donors:', error);
         } finally {
@@ -383,7 +435,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         try {
             const updates = {
                 id: user.id,
-                blood_group: regForm.bloodGroup,
+                blood_group: normalizeBloodGroup(regForm.bloodGroup) || regForm.bloodGroup,
                 district: regForm.district,
                 block: regForm.block,
                 phone: regForm.phone,
@@ -474,144 +526,50 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
         }
     }[language];
 
-    const renderServices = () => {
-        const searchLower = serviceSearch.toLowerCase();
-        const filteredServices = services.filter(s => {
-            const matchesSearch = !serviceSearch ||
-                s.name?.toLowerCase().includes(searchLower) ||
-                s.location?.toLowerCase().includes(searchLower);
+    const searchLower = serviceSearch.toLowerCase();
+    const filteredServices = sortByLabel(
+        services.filter((s) => {
+            const haystack = [s.name, s.location, s.address, s.district, s.block, s.description]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+            const matchesSearch = !serviceSearch || haystack.includes(searchLower);
             const matchesCategory = activeCategory === 'all' || s.type === activeCategory;
-            return matchesSearch && matchesCategory;
-        });
+            const matchesPlace = serviceMatchesPlace(s, serviceDistrict, serviceBlock);
+            return matchesSearch && matchesCategory && matchesPlace;
+        }),
+        'name',
+        language
+    );
 
-        if (filteredServices.length === 0) {
-            return (
-                <EmptyState
-                    icon="🔍"
-                    language={language}
-                    title={language === 'en' ? 'No Results' : 'কোন ফলাফল নেই'}
-                    message={language === 'en' ? 'No services found' : 'কোন পরিষেবা পাওয়া যায়নি'}
-                />
-            );
-        }
-
-        // If specific category selected, show flat list
-        if (activeCategory !== 'all') {
-            const type = activeCategory;
-            const typeConfig = {
-                hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
-                ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
-                fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
-                police: { label: t.services.police, icon: 'police', color: 'slate' },
-                power: { label: t.services.power, icon: 'power', color: 'yellow' }
-            };
-            const config = typeConfig[type] || { label: type, icon: 'other', color: 'slate' };
-
-            return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {filteredServices.map((service) => (
-                        <ServiceCard
-                            key={service.id}
-                            service={service}
-                            config={config}
-                            isExpanded={expandedServiceId === service.id}
-                            onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
-                        />
-                    ))}
-                </div>
-            );
-        }
-
-        // Grouped view (activeCategory === 'all')
-        const groupedServices = filteredServices.reduce((acc, service) => {
-            const type = service.type || 'other';
-            if (!acc[type]) acc[type] = [];
-            acc[type].push(service);
-            return acc;
-        }, {});
-
-        const typeConfig = {
-            hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
-            ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
-            fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
-            police: { label: t.services.police, icon: 'police', color: 'slate' },
-            power: { label: t.services.power, icon: 'power', color: 'yellow' }
-        };
-
-        const typeOrder = ['hospitals', 'ambulance', 'fire', 'police', 'power'];
-
-        return (
-            <div className="space-y-5">
-                {typeOrder.map(type => {
-                    const servicesOfType = groupedServices[type];
-                    if (!servicesOfType?.length) return null;
-                    const config = typeConfig[type];
-                    const colors = getServiceColor(config.color);
-
-                    return (
-                        <div key={type} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-                            <div className="mb-4 flex items-center gap-3 border-b border-slate-200/80 pb-3">
-                                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl text-xl shadow-sm ${colors.iconBg}`}>
-                                    {SERVICE_EMOJI[config.icon] || SERVICE_EMOJI.other}
-                                </div>
-                                <div className="min-w-0">
-                                    <h3 className={`font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>{config.label}</h3>
-                                    <p className={`text-xs font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {servicesOfType.length} {language === 'en' ? 'services available' : 'টি পরিষেবা উপলব্ধ'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                {servicesOfType.map((service) => (
-                                    <ServiceCard
-                                        key={service.id}
-                                        service={service}
-                                        config={config}
-                                        isExpanded={expandedServiceId === service.id}
-                                        onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
+    const serviceChipTypes = ['all', 'hospitals', 'ambulance', 'fire', 'police', 'power'];
+    const serviceChipLabel = (type) => {
+        if (type === 'all') return language === 'en' ? 'All' : 'সব';
+        return t.services[type] || type;
     };
 
     const filterSelectClass =
-        'w-full rounded-2xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm outline-none transition focus:border-orange-300 focus:bg-orange-50/40 focus:ring-2 focus:ring-orange-200/60 disabled:opacity-50';
+        'w-full rounded-xl border border-slate-200/80 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm outline-none transition focus:border-orange-300 focus:ring-2 focus:ring-orange-200/60 disabled:opacity-50';
 
     return (
         <div className="min-h-screen bg-[#fffdf7] pb-24 text-slate-900">
-            <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 md:mb-6">
+            <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
             <Toast message={toast.message} type={toast.type} show={toast.show} onDismiss={() => setToast(t => ({ ...t, show: false }))} />
 
             {/* Header */}
-            <div className="mb-5 flex items-center justify-between gap-3">
-                <div>
-                    <p className={`mb-0.5 text-[11px] font-black uppercase tracking-wider text-orange-600 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
-                        {language === 'en' ? 'Quick help' : 'দ্রুত সাহায্য'}
-                    </p>
-                    <h1 className={`text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {t.title}
-                    </h1>
-                </div>
-
-                <div className={`flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3.5 py-2 text-xs font-black text-red-700 shadow-sm sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
-                    <span className="text-base" aria-hidden>🚨</span>
-                    {language === 'en' ? 'Emergency' : 'জরুরি'}
-                </div>
+            <div className="mb-4">
+                <h1 className={`text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    {t.title}
+                </h1>
             </div>
 
             {/* Tabs */}
-            <div className="mb-5">
+            <div className="mb-4">
                 <div className="inline-flex w-full gap-1 rounded-full border border-slate-200/80 bg-white p-1 shadow-sm sm:w-auto">
                     <button
                         type="button"
                         onClick={() => setActiveTab('blood')}
-                        className={`min-h-[44px] flex-1 rounded-full px-5 py-2.5 text-xs font-black transition-all active:scale-[0.98] sm:flex-none sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
+                        className={`min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-black transition-all active:scale-[0.98] sm:flex-none sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
                             activeTab === 'blood'
                                 ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
                                 : 'text-slate-600 hover:bg-orange-50'
@@ -622,7 +580,7 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     <button
                         type="button"
                         onClick={() => setActiveTab('services')}
-                        className={`min-h-[44px] flex-1 rounded-full px-5 py-2.5 text-xs font-black transition-all active:scale-[0.98] sm:flex-none sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
+                        className={`min-h-[40px] flex-1 rounded-full px-4 py-2 text-xs font-black transition-all active:scale-[0.98] sm:flex-none sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
                             activeTab === 'services'
                                 ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
                                 : 'text-slate-600 hover:bg-orange-50'
@@ -635,102 +593,89 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
 
             {/* Content Area */}
             {activeTab === 'blood' ? (
-                <div className="space-y-4">
-                    <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-                        <div
-                            className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-400 via-orange-300 to-red-400 opacity-80"
-                            aria-hidden="true"
-                        />
-                        <div className="flex items-center justify-between gap-4 pt-1">
-                            <div className="min-w-0 flex-1">
-                                <h2 className={`mb-3 text-base font-black text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {t.blood.heroTitle}
-                                </h2>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!user) setCurrentView('login');
-                                        else setShowRegisterModal(true);
-                                    }}
-                                    className={`rounded-full bg-red-500 px-5 py-2.5 text-sm font-black text-white shadow-md shadow-red-500/30 transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {t.blood.registerBtn}
-                                </button>
-                            </div>
-                            <div className="hidden text-5xl opacity-25 sm:block" aria-hidden>
-                                ❤️
-                            </div>
-                        </div>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-sm">
+                        <p className={`min-w-0 text-[13px] font-bold leading-snug text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {t.blood.heroTitle}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (!user) setCurrentView('login');
+                                else setShowRegisterModal(true);
+                            }}
+                            className={`shrink-0 rounded-full bg-red-500 px-3.5 py-2 text-[11px] font-black text-white shadow-sm shadow-red-500/25 transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                        >
+                            {t.blood.registerBtn}
+                        </button>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-                                <select
-                                    value={selectedBloodGroup}
-                                    onChange={(e) => setSelectedBloodGroup(e.target.value)}
-                                    className={filterSelectClass}
-                                    aria-label={t.blood.filters.group}
-                                >
-                                    <option value="All">{language === 'en' ? 'All Groups' : 'সব গ্রুপ'}</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                </select>
-                                <select
-                                    value={selectedDistrict}
-                                    onChange={(e) => {
-                                        setSelectedDistrict(e.target.value);
-                                        setSelectedBlock('All');
-                                    }}
-                                    className={filterSelectClass}
-                                    aria-label={t.blood.filters.district}
-                                >
-                                    <option value="All">{language === 'en' ? 'All Districts' : 'সব জেলা'}</option>
-                                    {Object.keys(wbLocations).sort().map(dist => (
-                                        <option key={dist} value={dist}>{dist}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    value={selectedBlock}
-                                    onChange={(e) => setSelectedBlock(e.target.value)}
-                                    disabled={selectedDistrict === 'All'}
-                                    className={`${filterSelectClass} sm:col-span-1`}
-                                    aria-label={language === 'en' ? 'Block' : 'ব্লক'}
-                                >
-                                    <option value="All">{language === 'en' ? 'All Blocks' : 'সব ব্লক'}</option>
-                                    {selectedDistrict !== 'All' && wbLocations[selectedDistrict]?.map(block => (
-                                        <option key={block} value={block}>{block}</option>
-                                    ))}
-                                </select>
-                            </div>
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
+                        <div className="flex flex-wrap gap-1.5">
                             <button
                                 type="button"
-                                onClick={fetchDonors}
-                                className={`flex min-h-[44px] items-center justify-center gap-2 whitespace-nowrap rounded-full bg-orange-500 px-5 py-2.5 text-sm font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                onClick={() => setSelectedBloodGroup('All')}
+                                className={`min-h-[32px] rounded-full px-2.5 py-1 text-[11px] font-black transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''} ${
+                                    selectedBloodGroup === 'All'
+                                        ? 'bg-red-500 text-white shadow-sm'
+                                        : 'border border-slate-200/80 bg-slate-50 text-slate-600'
+                                }`}
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                {t.blood.findBtn}
+                                {language === 'en' ? 'All' : 'সব'}
                             </button>
+                            {BLOOD_GROUPS.map((group) => (
+                                <button
+                                    key={group}
+                                    type="button"
+                                    onClick={() => setSelectedBloodGroup(group)}
+                                    className={`min-h-[32px] rounded-full px-2.5 py-1 font-sans text-[11px] font-black leading-none tracking-tight transition-all active:scale-95 ${
+                                        selectedBloodGroup === group
+                                            ? 'bg-red-500 text-white shadow-sm'
+                                            : 'border border-slate-200/80 bg-slate-50 text-slate-700'
+                                    }`}
+                                >
+                                    {group}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="mt-2.5 grid grid-cols-2 gap-2">
+                            <select
+                                value={selectedDistrict}
+                                onChange={(e) => {
+                                    setSelectedDistrict(e.target.value);
+                                    setSelectedBlock('All');
+                                }}
+                                className={filterSelectClass}
+                                aria-label={t.blood.filters.district}
+                            >
+                                <option value="All">{language === 'en' ? 'All districts' : 'সব জেলা'}</option>
+                                {Object.keys(wbLocations).sort().map((dist) => (
+                                    <option key={dist} value={dist}>{dist}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={selectedBlock}
+                                onChange={(e) => setSelectedBlock(e.target.value)}
+                                disabled={selectedDistrict === 'All'}
+                                className={filterSelectClass}
+                                aria-label={language === 'en' ? 'Block' : 'ব্লক'}
+                            >
+                                <option value="All">{language === 'en' ? 'All blocks' : 'সব ব্লক'}</option>
+                                {selectedDistrict !== 'All' && wbLocations[selectedDistrict]?.map((block) => (
+                                    <option key={block} value={block}>{block}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
                     {!loading && donors.length > 0 && (
-                        <p className={`text-xs font-black text-slate-500 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                        <p className={`text-[11px] font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
                             {donors.length} {t.blood.donorsFound}
                         </p>
                     )}
 
-                    {/* Results */}
                     {loading ? (
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             <DonorCardSkeleton />
                             <DonorCardSkeleton />
                             <DonorCardSkeleton />
@@ -739,15 +684,16 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                         <EmptyState
                             icon="🔍"
                             language={language}
-                            title={language === 'en' ? 'No Donors Found' : 'কোন রক্তদাতা পাওয়া যায়নি'}
-                            message={language === 'en' ? 'No donors match your search criteria. Try adjusting filters.' : 'আপনার অনুসন্ধানের সাথে মিল নেই। ফিল্টার পরিবর্তন করে দেখুন।'}
+                            title={language === 'en' ? 'No donors found' : 'কোন রক্তদাতা পাওয়া যায়নি'}
+                            message={language === 'en' ? 'Try another group or district.' : 'অন্য গ্রুপ বা জেলা বেছে দেখুন।'}
                         />
                     ) : (
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             {donors.map((donor) => (
                                 <DonorCard
                                     key={donor.id}
                                     donor={donor}
+                                    language={language}
                                     isExpanded={expandedDonorId === donor.id}
                                     onToggle={() => setExpandedDonorId(expandedDonorId === donor.id ? null : donor.id)}
                                     t={t}
@@ -757,12 +703,86 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                     )}
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
+                        <div className="flex flex-wrap gap-1.5">
+                            {serviceChipTypes.map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setActiveCategory(type)}
+                                    className={`min-h-[32px] rounded-full px-2.5 py-1 text-[11px] font-black transition-all active:scale-95 ${language === 'bn' ? 'font-bengali' : ''} ${
+                                        activeCategory === type
+                                            ? 'bg-orange-500 text-white shadow-sm'
+                                            : 'border border-slate-200/80 bg-slate-50 text-slate-600'
+                                    }`}
+                                >
+                                    {serviceChipLabel(type)}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="mt-2.5 grid grid-cols-2 gap-2">
+                            <select
+                                value={serviceDistrict}
+                                onChange={(e) => {
+                                    setServiceDistrict(e.target.value);
+                                    setServiceBlock('All');
+                                }}
+                                className={filterSelectClass}
+                                aria-label={language === 'en' ? 'District' : 'জেলা'}
+                            >
+                                <option value="All">{language === 'en' ? 'All districts' : 'সব জেলা'}</option>
+                                {Object.keys(wbLocations).sort().map((dist) => (
+                                    <option key={dist} value={dist}>{dist}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={serviceBlock}
+                                onChange={(e) => setServiceBlock(e.target.value)}
+                                disabled={serviceDistrict === 'All'}
+                                className={filterSelectClass}
+                                aria-label={language === 'en' ? 'Block' : 'ব্লক'}
+                            >
+                                <option value="All">{language === 'en' ? 'All blocks' : 'সব ব্লক'}</option>
+                                {serviceDistrict !== 'All' && wbLocations[serviceDistrict]?.map((block) => (
+                                    <option key={block} value={block}>{block}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="relative mt-2.5">
+                            <svg className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                value={serviceSearch}
+                                onChange={(e) => setServiceSearch(e.target.value)}
+                                placeholder={language === 'en' ? 'Search by name or location' : 'নাম বা এলাকা খুঁজুন'}
+                                className={`w-full rounded-xl border border-slate-200/80 bg-white py-2 pl-9 pr-9 text-xs font-semibold text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-300 focus:ring-2 focus:ring-orange-200/60 ${language === 'bn' ? 'font-bengali' : ''}`}
+                            />
+                            {serviceSearch ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setServiceSearch('')}
+                                    className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-all hover:bg-orange-50 hover:text-slate-600 active:scale-95"
+                                    aria-label={language === 'en' ? 'Clear search' : 'সার্চ মুছুন'}
+                                >
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            ) : null}
+                        </div>
+                    </div>
+
+                    {!loading && filteredServices.length > 0 && (
+                        <p className={`text-[11px] font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {filteredServices.length} {language === 'en' ? 'services found' : 'টি পরিষেবা পাওয়া গেছে'}
+                        </p>
+                    )}
+
                     {loading ? (
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                            <ServiceCardSkeleton />
-                            <ServiceCardSkeleton />
-                            <ServiceCardSkeleton />
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             <ServiceCardSkeleton />
                             <ServiceCardSkeleton />
                             <ServiceCardSkeleton />
@@ -774,70 +794,25 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                             title={language === 'en' ? 'No Services Found' : 'কোন পরিষেবা পাওয়া যায়নি'}
                             message={language === 'en' ? 'Emergency services data is currently unavailable.' : 'জরুরি পরিষেবার তথ্য এখন উপলব্ধ নয়।'}
                         />
+                    ) : filteredServices.length === 0 ? (
+                        <EmptyState
+                            icon="🔍"
+                            language={language}
+                            title={language === 'en' ? 'No Results' : 'কোন ফলাফল নেই'}
+                            message={language === 'en' ? 'No services found' : 'কোন পরিষেবা পাওয়া যায়নি'}
+                        />
                     ) : (
-                        <div className="space-y-4">
-                            <div className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm sm:p-4">
-                                <div className="relative">
-                                    <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                    <input
-                                        type="text"
-                                        value={serviceSearch}
-                                        onChange={(e) => setServiceSearch(e.target.value)}
-                                        placeholder={language === 'en' ? 'Search services by name or location...' : 'নাম বা অবস্থান দ্বারা সার্চ করুন...'}
-                                        className={`w-full rounded-2xl border border-slate-200/80 bg-white py-3 pl-10 pr-10 text-sm font-semibold text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-orange-300 focus:bg-orange-50/40 focus:ring-2 focus:ring-orange-200/60 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                    />
-                                    {serviceSearch && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setServiceSearch('')}
-                                            className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-500 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
-                                            aria-label={language === 'en' ? 'Clear search' : 'সার্চ মুছুন'}
-                                        >
-                                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="overflow-x-auto pb-1 no-scrollbar">
-                                <div className="flex gap-2">
-                                    {['all', 'hospitals', 'ambulance', 'fire', 'police', 'power'].map((type) => {
-                                        const typeConfig = {
-                                            all: { label: language === 'en' ? 'All Services' : 'সকল পরিষেবা', icon: 'grid', color: 'slate' },
-                                            hospitals: { label: t.services.hospitals, icon: 'hospital', color: 'blue' },
-                                            ambulance: { label: t.services.ambulance, icon: 'ambulance', color: 'red' },
-                                            fire: { label: t.services.fire, icon: 'fire', color: 'orange' },
-                                            police: { label: t.services.police, icon: 'police', color: 'slate' },
-                                            power: { label: t.services.power, icon: 'power', color: 'yellow' }
-                                        };
-                                        const config = typeConfig[type];
-                                        const colors = getServiceColor(config.color);
-                                        const isActive = activeCategory === type;
-
-                                        return (
-                                            <button
-                                                key={type}
-                                                type="button"
-                                                onClick={() => setActiveCategory(type)}
-                                                className={`flex min-h-[40px] items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-black transition-all active:scale-95 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
-                                                    isActive
-                                                        ? `${colors.activePill} border-transparent shadow-md`
-                                                        : 'border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-orange-50'
-                                                }`}
-                                            >
-                                                <span aria-hidden>{SERVICE_EMOJI[config.icon] || '🗂️'}</span>
-                                                <span>{config.label}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {renderServices()}
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            {filteredServices.map((service) => (
+                                <ServiceCard
+                                    key={service.id}
+                                    service={service}
+                                    config={SERVICE_TYPES[service.type] || { icon: 'other', color: 'slate' }}
+                                    language={language}
+                                    isExpanded={expandedServiceId === service.id}
+                                    onToggle={() => setExpandedServiceId(expandedServiceId === service.id ? null : service.id)}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
@@ -907,14 +882,9 @@ export default function Emergency({ language = 'en', user, setCurrentView }) {
                                         className="w-full appearance-none rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-orange-300 focus:bg-orange-50/40 focus:ring-2 focus:ring-orange-200/60"
                                     >
                                         <option value="">{language === 'en' ? 'Select' : 'বেছে নিন'}</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
+                                        {BLOOD_GROUPS.map((group) => (
+                                            <option key={group} value={group}>{group}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
