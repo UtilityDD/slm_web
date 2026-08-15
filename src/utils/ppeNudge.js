@@ -5,6 +5,7 @@ import {
   PPE_NUDGE_ITEM_ORDER,
   getPpeItem,
 } from '../data/ppeItems';
+import { FIELD_PPE_JOBS } from '../data/profileFieldOptions';
 import {
   daysSince,
   isSharedDataNudgeSlotFree,
@@ -29,9 +30,7 @@ const LOCAL_LAST_KEY = 'slm_ppe_nudge_last';
 
 export function isFieldPpeJob(job) {
   if (!job || typeof job !== 'string') return false;
-  const j = job.trim();
-  if (!j) return false;
-  return !PPE_NUDGE_EXCLUDED_JOBS.has(j);
+  return FIELD_PPE_JOBS.has(job.trim());
 }
 
 export function getLocalPpeLastPromptDate(userId) {

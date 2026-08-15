@@ -34,6 +34,7 @@ import RadioMiniPlayer from "./components/RadioMiniPlayer";
 import RadioDesktopLaunch from "./components/RadioDesktopLaunch";
 import { LifeSkillRadioProvider, RadioScrollPaddingBridge, RadioSafetyGuard } from "./context/LifeSkillRadioContext";
 import IdleStoryReminder from "./components/IdleStoryReminder";
+import MonthWinnersReveal from "./components/MonthWinnersReveal";
 import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
 import PpeFieldNudge from "./components/PpeFieldNudge";
@@ -232,6 +233,9 @@ export default function SmartLinemanUI() {
   const [pushOptInOpen, setPushOptInOpen] = useState(false);
   const [idleStoryPreview, setIdleStoryPreview] = useState(null);
   const [celebrationPreview, setCelebrationPreview] = useState(null);
+  const [monthWinnersPreview, setMonthWinnersPreview] = useState(null);
+  const [monthWinnersPreviewData, setMonthWinnersPreviewData] = useState([]);
+  const [monthWinnersPreviewReady, setMonthWinnersPreviewReady] = useState(false);
   const celebrationPreviewConfig = useMemo(() => {
     if (!celebrationPreview?.campaignId) return null;
     return getCelebrationSplashForPreview(celebrationPreview.campaignId);
@@ -396,6 +400,30 @@ export default function SmartLinemanUI() {
     }
   }, [celebrationConfig]);
 
+  useEffect(() => {
+    if (!monthWinnersPreview) {
+      setMonthWinnersPreviewReady(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setMonthWinnersPreviewReady(false);
+    leaderboardService
+      .fetchHallOfFame(false)
+      .then((archive) => {
+        if (cancelled) return;
+        setMonthWinnersPreviewData(Array.isArray(archive) ? archive : []);
+        setMonthWinnersPreviewReady(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMonthWinnersPreviewData([]);
+        setMonthWinnersPreviewReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [monthWinnersPreview?.key]);
+
   // Never show ads / soft interrupts while the user is typing (phone, PIN, forms).
   useEffect(() => {
     const isTextField = (el) => {
@@ -449,6 +477,11 @@ export default function SmartLinemanUI() {
       if (showUpdateModal && isForceUpdate) return true; // require update action
       if (celebrationPreview) {
         setCelebrationPreview(null);
+        return true;
+      }
+      if (monthWinnersPreview) {
+        setMonthWinnersPreview(null);
+        setMonthWinnersRevealOpen(false);
         return true;
       }
       if (celebrationSplashOpen) {
@@ -563,6 +596,7 @@ export default function SmartLinemanUI() {
     ppeNudgeOpen,
     pushOptInOpen,
     monthWinnersRevealOpen,
+    monthWinnersPreview,
     sponsorAdOpen,
     celebrationSplashOpen,
     celebrationPreview,
@@ -1610,6 +1644,7 @@ export default function SmartLinemanUI() {
               setCurrentView={setCurrentView}
               language={language}
               user={user}
+              userProfile={userProfile}
             />
           );
         case 'my_tools':
@@ -1662,6 +1697,9 @@ export default function SmartLinemanUI() {
                   campaignId: opts.campaignId,
                   key: Date.now(),
                 })
+              }
+              onPreviewMonthWinners={() =>
+                setMonthWinnersPreview({ key: Date.now() })
               }
             />
           );
@@ -1797,6 +1835,7 @@ export default function SmartLinemanUI() {
     globalLoading ||
     celebrationSplashOpen ||
     celebrationPreview ||
+    monthWinnersPreview ||
     showLogoutModal ||
     showLanguageModal ||
     !!pushNotification ||
@@ -1819,7 +1858,7 @@ export default function SmartLinemanUI() {
     profileNudge: profileNudgeOpen,
     ppeNudge: ppeNudgeOpen,
     pushOptIn: pushOptInOpen,
-    monthWinners: monthWinnersRevealOpen,
+    monthWinners: monthWinnersRevealOpen || Boolean(monthWinnersPreview),
     sponsor: sponsorAdOpen,
   });
 
@@ -2548,6 +2587,21 @@ export default function SmartLinemanUI() {
           onDismiss={() => {
             if (celebrationPreview) setCelebrationPreview(null);
             else setCelebrationSplashOpen(false);
+          }}
+        />
+      ) : null}
+      {monthWinnersPreview ? (
+        <MonthWinnersReveal
+          key={monthWinnersPreview.key}
+          language={language}
+          hallOfFameData={monthWinnersPreviewData}
+          ready={monthWinnersPreviewReady}
+          active={monthWinnersPreviewReady}
+          blocked={false}
+          preview
+          onOpenChange={(open) => {
+            setMonthWinnersRevealOpen(open);
+            if (!open) setMonthWinnersPreview(null);
           }}
         />
       ) : null}

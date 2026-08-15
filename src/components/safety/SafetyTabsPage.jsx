@@ -8,7 +8,7 @@ import SafetyLibrary from './SafetyLibrary';
  * Full-height shell for My PPE and Identify (Porichiti).
  * Home opens each as its own view — no shared top tabs.
  */
-export default function SafetyTabsPage({ activeTab, setCurrentView, language, user }) {
+export default function SafetyTabsPage({ activeTab, setCurrentView, language, user, userProfile }) {
     const isPpe = activeTab === 'my_ppe';
 
     useEffect(() => {
@@ -44,6 +44,7 @@ export default function SafetyTabsPage({ activeTab, setCurrentView, language, us
                     <MyPPE
                         language={language}
                         user={user}
+                        userProfile={userProfile}
                         setCurrentView={setCurrentView}
                         embedded
                     />

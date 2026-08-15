@@ -7571,6 +7571,9 @@ html.native-android .lesson-reader-root {
   opacity: 0;
   transition: opacity 0.32s ease;
 }
+.month-winners-reveal--preview {
+  z-index: 10050;
+}
 .month-winners-reveal.is-visible {
   opacity: 1;
   pointer-events: auto;

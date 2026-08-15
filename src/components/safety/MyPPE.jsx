@@ -6,9 +6,10 @@ import { cacheHelper } from '../../utils/cacheHelper';
 import { PPE_ITEMS, CONDITIONS, AGE_OPTIONS, buildAnswersFromRows } from '../../data/ppeItems';
 import LinemanPPEView from './ppe/LinemanPPEView';
 import PpeItemIcon from './ppe/PpeItemIcon';
+import { isFieldPpeJob } from '../../utils/ppeNudge';
 
 // Phase: 'character' | 'welcome' | 'wizard' | 'summary'
-const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = false }) => {
+const MyPPE = ({ user, userProfile, language = 'bn', onClose, setCurrentView, embedded = false }) => {
     const [phase, setPhase] = useState('character');
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState([]); // {name, available, count, condition, age_months, usage}
@@ -19,11 +20,15 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
     const [showConfetti, setShowConfetti] = useState(false);
     const [slideDir, setSlideDir] = useState('right'); // animation direction
     const cardRef = useRef(null);
+    const profilePending = Boolean(user?.id) && userProfile === null;
+    const canEditPpe = isFieldPpeJob(userProfile?.job || user?.job);
 
-    // Fetch existing data on mount
+    // Fetch existing data once profile job is known
     useEffect(() => {
+        if (profilePending) return undefined;
         fetchExistingData();
-    }, [user]);
+        return undefined;
+    }, [user, profilePending]);
 
     const fetchExistingData = async () => {
         if (!user) {
@@ -131,8 +136,8 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
         setIsSaving(true);
         setPhase('summary');
 
-        if (!user) {
-            console.warn('⚠️ [MyPPE] No user logged in — cannot save');
+        if (!user || !canEditPpe) {
+            console.warn('⚠️ [MyPPE] Save blocked — no user or job is not a field PPE role');
             setIsSaving(false);
             return;
         }
@@ -245,7 +250,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
     const currentItem = PPE_ITEMS[currentStep];
 
     // ========== WELCOME SCREEN ==========
-    if (loading) {
+    if (loading || profilePending) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -258,7 +263,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
         );
     }
 
-    if (phase === 'character') {
+    if (phase === 'character' || !canEditPpe) {
         return (
             <LinemanPPEView
                 user={user}
@@ -266,6 +271,7 @@ const MyPPE = ({ user, language = 'bn', onClose, setCurrentView, embedded = fals
                 onClose={onClose}
                 setCurrentView={setCurrentView}
                 embedded={embedded}
+                readOnly={!canEditPpe}
             />
         );
     }

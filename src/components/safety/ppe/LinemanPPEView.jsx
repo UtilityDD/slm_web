@@ -17,6 +17,8 @@ export default function LinemanPPEView({
     embedded = false,
     view: controlledView,
     onViewChange,
+    readOnly = false,
+    setCurrentView,
 }) {
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState([]);
@@ -52,7 +54,7 @@ export default function LinemanPPEView({
     }, [loadData]);
 
     const handleSaveItem = async (updated) => {
-        if (!user?.id) return;
+        if (readOnly || !user?.id) return;
         setIsSaving(true);
         const prev = answers.find((a) => a.name === updated.name);
         const wasAvailable = !!prev?.available;
@@ -119,7 +121,41 @@ export default function LinemanPPEView({
 
     const selectedAnswer = answers.find((a) => a.name === selectedName);
 
+    const selectItem = readOnly ? undefined : setSelectedName;
+
     const pageTitle = language === 'en' ? 'My PPE' : 'আমার পিপিই';
+    const bn = language === 'bn';
+
+    const readOnlyBanner = readOnly ? (
+        <div className="shrink-0 border-b border-orange-200/70 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50">
+            <div className={`flex items-center gap-2.5 ${embedded ? 'px-3 py-2 sm:px-6' : 'px-4 py-2.5 sm:px-6'}`}>
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-orange-600 shadow-sm ring-1 ring-orange-200/80">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M12 9v4m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z" />
+                    </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                    <p className={`text-[13px] font-bold leading-snug text-slate-800 ${bn ? 'font-bengali' : ''}`}>
+                        {bn ? 'পিপিই আপডেট কেবলমাত্র এদের জন্য' : 'PPE update is only for'}
+                    </p>
+                    <p className={`mt-0.5 text-[10px] font-medium leading-snug text-slate-500 ${bn ? 'font-bengali' : ''}`}>
+                        {bn
+                            ? 'এইচটি মোবাইল ভ্যান · এলটি মোবাইল ভ্যান · এইচটি-এলটি আদারস · সাবস্টেশন অপারেশন'
+                            : 'HT Mobile Van · LT Mobile Van · HT-LT Others · Substation Operation'}
+                    </p>
+                </div>
+                {typeof setCurrentView === 'function' && (
+                    <button
+                        type="button"
+                        onClick={() => setCurrentView('safety-library')}
+                        className={`shrink-0 rounded-full bg-orange-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95 ${bn ? 'font-bengali' : ''}`}
+                    >
+                        {bn ? 'পরিচিতি' : 'Identify'}
+                    </button>
+                )}
+            </div>
+        </div>
+    ) : null;
 
     /** Fixed toolbar — same place for figure and list so the toggle never jumps. */
     const viewToolbar = (
@@ -127,7 +163,7 @@ export default function LinemanPPEView({
             <div className="mx-auto mb-3 w-full max-w-xs text-center">
                 <h1
                     className={`text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${
-                        language === 'bn' ? 'font-bengali' : ''
+                        bn ? 'font-bengali' : ''
                     }`}
                 >
                     {pageTitle}
@@ -156,17 +192,19 @@ export default function LinemanPPEView({
                         style={{ width: `${pct}%` }}
                     />
                 </div>
-                <p className={`mt-1.5 text-center text-[10px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                    {language === 'en' ? 'Tap a badge on the lineman' : 'লাইনম্যানের ব্যাজে ট্যাপ করুন'}
-                </p>
+                {!readOnly && (
+                    <p className={`mt-1.5 text-center text-[10px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {language === 'en' ? 'Tap a badge on the lineman' : 'লাইনম্যানের ব্যাজে ট্যাপ করুন'}
+                    </p>
+                )}
             </div>
 
             <div className="relative mt-2 flex w-full flex-1 min-h-0 items-start justify-center overflow-visible">
                 <div className={`h-full w-full overflow-visible transition-transform duration-300 ${saveFlash?.action === 'equip' ? 'scale-[1.02]' : ''}`}>
                     <LinemanFigure
                         answers={displayAnswers}
-                        selectedName={selectedName}
-                        onSelectItem={setSelectedName}
+                        selectedName={readOnly ? null : selectedName}
+                        onSelectItem={selectItem}
                         language={language}
                         equipAnim={equipAnim}
                     />
@@ -213,7 +251,7 @@ export default function LinemanPPEView({
                 answers={displayAnswers}
                 language={language}
                 onBack={() => setView('figure')}
-                onSelectItem={setSelectedName}
+                onSelectItem={selectItem}
                 embedded={embedded}
                 hideViewSegment
             />
@@ -222,9 +260,10 @@ export default function LinemanPPEView({
 
     const content = (
         <>
+            {readOnlyBanner}
             {viewToolbar}
             {view === 'list' ? listBody : figureBody}
-            {selectedName && (
+            {!readOnly && selectedName && (
                 <PPEItemSheet
                     itemName={selectedName}
                     answer={selectedAnswer}

@@ -185,7 +185,7 @@ function WinnerBurst({ active, reduceMotion }) {
 /**
  * Soft celebration slideshow over the monthly leaderboard for the latest
  * declared prize month. Once per month (localStorage). Tiny ✕ to dismiss.
- * Admins always see it for review (seen flag ignored, not written).
+ * Admins preview it from the admin panel (not auto-shown on leaderboard).
  *
  * Per winner: show photo → flip card → prize + sponsor → next.
  */
@@ -196,6 +196,7 @@ export default function MonthWinnersReveal({
     active = false,
     blocked = false,
     isAdmin = false,
+    preview = false,
     onOpenChange,
 }) {
     const isBn = language === 'bn';
@@ -213,9 +214,10 @@ export default function MonthWinnersReveal({
     onOpenChangeRef.current = onOpenChange;
 
     useEffect(() => {
-        onOpenChangeRef.current?.(open);
+        if (!open) return undefined;
+        onOpenChangeRef.current?.(true);
         return () => {
-            if (open) onOpenChangeRef.current?.(false);
+            onOpenChangeRef.current?.(false);
         };
     }, [open]);
 
@@ -258,8 +260,7 @@ export default function MonthWinnersReveal({
         : null;
 
     const finish = useCallback((opts = {}) => {
-        // Admins never persist "seen" so they can re-review on next visit.
-        const markSeen = !isAdmin && opts.markSeen !== false;
+        const markSeen = !preview && !isAdmin && opts.markSeen !== false;
         const month = monthRef.current;
         if (markSeen && month) markMonthWinnersSeen(month.year, month.month);
         clearTimers();
@@ -275,20 +276,27 @@ export default function MonthWinnersReveal({
                 startedKeyRef.current = null;
             }
         }, reduceMotion ? 0 : EXIT_MS);
-    }, [clearTimers, isAdmin, reduceMotion, schedule]);
+    }, [clearTimers, isAdmin, preview, reduceMotion, schedule]);
 
     useEffect(() => {
         if (!active) startedKeyRef.current = null;
     }, [active]);
 
     useEffect(() => {
+        if (!preview || !ready) return;
+        if (slides.length === 0) onOpenChangeRef.current?.(false);
+    }, [preview, ready, slides.length]);
+
+    useEffect(() => {
         if (!ready || !active || blocked || open) return;
         if (!targetMonth || slides.length === 0) return;
-        if (!isAdmin && hasSeenMonthWinners(targetMonth.year, targetMonth.month)) return;
+        // Live leaderboard: never auto-show for admins — they preview from Admin.
+        if (!preview && isAdmin) return;
+        if (!preview && hasSeenMonthWinners(targetMonth.year, targetMonth.month)) return;
         if (startedKeyRef.current === monthKey) return;
 
         const dwell = schedule(() => {
-            if (!isAdmin && hasSeenMonthWinners(targetMonth.year, targetMonth.month)) return;
+            if (!preview && hasSeenMonthWinners(targetMonth.year, targetMonth.month)) return;
             startedKeyRef.current = monthKey;
             monthRef.current = { year: targetMonth.year, month: targetMonth.month };
             setOpen(true);
@@ -297,7 +305,7 @@ export default function MonthWinnersReveal({
             setFace('winner');
             requestAnimationFrame(() => setVisible(true));
             if (!reduceMotion) playRevealOpenSound();
-        }, DWELL_MS);
+        }, preview ? 0 : DWELL_MS);
 
         return () => clearTimeout(dwell);
     }, [
@@ -306,6 +314,7 @@ export default function MonthWinnersReveal({
         blocked,
         open,
         isAdmin,
+        preview,
         targetMonth,
         slides.length,
         monthKey,
@@ -404,7 +413,7 @@ export default function MonthWinnersReveal({
         <div
             className={`month-winners-reveal ${visible ? 'is-visible' : ''} ${
                 reduceMotion ? 'is-reduced' : ''
-            }`}
+            }${preview ? ' month-winners-reveal--preview' : ''}`}
             role="dialog"
             aria-modal="true"
             aria-label={`${copy.winnersOfMonth} — ${monthLabel}`}

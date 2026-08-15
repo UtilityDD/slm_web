@@ -126,16 +126,16 @@ export default function LinemanFigure({ answers, selectedName, onSelectItem, lan
                         return (
                             <g
                                 key={`badge-${item.name}`}
-                                role="button"
-                                tabIndex={0}
-                                className="cursor-pointer outline-none"
-                                onClick={() => onSelectItem(item.name)}
-                                onKeyDown={(e) => {
+                                role={onSelectItem ? 'button' : undefined}
+                                tabIndex={onSelectItem ? 0 : undefined}
+                                className={onSelectItem ? 'cursor-pointer outline-none' : 'outline-none'}
+                                onClick={onSelectItem ? () => onSelectItem(item.name) : undefined}
+                                onKeyDown={onSelectItem ? (e) => {
                                     if (e.key === 'Enter' || e.key === ' ') {
                                         e.preventDefault();
                                         onSelectItem(item.name);
                                     }
-                                }}
+                                } : undefined}
                             >
                                 {(isSelected || badgeEquip) && (
                                     <circle cx={badge.x} cy={badge.y} r={r + 6} fill="none" stroke={badgeEquip ? '#22c55e' : '#f97316'} strokeWidth="2" opacity="0.6">

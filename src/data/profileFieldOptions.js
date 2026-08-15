@@ -10,6 +10,14 @@ export const JOB_TYPES = [
   'Others',
 ];
 
+/** Job types that may track and edit personal PPE. */
+export const FIELD_PPE_JOBS = new Set([
+  'HT-Mobile Van',
+  'LT-Mobile Van',
+  'HT-LT Others',
+  'Substation Operation',
+]);
+
 export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
 export const ACCIDENT_VOLTAGES = ['LT', '11kV', '33kV', 'Other'];

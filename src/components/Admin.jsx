@@ -881,7 +881,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey, onPreviewCelebration }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey, onPreviewCelebration, onPreviewMonthWinners }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -958,6 +958,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [ppeNudgePreviewRequireMode, setPpeNudgePreviewRequireMode] = useState(false);
   const [showIdleStoryPreviewSection, setShowIdleStoryPreviewSection] = useState(false);
   const [showCelebrationPreviewSection, setShowCelebrationPreviewSection] = useState(false);
+  const [showMonthWinnersPreviewSection, setShowMonthWinnersPreviewSection] = useState(false);
   const [showOnboardingPreviewSection, setShowOnboardingPreviewSection] = useState(false);
   const [showHomeCtaPreviewSection, setShowHomeCtaPreviewSection] = useState(false);
   const [showSponsorAdSection, setShowSponsorAdSection] = useState(false);
@@ -2842,6 +2843,38 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 {isEn
                   ? 'Opens the same full-screen splash users see. Dates are IST.'
                   : 'ব্যবহারকারীরা যে ফুল-স্ক্রিন স্প্ল্যাশ দেখেন, সেটিই খোলে। তারিখ IST।'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: preview monthly leaderboard winners celebration */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewMonthWinners === 'function' && (
+        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowMonthWinnersPreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-semibold text-slate-800 text-sm">
+              🏆 {isEn ? 'Preview month winners' : 'মাসের বিজয়ী প্রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showMonthWinnersPreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showMonthWinnersPreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <button
+                type="button"
+                onClick={() => onPreviewMonthWinners()}
+                className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-100"
+              >
+                {isEn ? 'Open winners celebration' : 'বিজয়ী সেলিব্রেশন খুলুন'}
+              </button>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Same slideshow as the monthly leaderboard. Preview only — does not mark it seen for users, and will not auto-open on the leaderboard for admins.'
+                  : 'মাসিক লিডারবোর্ডের একই স্লাইডশো। শুধু প্রিভিউ — ইউজারের seen হবে না, অ্যাডমিনের লিডারবোর্ডে নিজে থেকেও খুলবে না।'}
               </p>
             </div>
           )}
