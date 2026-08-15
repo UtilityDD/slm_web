@@ -231,4 +231,4 @@ For **illustration style, option anti-cheat, and spot-the-mistake rules**, follo
 
 - [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) — authoring illustrations + anti-cheat options
 - [Reading habit and gate](./reading-habit-and-gate.md) — quiz entry after gate passes
-- [Safety Library](./safety-library.md) — FileList tab of the same workbook (not quiz rows)
+- [Safety Library](./safety-library.md) — in-app catalog (not the quiz sheet)

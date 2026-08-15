@@ -32,6 +32,13 @@ export const toLocalQuizImagePath = (ref) => {
     return path ? toNativeRemoteUrl(path) : '';
 };
 
+function withWebpCandidate(localPath) {
+    if (!localPath) return [];
+    const webp = localPath.replace(/\.(png|jpe?g)(\?.*)?$/i, '.webp$2');
+    if (webp !== localPath) return [webp, localPath];
+    return [localPath];
+}
+
 /** Local file first, then Drive fallbacks — works for both img_* and Drive sheet cells. */
 export const buildImageFallbackCandidates = (rawUrl) => {
     const trimmed = String(rawUrl || '').trim();
@@ -39,7 +46,9 @@ export const buildImageFallbackCandidates = (rawUrl) => {
 
     const candidates = [];
     const localPath = toLocalQuizImagePath(trimmed);
-    if (localPath) candidates.push(localPath);
+    withWebpCandidate(localPath).forEach((url) => {
+        if (url && !candidates.includes(url)) candidates.push(url);
+    });
 
     const driveId = extractDriveIdFromMediaRef(trimmed);
     if (driveId) {

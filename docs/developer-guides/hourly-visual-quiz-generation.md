@@ -179,7 +179,7 @@ Do **not** paste draft rows into the live sheet until length, distractors, and i
 
 The Google workbook has multiple tabs:
 
-- **FileList** — Safety Library assets (not quiz rows)
+- **FileList** — legacy Safety Library export (Identify is now in-app; do not paste quiz rows here)
 - **quiz** — Hourly visual quiz CSV format (production)
 
 Published quiz CSV: see `VISUAL_QUIZ_LIVE_CSV_URL` in `src/utils/visualQuizCsv.js`.

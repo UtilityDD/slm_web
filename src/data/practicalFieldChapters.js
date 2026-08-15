@@ -52,7 +52,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'ধাপ ১ — প্লেট এবং পাইপ প্রস্তুতকরণ',
-                    image: '/images/plate_earthing/fig1_plate_prep.png',
+                    image: '/images/plate_earthing/fig1_plate_prep.webp',
                     caption: 'চিত্র ১: আর্থ প্লেটের সাথে জি.আই. পাইপ ও আর্থিং তারের সংযোগের নিখুঁত নকশা।',
                     items: [
                         'প্রয়োজনীয় সকল সরঞ্জাম, পরিমাপক যন্ত্র এবং কাঁচামাল এক জায়গায় সাজিয়ে কাজের প্রস্তুতি নিন।',
@@ -71,7 +71,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'ধাপ ৩ — পিটের মধ্যে প্লেট ও কয়লা-লবণের স্তর স্থাপন',
-                    image: '/images/plate_earthing/fig2_earth_pit.png',
+                    image: '/images/plate_earthing/fig2_earth_pit.webp',
                     caption: 'চিত্র ২: মাটির নিচে প্লেট আর্থিং পিটের ক্রস-সেকশন ডায়াগ্রাম (কয়লা, লবণ ও মাটির স্তরসমূহ)।',
                     items: [
                         'প্রস্তুত করা প্লেট ও পাইপ অ্যাসেম্বলিটি গর্তের ঠিক মাঝখানে একদম সোজা বা খাড়া (vertical) অবস্থায় দাঁড় করান। পাইপ দুটি সোজা রাখতে বাঁশের লাঠি বা কাঠ দিয়ে সাময়িক সাপোর্ট দিতে পারেন।',
@@ -162,7 +162,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'Step 1 — Prepare the Plate and Pipes (ISI)',
-                    image: '/images/plate_earthing/fig1_plate_prep.png',
+                    image: '/images/plate_earthing/fig1_plate_prep.webp',
                     caption: 'Figure 1: Diagram showing G.I. plate connection with watering pipe and earth wire protection pipe.',
                     items: [
                         'Gather all required tools, measuring instruments, and materials in one clean location.',
@@ -181,7 +181,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'Step 3 — Install Plate and Charcoal-Salt Layering',
-                    image: '/images/plate_earthing/fig2_earth_pit.png',
+                    image: '/images/plate_earthing/fig2_earth_pit.webp',
                     caption: 'Figure 2: Cross-sectional diagram of the excavated pit showing the installation layout of plate, pipes, and coal-salt layering.',
                     items: [
                         'Place the G.I. plate assembly vertically in the center of the pit. You can use bamboo sticks or wooden blocks as temporary supports to keep the pipes upright.',
@@ -262,22 +262,22 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 'কাজের সময় ডস অ্যান্ড ডোন্টস (Do\'s & Don\'ts) এবং প্রয়োজনীয় নিরাপত্তা সতর্কতা মেনে চলা'
             ],
             tools: [
-                { name: 'কম্বিনেশন প্লায়ার্স (Combination Pliers)', image: '/images/cable_laying/fig_2_25_combination_pliers.png' },
-                { name: 'অ্যাডজাস্টেবল রিঞ্চ (Adjustable Wrench)', image: '/images/cable_laying/fig_2_26_adjustable_wrench.png' },
-                { name: 'পাইপ রিঞ্চ (Pipe Wrench)', image: '/images/cable_laying/fig_2_27_pipe_wrench.png' },
-                { name: 'পরিমাপক স্টিল টেপ (Measuring Tape)', image: '/images/cable_laying/fig_2_28_measuring_tape.png' },
-                { name: 'লাইন্সম্যান হ্যামার (Lineman Hammer)', image: '/images/cable_laying/fig_2_29_hammer.png' },
-                { name: 'র‍্যাচেট হ্যান্ড ড্রিল (Hand Drill)', image: '/images/cable_laying/fig_2_30_hand_drill.png' },
-                { name: 'ইলেকট্রিক ড্রিল মেশিন (Electric Drill)', image: '/images/cable_laying/fig_2_31_electric_drill.png' },
-                { name: 'বেঞ্চ ভাইস (Bench Vice)', image: '/images/cable_laying/fig_2_32_bench_vice.png' },
-                { name: 'চেন পুলি ব্লক (Chain Pulley)', image: '/images/cable_laying/fig_2_33_chain_pulley.png' },
-                { name: 'ট্রাইপড স্ট্যান্ড (Tripod)', image: '/images/cable_laying/fig_2_34_tripod.png' },
-                { name: 'কাম-অ্যালং ক্ল্যাম্প (Come Along Clamp)', image: '/images/cable_laying/fig_2_35_come_along_clamp.png' },
-                { name: 'র‍্যাচেট টেনশনার (Ratchet Device)', image: '/images/cable_laying/fig_2_36_ratchet_device.png' },
-                { name: 'কেবল সহ ক্যাবল ড্রাম (Cable Drum with Cable)', image: '/images/cable_laying/fig_2_20_cable_drum_with.png' },
-                { name: 'কেবল ছাড়া ক্যাবল ড্রাম (Cable Drum without Cable)', image: '/images/cable_laying/fig_2_21_cable_drum_without.png' },
-                { name: 'অ্যাঙ্গেল রোলার (Angle Rollers)', image: '/images/cable_laying/fig_2_22_angle_rollers.png' },
-                { name: 'কেবল পুলিং উইঞ্চ ও জ্যাক সেটআপ (Cable Pulling)', image: '/images/cable_laying/fig_2_23_pulling_methods.png' },
+                { name: 'কম্বিনেশন প্লায়ার্স (Combination Pliers)', image: '/images/cable_laying/fig_2_25_combination_pliers.webp' },
+                { name: 'অ্যাডজাস্টেবল রিঞ্চ (Adjustable Wrench)', image: '/images/cable_laying/fig_2_26_adjustable_wrench.webp' },
+                { name: 'পাইপ রিঞ্চ (Pipe Wrench)', image: '/images/cable_laying/fig_2_27_pipe_wrench.webp' },
+                { name: 'পরিমাপক স্টিল টেপ (Measuring Tape)', image: '/images/cable_laying/fig_2_28_measuring_tape.webp' },
+                { name: 'লাইন্সম্যান হ্যামার (Lineman Hammer)', image: '/images/cable_laying/fig_2_29_hammer.webp' },
+                { name: 'র‍্যাচেট হ্যান্ড ড্রিল (Hand Drill)', image: '/images/cable_laying/fig_2_30_hand_drill.webp' },
+                { name: 'ইলেকট্রিক ড্রিল মেশিন (Electric Drill)', image: '/images/cable_laying/fig_2_31_electric_drill.webp' },
+                { name: 'বেঞ্চ ভাইস (Bench Vice)', image: '/images/cable_laying/fig_2_32_bench_vice.webp' },
+                { name: 'চেন পুলি ব্লক (Chain Pulley)', image: '/images/cable_laying/fig_2_33_chain_pulley.webp' },
+                { name: 'ট্রাইপড স্ট্যান্ড (Tripod)', image: '/images/cable_laying/fig_2_34_tripod.webp' },
+                { name: 'কাম-অ্যালং ক্ল্যাম্প (Come Along Clamp)', image: '/images/cable_laying/fig_2_35_come_along_clamp.webp' },
+                { name: 'র‍্যাচেট টেনশনার (Ratchet Device)', image: '/images/cable_laying/fig_2_36_ratchet_device.webp' },
+                { name: 'কেবল সহ ক্যাবল ড্রাম (Cable Drum with Cable)', image: '/images/cable_laying/fig_2_20_cable_drum_with.webp' },
+                { name: 'কেবল ছাড়া ক্যাবল ড্রাম (Cable Drum without Cable)', image: '/images/cable_laying/fig_2_21_cable_drum_without.webp' },
+                { name: 'অ্যাঙ্গেল রোলার (Angle Rollers)', image: '/images/cable_laying/fig_2_22_angle_rollers.webp' },
+                { name: 'কেবল পুলিং উইঞ্চ ও জ্যাক সেটআপ (Cable Pulling)', image: '/images/cable_laying/fig_2_23_pulling_methods.webp' },
             ],
             materials: [
                 'আন্ডারগ্রাউন্ড আর্মার্ড ক্যাবল (Underground Armoured Cable) — বিদ্যুৎ পরিবহনের জন্য লোহার বর্মযুক্ত ক্যাবল',
@@ -290,7 +290,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'ধাপ ১ — কেবল ও সরঞ্জাম প্রস্তুতি এবং ড্রাম মাউন্টিং',
-                    image: '/images/cable_laying/fig_2_20_cable_drum_with.png',
+                    image: '/images/cable_laying/fig_2_20_cable_drum_with.webp',
                     caption: 'চিত্র ১: ক্যাবল ড্রাম জ্যাকের সাহায্যে ঝুলিয়ে কেবল টানার প্রস্তুতি।',
                     items: [
                         'কাজের সাইট চিহ্নিত করে ক্যাবল টানার পথ (Route) পরিষ্কার করুন এবং আন্ডারগ্রাউন্ড পিট বা ট্র্যাঞ্চ ঠিকমতো কাটা হয়েছে কিনা পরীক্ষা করুন।',
@@ -301,7 +301,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'ধাপ ২ — কেবল টানার পদ্ধতি ও উইঞ্চ মেশিনের ব্যবহার',
-                    image: '/images/cable_laying/fig_2_23_pulling_methods.png',
+                    image: '/images/cable_laying/fig_2_23_pulling_methods.webp',
                     caption: 'চিত্র ২: উইঞ্চের সাহায্যে ক্যাবল ড্রাম থেকে রোলার ও পাইপের ভেতর ক্যাবল টানার পদ্ধতি।',
                     items: [
                         'হালকা ক্যাবলের ক্ষেত্রে কর্মীরা হাতে টেনে রোলার ও ট্র্যাঞ্চের ওপর দিয়ে কেবল বিছিয়ে দিতে পারেন। তবে ভারী আর্মার্ড ক্যাবলের ক্ষেত্রে অবশ্যই ক্যাবল পুলিং উইঞ্চ (Cable pulling winch) ব্যবহার করতে হবে।',
@@ -312,7 +312,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'ধাপ ৩ — লাইন্সম্যান হ্যান্ড টুলসের সঠিক ব্যবহার',
-                    image: '/images/cable_laying/fig_2_24_lineman_tools.png',
+                    image: '/images/cable_laying/fig_2_24_lineman_tools.webp',
                     caption: 'চিত্র ৩: বিদ্যুৎ কাজের জন্য বিশেষভাবে উপযোগী ইনসুলেটেড লাইন্সম্যান হ্যান্ড টুলস।',
                     items: [
                         'লাইন্সম্যানদের কাজের জন্য ব্যবহৃত প্রতিটি হ্যান্ড টুলসের হাতলে ডাই-ইলেকট্রিক ইনসুলেশন (রাবার বা প্লাস্টিকের চওড়া কোটিং) থাকা বাধ্যতামূলক, যা ইলেকট্রিক শক থেকে বাঁচায়।',
@@ -323,7 +323,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'ধাপ ৪ — কেবল বিছানোর পর তার টেস্টিং ও ফল্ট পরীক্ষা',
-                    image: '/images/cable_laying/fig_2_30_hand_drill.png',
+                    image: '/images/cable_laying/fig_2_30_hand_drill.webp',
                     caption: 'চিত্র ৪: ছিদ্র করার কাজে ব্যবহৃত র‍্যাচেট হ্যান্ড ড্রিল ডিভাইস।',
                     items: [
                         'ক্যাবল টানা ও বিছানোর কাজ সম্পন্ন হওয়ার পর লাইনে বিদ্যুৎ দেওয়ার আগে অবশ্যই টেস্ট করতে হবে। কেবল বিছানোর সময় কোনো চিমটি বা ড্যামেজ হয়ে ভেতরের কন্ডাক্টর লিকেজ হয়েছে কিনা তা দেখা অত্যন্ত জরুরি।',
@@ -381,22 +381,22 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 'Adhere to safety dos and don\'ts when working in the field'
             ],
             tools: [
-                { name: 'Combination Pliers', image: '/images/cable_laying/fig_2_25_combination_pliers.png' },
-                { name: 'Adjustable Wrench', image: '/images/cable_laying/fig_2_26_adjustable_wrench.png' },
-                { name: 'Pipe Wrench', image: '/images/cable_laying/fig_2_27_pipe_wrench.png' },
-                { name: 'Measuring Tape', image: '/images/cable_laying/fig_2_28_measuring_tape.png' },
-                { name: 'Lineman Hammer', image: '/images/cable_laying/fig_2_29_hammer.png' },
-                { name: 'Hand Drill', image: '/images/cable_laying/fig_2_30_hand_drill.png' },
-                { name: 'Electric Drill', image: '/images/cable_laying/fig_2_31_electric_drill.png' },
-                { name: 'Bench Vice', image: '/images/cable_laying/fig_2_32_bench_vice.png' },
-                { name: 'Chain Pulley', image: '/images/cable_laying/fig_2_33_chain_pulley.png' },
-                { name: 'Tripod', image: '/images/cable_laying/fig_2_34_tripod.png' },
-                { name: 'Come Along Clamp', image: '/images/cable_laying/fig_2_35_come_along_clamp.png' },
-                { name: 'Ratchet Device', image: '/images/cable_laying/fig_2_36_ratchet_device.png' },
-                { name: 'Cable Drum with Cable', image: '/images/cable_laying/fig_2_20_cable_drum_with.png' },
-                { name: 'Cable Drum without Cable', image: '/images/cable_laying/fig_2_21_cable_drum_without.png' },
-                { name: 'Angle Rollers', image: '/images/cable_laying/fig_2_22_angle_rollers.png' },
-                { name: 'Cable Pulling Setup', image: '/images/cable_laying/fig_2_23_pulling_methods.png' },
+                { name: 'Combination Pliers', image: '/images/cable_laying/fig_2_25_combination_pliers.webp' },
+                { name: 'Adjustable Wrench', image: '/images/cable_laying/fig_2_26_adjustable_wrench.webp' },
+                { name: 'Pipe Wrench', image: '/images/cable_laying/fig_2_27_pipe_wrench.webp' },
+                { name: 'Measuring Tape', image: '/images/cable_laying/fig_2_28_measuring_tape.webp' },
+                { name: 'Lineman Hammer', image: '/images/cable_laying/fig_2_29_hammer.webp' },
+                { name: 'Hand Drill', image: '/images/cable_laying/fig_2_30_hand_drill.webp' },
+                { name: 'Electric Drill', image: '/images/cable_laying/fig_2_31_electric_drill.webp' },
+                { name: 'Bench Vice', image: '/images/cable_laying/fig_2_32_bench_vice.webp' },
+                { name: 'Chain Pulley', image: '/images/cable_laying/fig_2_33_chain_pulley.webp' },
+                { name: 'Tripod', image: '/images/cable_laying/fig_2_34_tripod.webp' },
+                { name: 'Come Along Clamp', image: '/images/cable_laying/fig_2_35_come_along_clamp.webp' },
+                { name: 'Ratchet Device', image: '/images/cable_laying/fig_2_36_ratchet_device.webp' },
+                { name: 'Cable Drum with Cable', image: '/images/cable_laying/fig_2_20_cable_drum_with.webp' },
+                { name: 'Cable Drum without Cable', image: '/images/cable_laying/fig_2_21_cable_drum_without.webp' },
+                { name: 'Angle Rollers', image: '/images/cable_laying/fig_2_22_angle_rollers.webp' },
+                { name: 'Cable Pulling Setup', image: '/images/cable_laying/fig_2_23_pulling_methods.webp' },
             ],
             materials: [
                 'Underground Armoured Cable — for power transmission with metallic armoring',
@@ -409,7 +409,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'Step 1 — Cable Preparation and Drum Mounting',
-                    image: '/images/cable_laying/fig_2_20_cable_drum_with.png',
+                    image: '/images/cable_laying/fig_2_20_cable_drum_with.webp',
                     caption: 'Figure 1: Cable drum jack mounting setup to unroll cables smoothly.',
                     items: [
                         'Identify the routing path, clean the cable trench, and inspect the trench dimensions.',
@@ -420,7 +420,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'Step 2 — Pulling Methods and Winch Operations',
-                    image: '/images/cable_laying/fig_2_23_pulling_methods.png',
+                    image: '/images/cable_laying/fig_2_23_pulling_methods.webp',
                     caption: 'Figure 2: Winch pulling setup to safely roll cable over guiding devices into trenches.',
                     items: [
                         'Light cables can be pulled manually along the rollers. For heavy armoured cables, use a mechanical cable pulling winch.',
@@ -431,7 +431,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'Step 3 — Erection and Maintenance Hand Tools',
-                    image: '/images/cable_laying/fig_2_24_lineman_tools.png',
+                    image: '/images/cable_laying/fig_2_24_lineman_tools.webp',
                     caption: 'Figure 3: Common lineman hand tools insulated for electrical utility jobs.',
                     items: [
                         'Lineman hand tools must have high-dielectric insulated rubber grips to protect workers from electric shock.',
@@ -442,7 +442,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'Step 4 — Post-Laying Testing and Fault Inspection',
-                    image: '/images/cable_laying/fig_2_30_hand_drill.png',
+                    image: '/images/cable_laying/fig_2_30_hand_drill.webp',
                     caption: 'Figure 4: Ratchet hand drill device used for line structures cleating.',
                     items: [
                         'Cables must be thoroughly tested after installation before applying main voltage to check for any physical damage.',
@@ -528,7 +528,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'A — ব্রিটানিয়া জয়েন্ট এবং ওয়েস্টার্ন ইউনিয়ন জয়েন্ট',
-                    image: '/images/conductor_jointing/fig_4_37_britannia_joint.png',
+                    image: '/images/conductor_jointing/fig_4_37_britannia_joint.webp',
                     caption: 'চিত্র ১: সলিড কপার তারের জন্য ব্রিটানিয়া জয়েন্টের নিটোল নকশা ও বাইন্ডিং তারের সংযোগ।',
                     items: [
                         'তারের প্রান্তে থাকা মরিচা বা অক্সিডেশন দূর করতে প্রথমে তারের ব্রাশ বা শিরীষ কাগজ দিয়ে কন্ডাক্টরের মুখ ভালোভাবে পরিষ্কার করুন।',
@@ -539,7 +539,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — ম্যারেড জয়েন্ট প্রস্তুতকরণ',
-                    image: '/images/conductor_jointing/fig_4_38_married_joint.png',
+                    image: '/images/conductor_jointing/fig_4_38_married_joint.webp',
                     caption: 'চিত্র ২: মাঝখানে জি.আই. কোরযুক্ত স্ট্র্যান্ডেড কপার তারের ম্যারেড জয়েন্ট তৈরির ধাপ।',
                     items: [
                         'ম্যারেড জয়েন্ট মূলত মাঝখানে জি.আই. স্টিলের কোরযুক্ত স্ট্র্যান্ডেড কপার কন্ডাক্টরের মধ্যে তৈরি করা হয়। মনে রাখবেন, এটি অ্যালুমিনিয়াম কন্ডাক্টরে ব্যবহার করা যাবে না।',
@@ -550,7 +550,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'C — টি-জয়েন্ট (T-Joint) প্রস্তুতকরণ',
-                    image: '/images/conductor_jointing/fig_4_39_t_joint.png',
+                    image: '/images/conductor_jointing/fig_4_39_t_joint.webp',
                     caption: 'চিত্র ৩: স্ট্র্যান্ডেড কন্ডাক্টরে টি-জয়েন্ট তৈরির পূর্ব ও পরের চিত্র।',
                     items: [
                         'টি-জয়েন্ট স্ট্র্যান্ডেড কন্ডাক্টরে তৈরি করা হয়। এটি কোনো মেকানিক্যাল টান বা টেনশন সহ্য করতে পারে না; মূলত সাবস্টেশনে জাম্পার বা ট্যাপ অফ সংযোগ নিতে এটি ব্যবহৃত হয়।',
@@ -560,7 +560,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'D — স্লীভ জয়েন্ট (Sleeve Joint) প্রস্তুতকরণ',
-                    image: '/images/conductor_jointing/fig_4_40_sleeve_joint.png',
+                    image: '/images/conductor_jointing/fig_4_40_sleeve_joint.webp',
                     caption: 'চিত্র ৪: টুইস্টিং রেঞ্চের সাহায্যে প্যাঁচানো স্লীভ জয়েন্টের ডায়াগ্রাম।',
                     items: [
                         'স্লীভ জয়েন্ট মূলত ০.০৬ বর্গসেমি পর্যন্ত সাইজের যেকোনো অ্যালুমিনিয়াম কন্ডাক্টরে (যেমন: ACSR, AAC) করা যেতে পারে।',
@@ -582,7 +582,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'F — জাম্পারিং ব্যবস্থা',
-                    image: '/images/conductor_jointing/fig_4_41_jumpering.png',
+                    image: '/images/conductor_jointing/fig_4_41_jumpering.webp',
                     caption: 'চিত্র ৫: পি.জি. ক্ল্যাম্প (P.G. Clamp) ব্যবহার করে জাম্পার সংযোগের চিত্র।',
                     items: [
                         'জাম্পারিং হলো দুটি কন্ডাক্টরের মধ্যে বিদ্যুৎ সংযোগের ব্রিজ। জাম্পার তারকে কখনো সরাসরি প্রধান লাইনের সাথে পেঁচাবেন না, সর্বদা প্যারালাল গ্রুপ (P.G.) ক্ল্যাম্প ব্যবহার করে সংযোগ করুন।',
@@ -641,7 +641,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'A — Britannia Joint & Western Union Joint',
-                    image: '/images/conductor_jointing/fig_4_37_britannia_joint.png',
+                    image: '/images/conductor_jointing/fig_4_37_britannia_joint.webp',
                     caption: 'Figure 1: Britannia joint construction details for solid copper wires.',
                     items: [
                         'Prepare conductors by cleaning the ends thoroughly with a wire brush or emery paper to remove rust or oxidation.',
@@ -652,7 +652,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — Married Joint Preparation',
-                    image: '/images/conductor_jointing/fig_4_38_married_joint.png',
+                    image: '/images/conductor_jointing/fig_4_38_married_joint.webp',
                     caption: 'Figure 2: Married joint setup for stranded copper wire with a central steel core.',
                     items: [
                         'Married joints are prepared between copper conductors having a central G.I. steel wire strand. Do not use this joint for aluminum conductors.',
@@ -663,7 +663,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'C — \'T\' Joint Preparation',
-                    image: '/images/conductor_jointing/fig_4_39_t_joint.png',
+                    image: '/images/conductor_jointing/fig_4_39_t_joint.webp',
                     caption: 'Figure 3: T-joint preparation and completion on stranded conductors.',
                     items: [
                         'T-joint is made with stranded conductors. Note that this joint cannot withstand mechanical tension; it is mainly used for jumpers or taps in substations.',
@@ -673,7 +673,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'D — Sleeve Joint Preparation',
-                    image: '/images/conductor_jointing/fig_4_40_sleeve_joint.png',
+                    image: '/images/conductor_jointing/fig_4_40_sleeve_joint.webp',
                     caption: 'Figure 4: Sleeve joint setup twisted using jointing wrenches.',
                     items: [
                         'Sleeve joints are compatible with all types of aluminum conductors (ACSR, AAC, etc.) up to 0.06 cm² sizes.',
@@ -696,7 +696,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'F — Jumpering Arrangements',
-                    image: '/images/conductor_jointing/fig_4_41_jumpering.png',
+                    image: '/images/conductor_jointing/fig_4_41_jumpering.webp',
                     caption: 'Figure 5: Connection of jumper using P.G. clamps.',
                     items: [
                         'Jumpering is the process of connecting two conductors. Jumpers should always be connected using Parallel Groove (P.G.) clamps rather than direct main conductor wrapping.',
@@ -771,7 +771,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'ধাপ ১ — সঠিক আর্থিংয়ের মূলনীতি ও নিরাপত্তা',
-                    image: '/images/earthing/fig_1_35_proper_earthing.png',
+                    image: '/images/earthing/fig_1_35_proper_earthing.webp',
                     caption: 'চিত্র ১: কন্ডাক্টরের ইনসুলেশন নষ্ট হলে মানুষের শরীর সুরক্ষিত রাখতে প্রপার আর্থিং সংযোগ।',
                     items: [
                         'আর্থিং বলতে বোঝায় বৈদ্যুতিক যন্ত্রপাতির বিদ্যুৎ-পরিবহনহীন ধাতব অংশকে আর্থ ইলেকট্রোডের মাধ্যমে মাটির সাথে সংযুক্ত করা।',
@@ -799,7 +799,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'ধাপ ৪ — পাইপ আর্থিং প্রস্তুতকরণ পদ্ধতি',
-                    image: '/images/earthing/fig_1_36_pipe_earthing.png',
+                    image: '/images/earthing/fig_1_36_pipe_earthing.webp',
                     caption: 'চিত্র ২: মাটির নিচে ফাঁপা জি.আই. পাইপ এবং কয়লা-লবণের স্তরের স্ট্যান্ডার্ড নকশা।',
                     items: [
                         'পাইপ আর্থিং আবাসিক ভবন এবং মাঝারি শিল্প কারখানায় বহুল ব্যবহৃত একটি আর্থিং পদ্ধতি।',
@@ -810,7 +810,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'ধাপ ৫ — প্লেট আর্থিং প্রস্তুতকরণ পদ্ধতি',
-                    image: '/images/earthing/fig_1_37_plate_earthing.png',
+                    image: '/images/earthing/fig_1_37_plate_earthing.webp',
                     caption: 'চিত্র ৩: কপার/জিআই প্লেট এবং তার চারপাশের ১৫ সেমি কয়লা-লবণের অল্টারনেট স্তরের নকশা।',
                     items: [
                         'প্লেট আর্থিং সাবস্টেশন এবং বড় বাণিজ্যিক ভবনের মেইন প্যানেল বোর্ডে উচ্চ সুরক্ষার জন্য ব্যবহৃত হয়।',
@@ -875,7 +875,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'Step 1 — Principles of Proper Earthing',
-                    image: '/images/earthing/fig_1_35_proper_earthing.png',
+                    image: '/images/earthing/fig_1_35_proper_earthing.webp',
                     caption: 'Figure 1: Proper earthing paths protecting users from shock during insulation failure.',
                     items: [
                         'Earthing connects the non-current carrying metallic parts of electrical equipment to the earth using a good conductor (earth electrode).',
@@ -903,7 +903,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'Step 4 — Pipe Earthing Construction',
-                    image: '/images/earthing/fig_1_36_pipe_earthing.png',
+                    image: '/images/earthing/fig_1_36_pipe_earthing.webp',
                     caption: 'Figure 2: Layout details of a standard GI Pipe Earthing system.',
                     items: [
                         'Pipe earthing is widely used in residential and industrial wiring systems due to its reliability and low cost.',
@@ -914,7 +914,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'Step 5 — Plate Earthing Construction',
-                    image: '/images/earthing/fig_1_37_plate_earthing.png',
+                    image: '/images/earthing/fig_1_37_plate_earthing.webp',
                     caption: 'Figure 3: Layout details of a standard Plate Earthing system showing plate dimensions and layering.',
                     items: [
                         'Plate earthing is preferred for small buildings and installations where high safety and low resistance are needed.',
@@ -990,7 +990,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'A — গার্ডিংয়ের মূলনীতি ও কার্যপ্রণালী',
-                    image: '/images/guarding/fig_4_43_cradle_type_guarding.png',
+                    image: '/images/guarding/fig_4_43_cradle_type_guarding.webp',
                     caption: 'চিত্র ১: কন্ডাক্টর ছিঁড়ে নিচে পড়ার সময় মেটাল গার্ড ক্রেডেল স্পর্শ করার নিরাপত্তা মূলক নকশা।',
                     items: [
                         'ওভারহেড লাইনের কন্ডাক্টর ছিঁড়ে গেলে তা যেন মাটিতে থাকা মানুষ, পশু বা নিচে থাকা টেলিফোন লাইনের সংস্পর্শে না আসে, তার জন্য লাইনের নিচে জি.আই. তারের একটি জালি তৈরি করা হয়।',
@@ -1001,7 +1001,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — লেভিস গার্ডিংয়ের প্রকারভেদ (কার্পেট, ক্রেডেল ও বক্স টাইপ)',
-                    image: '/images/guarding/fig_4_44_carpet_guarding.png',
+                    image: '/images/guarding/fig_4_44_carpet_guarding.webp',
                     caption: 'চিত্র ২: রাস্তা পারাপার বা টেলিফোন লাইনের ক্রসিংয়ে ব্যবহৃত কার্পেট গার্ডিংয়ের লেআউট।',
                     items: [
                         '১. কার্পেট গার্ডিং (Carpet Guarding): নির্দিষ্ট দৈর্ঘ্যের ক্রস-আর্ম খুঁটির সাথে যুক্ত করে ৪টি জি.আই. তার ব্যবহার করে এই গার্ডিং প্রস্তুত করা হয়। নির্দিষ্ট দূরত্ব পর পর আড়াআড়ি লেসিং তার বাঁধা থাকে। এটি মূলত বিদ্যুৎ লাইনের ক্রসিং বা পাওয়ার ও টেলিফোন লাইনের ক্রসিংয়ে ব্যবহৃত হয় (চিত্র ২)।',
@@ -1096,7 +1096,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
             steps: [
                 {
                     title: 'A — Guarding Concept and Working Principle',
-                    image: '/images/guarding/fig_4_43_cradle_type_guarding.png',
+                    image: '/images/guarding/fig_4_43_cradle_type_guarding.webp',
                     caption: 'Figure 1: Safe cradle guarding layout capturing a snapped line and causing fuse blow.',
                     items: [
                         'Overhead line guarding prevents a broken live conductor from coming into contact with other electric, telephone, or telegraph lines, roads, railway tracks, and pedestrians.',
@@ -1107,7 +1107,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — Levice Guarding Types (Carpet, Cradle, and Box)',
-                    image: '/images/guarding/fig_4_44_carpet_guarding.png',
+                    image: '/images/guarding/fig_4_44_carpet_guarding.webp',
                     caption: 'Figure 2: Carpet guarding layout designed for telephone line and power line crossings.',
                     items: [
                         '1. Carpet Guarding: Specific length cross arms are fixed on the poles. Four G.I. wires are used for the guard wires, with lacings tied at specific intervals. This type is used for power line or power-to-telephone line crossings (Figure 2).',
@@ -1224,7 +1224,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — আরইসি জে-১ কয়েল আর্থিং পদ্ধতি (REC Standard J-1)',
-                    image: '/images/earthing/fig_4_45_coil_earthing.png',
+                    image: '/images/earthing/fig_4_45_coil_earthing.webp',
                     caption: 'চিত্র ১: আরইসি স্ট্যান্ডার্ড জে-১ অনুযায়ী কন্ডাক্টর পোলের গোড়ায় কয়লা ও লবণের স্তরে কোয়েল আর্থিংয়ের ডায়াগ্রাম।',
                     items: [
                         'কোয়েল আর্থিং সাধারণত সাধারণ ও সাধারণ ডিস্ট্রিবিউশন পোল বা খুঁটির গোড়ায় আর্থিং করতে ব্যবহৃত হয়।',
@@ -1234,7 +1234,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'C — আরইসি জে-২ পাইপ বা স্পাইক আর্থিং পদ্ধতি (REC Standard J-2)',
-                    image: '/images/earthing/fig_4_46_pipe_earthing.png',
+                    image: '/images/earthing/fig_4_46_pipe_earthing.webp',
                     caption: 'চিত্র ২: আরইসি স্ট্যান্ডার্ড জে-২ অনুযায়ী স্পাইক বা পাইপ আর্থিংয়ের নিখুঁত গঠন ও পরিমাপ।',
                     items: [
                         'পাইপ বা স্পাইক আর্থিং মূলত বিশেষ স্ট্রাকচার (যেমন: ডাবল-পোল ট্রান্সফর্মার পোল, সুইচ গিয়ার পোল) এবং রেল বা নদী ক্রসিংয়ের পোলে ব্যবহৃত হয়।',
@@ -1336,7 +1336,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — REC Coil Earthing Method (REC Standard J-1)',
-                    image: '/images/earthing/fig_4_45_coil_earthing.png',
+                    image: '/images/earthing/fig_4_45_coil_earthing.webp',
                     caption: 'Figure 1: REC J-1 spiral coil earthing layout showing 115 turns of G.I. wire and coke-salt layers.',
                     items: [
                         'Coil earthing is adopted at standard distribution line poles or supports.',
@@ -1346,7 +1346,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'C — REC Pipe/Spike Earthing Method (REC Standard J-2)',
-                    image: '/images/earthing/fig_4_46_pipe_earthing.png',
+                    image: '/images/earthing/fig_4_46_pipe_earthing.webp',
                     caption: 'Figure 2: REC J-2 Pipe/Spike Earthing showing assembly dimensions and hot-dip galvanization details.',
                     items: [
                         'Pipe or spike earthing is utilized at special structures (e.g. transformer poles, air-break switches) and major river, railway, or road crossings.',
@@ -1460,7 +1460,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — পোল-মাউন্টেড সাব-স্টেশন',
-                    image: '/images/substation/fig_substation_pole_mounted.png',
+                    image: '/images/substation/fig_substation_pole_mounted.webp',
                     caption: 'চিত্র ১: পোল-মাউন্টেড ডিস্ট্রিবিউশন সাব-স্টেশনের এইচ-পোল আর্কিটেকচার ও সরঞ্জাম ডায়াগ্রাম।',
                     items: [
                         '১১ কেভি (কিছু ক্ষেত্রে ৩৩ কেভি) বিতরণ ব্যবস্থার জন্য পোল-মাউন্টেড সাব-স্টেশন সবচেয়ে সস্তা ও বহুল ব্যবহৃত রূপ।',
@@ -1471,7 +1471,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'C — সাব-স্টেশনের প্রধান সরঞ্জামসমূহ',
-                    image: '/images/substation/fig_substation_equipments_combined.png',
+                    image: '/images/substation/fig_substation_equipments_combined.webp',
                     caption: 'চিত্র ২: সাব-স্টেশনের প্রধান সরঞ্জামসমূহ (বামে: উচ্চ-ভোল্টেজ বুশিং/ইনসুলেটর, মাঝে: ক্যাবলের চারপাশে রিং-টাইপ সিটি, ডানে: পোল-মাউন্টেড পটেনশিয়াল ট্রান্সফর্মার বা পিটি)।',
                     items: [
                         'সাব-স্টেশনে ব্যবহৃত প্রধান সরঞ্জামগুলোর কাজ ও গঠন নিচে দেওয়া হলো:',
@@ -1484,7 +1484,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'D — যন্ত্রপাতির স্ট্যান্ডার্ড প্রতীকসমূহ',
-                    image: '/images/substation/fig_substation_symbols_combined.png',
+                    image: '/images/substation/fig_substation_symbols_combined.webp',
                     caption: 'চিত্র ৩: সাব-স্টেশন সিঙ্গেল লাইন ডায়াগ্রাম বা কী ডায়াগ্রামে ব্যবহৃত স্ট্যান্ডার্ড ড্রয়িং প্রতীকসমূহ।',
                     items: [
                         'সাব-স্টেশনের সিঙ্গেল লাইন ডায়াগ্রাম বা কী ডায়াগ্রাম পড়ার জন্য উপরোক্ত স্ট্যান্ডার্ড ড্রয়িং প্রতীকসমূহ মুখস্থ রাখা আবশ্যক।',
@@ -1541,7 +1541,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'B — Pole-Mounted Substation Construction',
-                    image: '/images/substation/fig_substation_pole_mounted.png',
+                    image: '/images/substation/fig_substation_pole_mounted.webp',
                     caption: 'Figure 1: Pole-mounted distribution substation structure with H-pole design and equipment layouts.',
                     items: [
                         'Pole-mounted substations are the most economical choice for local distribution up to 11kV (or 33kV in some cases).',
@@ -1552,7 +1552,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'C — Substation Key Equipment',
-                    image: '/images/substation/fig_substation_equipments_combined.png',
+                    image: '/images/substation/fig_substation_equipments_combined.webp',
                     caption: 'Figure 2: Key substation equipment (Left: High-Voltage Bushing/Insulator, Center: Ring-Type Current Transformers, Right: Pole-Mounted Potential Transformer).',
                     items: [
                         'Key equipment in a transformer substation serves the following functions:',
@@ -1565,7 +1565,7 @@ export const PRACTICAL_FIELD_CHAPTERS = [
                 },
                 {
                     title: 'D — Substation Equipment Standard Symbols',
-                    image: '/images/substation/fig_substation_symbols_combined.png',
+                    image: '/images/substation/fig_substation_symbols_combined.webp',
                     caption: 'Figure 3: Standard drawing symbols used for key equipment in substation single-line diagrams.',
                     items: [
                         'Understanding these symbols is essential to read and interpret single-line key diagrams of substations.',

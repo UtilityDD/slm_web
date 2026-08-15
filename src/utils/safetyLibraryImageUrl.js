@@ -1,9 +1,8 @@
 import { toNativeRemoteUrl } from './nativeRemoteAssets';
 
 /**
- * Safety Library sheet images are Google Drive share links.
- * PWA Chrome often loads lh3 fine; Capacitor WebView (localhost) frequently fails
- * on lh3/u/0 — use the same Drive fallback chain as visual quizzes.
+ * Safety Library images are in-app paths under /assets/safety/.
+ * Native APK rewrites those to the live site. Drive URLs are only a leftover fallback.
  */
 
 export function extractSafetyLibraryDriveId(url) {
@@ -12,7 +11,7 @@ export function extractSafetyLibraryDriveId(url) {
     return match ? match[1] || match[2] || '' : '';
 }
 
-/** Ordered candidates: hosted relative path (rewritten on native), then Drive URLs that work in WebView. */
+/** Ordered candidates: hosted relative path (rewritten on native), then Drive URLs if any remain. */
 export function buildSafetyLibraryImageCandidates(rawUrl) {
     const trimmed = String(rawUrl || '').trim();
     if (!trimmed) return [];
@@ -24,8 +23,11 @@ export function buildSafetyLibraryImageCandidates(rawUrl) {
 
     if (trimmed.startsWith('/')) {
         push(toNativeRemoteUrl(trimmed));
-    } else if (!/^https?:\/\//i.test(trimmed) && !trimmed.includes('drive.google.com')) {
+        return candidates;
+    }
+    if (!/^https?:\/\//i.test(trimmed) && !trimmed.includes('drive.google.com')) {
         push(toNativeRemoteUrl(trimmed.startsWith('assets/') ? `/${trimmed}` : trimmed));
+        return candidates;
     }
 
     const driveId = extractSafetyLibraryDriveId(trimmed);

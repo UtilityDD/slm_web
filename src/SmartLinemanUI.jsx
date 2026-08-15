@@ -111,7 +111,7 @@ export default function SmartLinemanUI() {
     let idleId = null;
     const run = () => {
       if (cancelled) return;
-      libraryService.fetchLibrary().catch(err => console.warn('Background library pre-fetch failed:', err));
+      libraryService.fetchLibrary().catch(err => console.warn('Background library warm-up failed:', err));
     };
     const timer = setTimeout(() => {
       if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -574,7 +574,7 @@ export default function SmartLinemanUI() {
     if (nativeExitHintTimerRef.current) clearTimeout(nativeExitHintTimerRef.current);
   }, []);
 
-  // Background Preloading for Safety Library (Drive images) — far after first paint
+  // Background preload for Safety Library images — far after first paint
   // so post-login Training + Supabase chapter sync keep network priority.
   useEffect(() => {
     let cancelled = false;

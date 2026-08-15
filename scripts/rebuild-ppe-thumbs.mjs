@@ -49,15 +49,15 @@ async function main() {
     ['safety-helmet', 'public/assets/safety/helmet.webp'],
     ['full-body-harness', 'public/assets/safety/Full_Body_Harness1.webp'],
     ['safety-shoes', 'public/assets/safety/boots1.webp'],
-    ['discharge-rod', 'public/assets/safety/discharge_rod.png'],
+    ['discharge-rod', 'public/assets/safety/discharge_rod.webp'],
     ['gum-boot', 'public/assets/safety/boots.webp'],
     ['voltage-detector', 'public/assets/safety/tester.webp'],
     ['reflective-jacket', 'public/assets/safety/High_Visibility_Vest_2.webp'],
-    ['raincoat', 'public/assets/safety/raincoat.png', { trim: 12 }],
-    ['torch', 'public/assets/safety/torch.png', { trim: 10 }],
+    ['raincoat', 'public/assets/safety/raincoat.webp', { trim: 12 }],
+    ['torch', 'public/assets/safety/torch.webp', { trim: 10 }],
     // Lesson / FAQ fallbacks
     ['safety-goggles', 'public/images/loader/goggles.webp'],
-    ['safety-belt', 'public/assets/safety/safety_belt.png', { trim: 12 }],
+    ['safety-belt', 'public/assets/safety/safety_belt.webp', { trim: 12 }],
   ];
 
   for (const [slug, src, opts] of map) {

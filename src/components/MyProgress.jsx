@@ -509,7 +509,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                         <div className="flex flex-col items-center">
                                             <div className="signature-line mb-3 flex h-10 items-center justify-center overflow-visible text-slate-400">
                                                 <img
-                                                    src="/signature.png"
+                                                    src="/signature.webp"
                                                     alt="Official Signature"
                                                     className="h-14 w-auto object-contain opacity-90 mix-blend-multiply sm:h-16"
                                                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -817,7 +817,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                 <div className="flex w-full items-center justify-center gap-8 border-t-2 border-slate-200 pt-4">
                                     <div className="flex flex-col items-center">
                                         <img
-                                            src="/signature.png"
+                                            src="/signature.webp"
                                             alt="Signature"
                                             className="mb-1 h-14 w-auto object-contain opacity-90 mix-blend-multiply"
                                             onError={(e) => { e.target.style.display = 'none'; }}

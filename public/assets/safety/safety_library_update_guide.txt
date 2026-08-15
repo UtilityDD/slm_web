@@ -1,44 +1,19 @@
-# SAFETY LIBRARY - CONTENT UPDATE GUIDELINES
-==============================================
+# SAFETY LIBRARY — CONTENT UPDATE
 
-This guide helps you update the Safety & Tools Library dynamically without changing any application code.
+Identify (Safety Library) is an in-app catalog. It does not read a live Google Sheet.
 
-## 1. WHERE IS THE DATA?
-The data is stored in your Supabase project in the 'safety_library' table. 
-You can access it via your Supabase Dashboard.
+## Where is the data?
 
-## 2. UPDATING IMAGES
-You have two ways to add images:
+`src/data/safetyLibraryItems.js`
 
-### Option A: Using Google Drive (Recommended)
-1. Upload your image to Google Drive.
-2. Right-click File -> Get Link.
-3. Set access to "Anyone with the link can view".
-4. Copy the link (e.g., https://drive.google.com/file/d/1A2B3C.../view).
-5. Paste this link into the 'images' array in the Supabase table.
+Each item has: id, category, name_bn, function_bn, images[], approx_price_inr, guide_bn, related_items[].
 
-### Option B: Local Assets
-1. Copy the new image files into this folder (public/assets/safety/).
-2. Note the filename (e.g., gloves_new.webp).
-3. Add the path in the Supabase 'images' array: ["/assets/safety/gloves_new.webp"]
+## Images
 
-## 3. DATABASE FORMAT (Supabase UI)
-When editing the 'images' column for a row, use a JSON array format.
-- Single image: ["link1"]
-- Multiple images: ["link1", "link2", "link3"]
+1. Copy files into `public/assets/safety/` (or `public/assets/safety/library/<category>/`).
+2. Run `node scripts/maintenance/compress-safety-library-images.mjs` so they stay phone-sized WebP.
+3. Add the public path to that item's `images` array, e.g. `"/assets/safety/library/ppe/helmet.webp"`.
 
-The first image in the list will be the primary image displayed.
+The first image is the grid thumbnail source (a random image from the list is shown on cards).
 
-## 4. PROMPT FOR AI ASSISTANCE
-If you have added new images to this folder and want me (Antigravity) to help you sync everything, copy and paste this prompt:
-
----
-
-PROMPT START:
-"I have added new safety images to the 'public/assets/safety' folder. Please scan the directory, identify the new items, and provide me with the SQL 'INSERT' or 'UPDATE' commands to sync the Supabase 'safety_library' table with these new assets. Also, ensure the names in Bengali use common field nomenclature (phonetic English)."
-PROMPT END:
-
----
-
-## Technical Note:
-The app uses a custom helper to convert Google Drive links into direct-view images automatically. Do not use 'Preview' or 'Export' specific links; standard Sharing links work perfectly.
+Native APK loads these from the live website, not from Drive.

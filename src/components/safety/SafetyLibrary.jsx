@@ -96,6 +96,8 @@ const ImageSlider = forwardRef(function ImageSlider(
         onZoomChange,
         /** Tall charts: let image use natural height so the modal scroll body can scroll vertically at 1× zoom. */
         naturalImageHeight = false,
+        /** Fill a sized parent (e.g. 2/3 viewport) — image scales up/down with object-contain. */
+        fillFrame = false,
         /** Auto-rotate slides every 3s when multiple images (off in detail modal). */
         autoAdvance = true
     },
@@ -400,7 +402,7 @@ const ImageSlider = forwardRef(function ImageSlider(
 
     if (!validImages || validImages.length === 0) {
         return (
-            <div className={`${aspect} flex flex-col items-center justify-center border-b border-slate-200/80 bg-slate-100 p-4 text-center text-slate-400`}>
+            <div className={`${fillFrame ? 'h-full w-full' : aspect} flex flex-col items-center justify-center border-b border-slate-200/80 bg-slate-100 p-4 text-center text-slate-400`}>
                 <svg className="mb-2 h-8 w-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -412,7 +414,7 @@ const ImageSlider = forwardRef(function ImageSlider(
     const canZoomIn = zoom < ZOOM_MAX - 0.01;
     const canZoomOut = zoom > ZOOM_MIN + 0.01;
 
-    const boxAspect = naturalImageHeight ? 'w-full min-h-0' : aspect;
+    const boxAspect = fillFrame ? 'h-full w-full' : naturalImageHeight ? 'w-full min-h-0' : aspect;
     const touchClass =
         enableZoom && zoom > 1.001
             ? `touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`
@@ -426,7 +428,7 @@ const ImageSlider = forwardRef(function ImageSlider(
             onPointerDown={enableZoom ? onViewportPointerDown : undefined}
             onLostPointerCapture={enableZoom ? onLostPointerCapture : undefined}
             className={`group/slider relative flex select-none justify-center bg-white ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-                naturalImageHeight ? 'items-start overflow-x-hidden overflow-y-visible' : 'items-center overflow-hidden'
+                naturalImageHeight && !fillFrame ? 'items-start overflow-x-hidden overflow-y-visible' : 'items-center overflow-hidden'
             } ${touchClass}`}
         >
             {showControls && validImages.length > 1 && (
@@ -444,13 +446,15 @@ const ImageSlider = forwardRef(function ImageSlider(
 
             <div
                 className={
-                    naturalImageHeight
-                        ? 'flex w-full items-start justify-center p-1'
-                        : 'flex min-h-full min-w-full items-center justify-center p-1'
+                    fillFrame
+                        ? 'flex h-full w-full items-center justify-center p-2'
+                        : naturalImageHeight
+                          ? 'flex w-full items-start justify-center p-1'
+                          : 'flex min-h-full min-w-full items-center justify-center p-1'
                 }
                 style={{
                     transform: enableZoom ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` : `scale(${zoom})`,
-                    transformOrigin: naturalImageHeight ? 'top center' : 'center center',
+                    transformOrigin: fillFrame || !naturalImageHeight ? 'center center' : 'top center',
                     transition: isDragging ? 'none' : 'transform 0.2s ease-out'
                 }}
             >
@@ -468,9 +472,11 @@ const ImageSlider = forwardRef(function ImageSlider(
                         }
                     }}
                     className={`object-contain filter drop-shadow-md transition-opacity duration-300 ${
-                        naturalImageHeight
-                            ? 'h-auto w-full max-w-full'
-                            : 'h-auto w-auto max-h-full max-w-full'
+                        fillFrame
+                            ? 'h-full w-full'
+                            : naturalImageHeight
+                              ? 'h-auto w-full max-w-full'
+                              : 'h-auto w-auto max-h-full max-w-full'
                     } ${enableZoom ? '' : 'zoom-in-95 duration-500 group-hover/slider:scale-105'}`}
                 />
             </div>
@@ -709,6 +715,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             'Tools': { icon: <WrenchIcon className="w-4 h-4" /> },
             'Insulators': { icon: <TreeIcon className="w-4 h-4" /> },
             'Charts': { icon: <LineChartIcon className="w-4 h-4" /> },
+            'AB Cable Items': { icon: <WrenchIcon className="w-4 h-4" /> },
             'Others': { icon: <InfoIcon className="w-4 h-4" /> }
         };
         return metadata[catId] || { icon: <InfoIcon className="w-4 h-4" /> };
@@ -1091,22 +1098,18 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
                             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
                                 <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
-                                <div
-                                    className={`group/modal-img relative w-full shrink-0 bg-white sm:h-full sm:border-r sm:border-slate-200/80 ${
-                                        selectedItem.category === 'Charts' ? 'sm:overflow-y-auto sm:no-scrollbar' : 'sm:overflow-hidden'
-                                    }`}
-                                >
+                                <div className="group/modal-img relative flex h-[66dvh] w-full max-h-[66dvh] shrink-0 items-center justify-center bg-white sm:h-[66dvh] sm:max-h-[66dvh] sm:border-r sm:border-slate-200/80">
                                     <ImageSlider
                                         key={selectedItem.id}
                                         ref={detailSliderRef}
                                         images={selectedItem.images}
                                         alt={selectedItem.name_bn}
-                                        aspect="h-full"
+                                        aspect="h-full w-full"
                                         showControls={true}
                                         enableZoom
                                         zoomChrome="none"
                                         onZoomChange={setDetailZoomLevel}
-                                        naturalImageHeight
+                                        fillFrame
                                         autoAdvance={false}
                                     />
                                 </div>
