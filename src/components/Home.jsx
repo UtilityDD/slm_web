@@ -546,7 +546,7 @@ export default function Home({
     },
     {
       id: 'safety-library',
-      label: bn ? 'চিনুন' : 'Identify',
+      label: bn ? 'পরিচিতি' : 'Identify',
       value: null,
       onClick: () => go('safety-library'),
       accent: 'border-indigo-200 bg-indigo-50/80 text-indigo-900',
@@ -558,7 +558,7 @@ export default function Home({
           <path d="M12 16h.01" />
         </svg>
       ),
-      ariaLabel: bn ? 'চিনুন' : 'Identify',
+      ariaLabel: bn ? 'পরিচিতি' : 'Identify',
     },
     {
       id: 'life-skill',

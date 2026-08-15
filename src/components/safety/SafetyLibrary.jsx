@@ -611,7 +611,7 @@ const SafetyLibraryLoadingView = ({ language }) => {
     );
 };
 
-const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
+const GridImage = ({ images, alt }) => {
     const [randomImage] = useState(() => {
         if (!images || images.length === 0) return null;
         const randomIndex = Math.floor(Math.random() * images.length);
@@ -621,26 +621,24 @@ const GridImage = ({ images, alt, aspect = 'aspect-square' }) => {
 
     if (!randomImage || failed) {
         return (
-            <div className={`${aspect} bg-slate-100 flex flex-col items-center justify-center p-4 text-slate-400`}>
+            <div className="flex h-full w-full flex-col items-center justify-center bg-slate-100 p-4 text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
             </div>
         );
     }
 
     return (
-        <div className={`${aspect} bg-white relative overflow-hidden flex items-center justify-center group-hover:scale-105 transition-transform duration-500`}>
-            <img
-                src={toSafetyLibraryDisplayUrl(randomImage)}
-                alt={alt}
-                data-fallback-index="0"
-                onError={(e) => {
-                    if (handleSafetyLibraryImageError(e, randomImage)) {
-                        setFailed(true);
-                    }
-                }}
-                className="max-h-full w-full object-contain filter drop-shadow-sm p-2"
-            />
-        </div>
+        <img
+            src={toSafetyLibraryDisplayUrl(randomImage)}
+            alt={alt}
+            data-fallback-index="0"
+            onError={(e) => {
+                if (handleSafetyLibraryImageError(e, randomImage)) {
+                    setFailed(true);
+                }
+            }}
+            className="h-full w-full object-contain object-center p-1.5 filter drop-shadow-sm transition-transform duration-500 group-hover:scale-[1.04] sm:p-2"
+        />
     );
 };
 
@@ -738,7 +736,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             backPreviousAria: 'Previous item',
         },
         bn: {
-            title: 'চিনুন',
+            title: 'পরিচিতি',
             searchPlaceholder: 'খুঁজুন...',
             noResults: 'কিছু পাওয়া যায়নি',
             priceLabel: 'মূল্য:',
@@ -963,17 +961,19 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             <div
                                 key={item.id}
                                 onClick={() => openItemDetail(item)}
-                                className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
+                                className="group flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
                             >
-                                <div className="relative aspect-square">
-                                    <GridImage images={item.images} alt={item.name_bn} aspect="h-full" />
-                                    <div className="absolute top-2 left-2">
+                                <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
+                                    <div className="absolute inset-0">
+                                        <GridImage images={item.images} alt={item.name_bn} />
+                                    </div>
+                                    <div className="absolute top-2 left-2 z-10">
                                         <span className="rounded-full border border-orange-200/80 bg-orange-50 px-2 py-0.5 text-[8px] font-bold text-orange-800 shadow-sm">
                                             {item.category}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex flex-grow flex-col justify-center bg-white p-2.5 sm:p-4">
+                                <div className="flex h-[3.25rem] shrink-0 items-center justify-center bg-white px-2 py-2 sm:h-[3.75rem] sm:px-3">
                                     <h3 className="line-clamp-2 text-center text-[11px] font-black leading-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-sm">
                                         {item.name_bn}
                                     </h3>

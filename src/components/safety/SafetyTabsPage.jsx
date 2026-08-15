@@ -5,7 +5,7 @@ import MyPPE from './MyPPE';
 import SafetyLibrary from './SafetyLibrary';
 
 /**
- * Full-height shell for My PPE and Identify (Chinun).
+ * Full-height shell for My PPE and Identify (Porichiti).
  * Home opens each as its own view — no shared top tabs.
  */
 export default function SafetyTabsPage({ activeTab, setCurrentView, language, user }) {
