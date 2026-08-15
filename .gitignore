@@ -15,6 +15,9 @@ local.properties
 *.err
 report_summary.txt
 
+# Score-repair JSON snapshots (contain user scores)
+scripts/maintenance/backups/
+
 # Temp script outputs
 ai_fix.*
 enhance_chapters.*

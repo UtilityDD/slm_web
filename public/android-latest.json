@@ -1,12 +1,12 @@
 {
-  "version_name": "1.3.125",
-  "version_code": 123,
+  "version_name": "1.3.126",
+  "version_code": 124,
   "apk_url": "https://www.smartlineman.in/downloads/smartlineman.apk",
   "download_page": "https://www.smartlineman.in/download",
   "force_update": false,
   "min_supported_version_code": 68,
   "release_notes": {
-    "en": "Please update — Safety Library is now in-app with local photos, images are smaller on mobile, and unused extras were removed.",
-    "bn": "নতুন ভার্সন আপডেট করুন—সেফটি লাইব্রেরি এখন অ্যাপের ভিতরে, ছবি হালকা, অপ্রয়োজনীয় ছবি বাদ।"
+    "en": "Please update — Reading scores now add every +20, including later lesson reviews. Training badges still follow first-time lessons only.",
+    "bn": "নতুন ভার্সন আপডেট করুন—পড়ার পয়েন্টে এখন প্রতিবারের +২০ যোগ হবে। ট্রেনিং ব্যাজ শুধু প্রথমবারের পাঠে।"
   }
 }

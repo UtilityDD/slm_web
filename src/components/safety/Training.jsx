@@ -4,7 +4,7 @@ import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL, CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
-import { calculateLevelFromProgress, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
+import { calculateLevelFromProgress, firstTimeReadingPointsFromLessons, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
@@ -226,12 +226,12 @@ function getActiveCoreChapterNumber(completedLessons, trainingChapters) {
  * Welcome-card copy from reading lesson ids only (chapters 1–9 vs manifest counts).
  * @returns {{ primary: string, secondary: string | null } | null}
  */
-function buildLessonProgressWelcomeCopy({ completedLessons, trainingChapters, language, readingPoints }) {
+function buildLessonProgressWelcomeCopy({ completedLessons, trainingChapters, language }) {
     const total = sumCoreProgramLessonTotal(trainingChapters);
     const done = countCoreProgramLessonsCompleted(completedLessons);
     const activeChapter = getActiveCoreChapterNumber(completedLessons, trainingChapters);
     const levelNum = calculateLevelFromProgress(completedLessons, trainingChapters);
-    const badge = getBadgeByLevel(levelNum, readingPoints || 0);
+    const badge = getBadgeByLevel(levelNum, firstTimeReadingPointsFromLessons(completedLessons));
 
     if (language === 'bn') {
         const d = toBengaliNumber(done, 'bn');
@@ -1198,7 +1198,6 @@ export default function Training({
     /** FAQ opened via ?tab=faq (Home/More) — no Training back chevron; use bottom nav / system Back. */
     const [faqExitUsesHistory, setFaqExitUsesHistory] = useState(false);
     const [fetchError, setFetchError] = useState(false);
-    const [readingPoints, setReadingPoints] = useState(0);
     const { expanded: radioGlobalExpanded } = useLifeSkillRadio();
 
     // Supplementary Modules State — surface from Home deep link / hash (no in-page tabs)
@@ -1343,9 +1342,8 @@ export default function Training({
             completedLessons,
             trainingChapters,
             language,
-            readingPoints,
         });
-    }, [user?.id, completedLessons, trainingChapters, language, readingPoints]);
+    }, [user?.id, completedLessons, trainingChapters, language]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
@@ -2295,7 +2293,6 @@ export default function Training({
 
             if (isGuestUser(profile)) {
                 setCompletedLessons([]);
-                setReadingPoints(0);
                 return;
             }
 
@@ -2311,7 +2308,7 @@ export default function Training({
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('completed_lessons, reading_points, points')
+                    .select('completed_lessons, points')
                     .eq('id', user.id)
                     .single();
 
@@ -2330,18 +2327,13 @@ export default function Training({
                         console.log('⚠️ Admin reset detected on server. Purging local progress...');
                         storageUtils.removeItem(`training_progress_${user.id}`);
                         setCompletedLessons([]);
-                        setReadingPoints(0);
                         return; // Exit, everything is now reset to 0
                     }
 
                     console.log('✅ Lessons fetched from Supabase:', {
                         completed_lessons: data.completed_lessons?.length || 0,
-                        reading_points: data.reading_points || 0,
                         sample_lessons: data.completed_lessons?.slice(0, 5)
                     });
-
-                    // Set reading points
-                    setReadingPoints(data.reading_points || 0);
 
                     if (data.completed_lessons) {
                         // 3. Merge (Union) — supplementary `supp_*` ids stay local-only, never in profile.completed_lessons

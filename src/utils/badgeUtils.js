@@ -1,4 +1,9 @@
-import { filterCoreCompletedLessonIds } from './trainingLessonIds';
+import { CORE_LESSON_MONTHLY_BONUS_POINTS, filterCoreCompletedLessonIds } from './trainingLessonIds';
+
+/** Unique completed core lessons × 20 — Training badge only; not cumulative re-reads. */
+export function firstTimeReadingPointsFromLessons(completedLessons) {
+    return filterCoreCompletedLessonIds(completedLessons).length * CORE_LESSON_MONTHLY_BONUS_POINTS;
+}
 
 /**
  * Learning-path milestone badges (medal + ribbon on Training roadmap).
@@ -81,13 +86,18 @@ export const badgeLevels = [
     },
 ];
 
-export const getBadgeByLevel = (level, readingPoints = 0) => {
+/**
+ * Training / rank badge from first-time chapter progress.
+ * Pass unique-lesson reading (firstTimeReadingPointsFromLessons), never cumulative re-read totals.
+ */
+export const getBadgeByLevel = (level, firstTimeReadingPoints = 0) => {
     // Treat level 0 or null as Level 1 (Trainee)
     let effectiveLevel = (!level || level < 1) ? 1 : level;
 
     // Fail-proof Point-based Promotion (Logical Override)
-    // Thresholds based on chapter completion (approx 200 pts per chapter)
+    // Thresholds based on first-time chapter completion (approx 200 pts per chapter)
     // We use slightly lower thresholds to account for minor sync latencies
+    const readingPoints = firstTimeReadingPoints;
     if (readingPoints >= 1780) effectiveLevel = Math.max(effectiveLevel, 9);      // Expert (Ch 9)
     else if (readingPoints >= 1580) effectiveLevel = Math.max(effectiveLevel, 9); // Expert (Ch 8 completed)
     else if (readingPoints >= 1380) effectiveLevel = Math.max(effectiveLevel, 8); // Specialist (Ch 7 completed)

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
-import { getBadgeByLevel } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { leaderboardService } from '../utils/leaderboardService';
 import { getBoardTabLabel, getUserPrizeWins } from '../utils/hallOfFamePrizes';
@@ -292,7 +292,7 @@ export default function LeaderboardUserSheet({
 
     const badge = getBadgeByLevel(
         merged.training_level || 0,
-        merged.all_time_reading_points ?? merged.reading_points ?? 0
+        firstTimeReadingPointsFromLessons(merged.completed_lessons)
     );
 
     const ppeEquipped = ppeAnswers.filter((a) => a.available).length;

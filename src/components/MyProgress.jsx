@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas';
 import { QRCodeCanvas } from 'qrcode.react';
 import CryptoJS from 'crypto-js';
 import { supabase } from '../supabaseClient';
-import { getBadgeByLevel } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { WEBSITE_URL } from '../config';
 import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
@@ -282,7 +282,10 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
         };
     }, [attempts, profile, bn]);
 
-    const badge = getBadgeByLevel(profile?.training_level || 0, profile?.reading_points || 0);
+    const badge = getBadgeByLevel(
+        profile?.training_level || 0,
+        firstTimeReadingPointsFromLessons(mergeCoreLessonProgressIds(profile?.completed_lessons, attempts))
+    );
     const phone = safePhone(profile);
     const joinedDate = formatDate(profile?.created_at, language);
     const lastActive = formatDate(profile?.last_login_at, language);

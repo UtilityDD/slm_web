@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
-import { getBadgeByLevel } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
@@ -385,7 +385,7 @@ export default function Home({
   const lessonCount = coreLessons.length;
   const progressPct = Math.min(100, Math.round((lessonCount / APPROX_CORE_LESSON_TOTAL) * 100));
   const trainingLevel = userProfile?.training_level || 1;
-  const badge = getBadgeByLevel(trainingLevel, userProfile?.reading_points || 0);
+  const badge = getBadgeByLevel(trainingLevel, firstTimeReadingPointsFromLessons(coreLessons));
   const badgeName = bn ? badge.bn : badge.en;
   const displayName =
     userProfile?.full_name && !userProfile.full_name.includes('@')

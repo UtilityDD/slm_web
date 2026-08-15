@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
-import { getBadgeByLevel } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
 import { leaderboardService } from '../utils/leaderboardService';
@@ -2470,7 +2470,7 @@ export default function Competitions({
                                                                 <div className="relative mb-1.5 shrink-0">
                                                                     <ReadingLevelAvatarFrame
                                                                         level={player.training_level || 0}
-                                                                        readingPoints={player.all_time_reading_points !== undefined ? player.all_time_reading_points : (player.reading_points || 0)}
+                                                                        readingPoints={firstTimeReadingPointsFromLessons(player.completed_lessons)}
                                                                         language={language}
                                                                         sizeClass={avatarSize}
                                                                         avatarUrl={player.avatar_url}
@@ -2624,7 +2624,7 @@ export default function Competitions({
                                                 />
                                             </div>
                                             {(() => {
-                                                const readingPts = item.all_time_reading_points !== undefined ? item.all_time_reading_points : (item.reading_points || 0);
+                                                const readingPts = firstTimeReadingPointsFromLessons(item.completed_lessons);
                                                 const onlineSlot = leaderboardTab === 'monthly' && (item.last_active || item.last_login_at) && (() => {
                                                     const lastActiveDate = item.last_active || item.last_login_at;
                                                     const date = new Date(lastActiveDate);

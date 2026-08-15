@@ -16,6 +16,7 @@ export function getReadingFrameRingClass(level) {
 /**
  * Pro avatar plate: circle photo + subtle tier ring + L# caption under the face.
  * Tap L# for full stage name (mobile-friendly).
+ * `readingPoints` must be first-time unique-lesson points, not cumulative re-reads.
  */
 export default function ReadingLevelAvatarFrame({
     level = 0,
