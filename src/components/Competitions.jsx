@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
-import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
+import { completedLessonsForBadge, firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
-import { leaderboardService } from '../utils/leaderboardService';
+import { leaderboardService, overlayCumulativeReading } from '../utils/leaderboardService';
 import { requestManager } from '../utils/requestManager';
 import { visualQuizService } from '../utils/visualQuizService';
 import {
@@ -80,7 +80,7 @@ function peekCachedMonthlyLeaderboard() {
     const now = new Date();
     const m = now.getMonth() + 1;
     const y = now.getFullYear();
-    const data = cacheHelper.get(`leaderboard_monthly_ist_${y}_${m}`);
+    const data = cacheHelper.get(`leaderboard_monthly_ist_badge_${y}_${m}`);
     return Array.isArray(data) ? data : [];
 }
 
@@ -88,7 +88,7 @@ function peekCachedEncouragementBoards(lang = 'bn') {
     const now = new Date();
     const m = now.getMonth() + 1;
     const y = now.getFullYear();
-    return cacheHelper.get(`leaderboard_encouragement_ist_${y}_${m}_${lang}`) || null;
+    return cacheHelper.get(`leaderboard_encouragement_ist_badge_${y}_${m}_${lang}`) || null;
 }
 
 const LiveIndicator = () => (
@@ -783,7 +783,10 @@ export default function Competitions({
         }
     }[language];
 
-    const currentUserBadge = getBadgeByLevel((userProfile && userProfile.training_level) || 0);
+    const currentUserBadge = getBadgeByLevel(
+        (userProfile && userProfile.training_level) || 0,
+        firstTimeReadingPointsFromLessons(userProfile?.completed_lessons)
+    );
     const hourlyLifetimePoints = getLifetimePoints(userProfile, userRank);
     const hourlyStakesUi = getHourlyStakesUi(hourlyLifetimePoints, language);
     const [showHourlyPenaltyInfoModal, setShowHourlyPenaltyInfoModal] = useState(false);
@@ -1551,14 +1554,14 @@ export default function Competitions({
         }
 
         try {
-            const cacheKey = `user_rank_all_time_${user.id}`;
+            const cacheKey = `user_rank_all_time_rdg_${user.id}`;
 
             const rankData = await requestManager.fetch(
                 cacheKey,
                 async () => {
                     const query = supabase
                         .from('leaderboard_view')
-                        .select('score, reading_points') 
+                        .select('score, reading_points, completed_lessons')
                         .eq('user_id', user.id);
 
                     const { data: myData, error: myError } = await query.maybeSingle();
@@ -1576,10 +1579,16 @@ export default function Competitions({
 
                     if (countError) throw countError;
 
+                    const [overlaid] = await overlayCumulativeReading([{
+                        user_id: user.id,
+                        completed_lessons: myData.completed_lessons,
+                        reading_points: myData.reading_points || 0,
+                    }]);
+
                     return {
                         rank: count + 1,
                         score: myScoreValue,
-                        reading_points: myData.reading_points || 0,
+                        reading_points: overlaid?.reading_points || myData.reading_points || 0,
                     };
                 },
                 { ttl: 5, swr: true, forceRefresh }
@@ -1603,7 +1612,7 @@ export default function Competitions({
 
     const fetchLeaderboard = async (forceRefresh = false) => {
         try {
-            const cacheKey = 'leaderboard_top_10_all_time';
+            const cacheKey = 'leaderboard_top_10_all_time_rdg';
 
             const formattedData = await requestManager.fetch(
                 cacheKey,
@@ -1618,11 +1627,11 @@ export default function Competitions({
 
                     if (error) throw error;
 
-                    return data.map(item => ({
+                    return overlayCumulativeReading((data || []).map(item => ({
                         ...item,
                         points: item.score ?? 0,
                         reading_points: item.reading_points ?? 0
-                    }));
+                    })));
                 },
                 { ttl: 5, swr: true, forceRefresh }
             );
@@ -2470,7 +2479,7 @@ export default function Competitions({
                                                                 <div className="relative mb-1.5 shrink-0">
                                                                     <ReadingLevelAvatarFrame
                                                                         level={player.training_level || 0}
-                                                                        readingPoints={firstTimeReadingPointsFromLessons(player.completed_lessons)}
+                                                                        readingPoints={firstTimeReadingPointsFromLessons(completedLessonsForBadge(player))}
                                                                         language={language}
                                                                         sizeClass={avatarSize}
                                                                         avatarUrl={player.avatar_url}
@@ -2624,7 +2633,7 @@ export default function Competitions({
                                                 />
                                             </div>
                                             {(() => {
-                                                const readingPts = firstTimeReadingPointsFromLessons(item.completed_lessons);
+                                                const readingPts = firstTimeReadingPointsFromLessons(completedLessonsForBadge(item));
                                                 const onlineSlot = leaderboardTab === 'monthly' && (item.last_active || item.last_login_at) && (() => {
                                                     const lastActiveDate = item.last_active || item.last_login_at;
                                                     const date = new Date(lastActiveDate);
@@ -2757,7 +2766,10 @@ export default function Competitions({
 
                 {/* My Position Sticky Bar */}
                 {!showHallOfFame && user && userRank && !loadingFull && leaderboardTab === 'all-time' && (() => {
-                    const userBadge = getBadgeByLevel(userProfile?.training_level || 0);
+                    const userBadge = getBadgeByLevel(
+                        userProfile?.training_level || 0,
+                        firstTimeReadingPointsFromLessons(userProfile?.completed_lessons)
+                    );
                     return (
                         <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-8 left-0 right-0 z-50 px-4 md:px-8 pointer-events-none">
                             <div className="max-w-3xl mx-auto">

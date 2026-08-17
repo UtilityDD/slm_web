@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { applyCumulativeReadingToRows } from "./cumulativeReadingPoints";
 import { requestManager } from "./requestManager";
 import {
     aggregateActivityAttempts,
@@ -115,7 +116,7 @@ async function fetchProfilesForIds(userIds) {
     for (let i = 0; i < unique.length; i += chunkSize) {
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points')
+            .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points, completed_lessons')
             .in('id', unique.slice(i, i + chunkSize));
 
         if (error) {
@@ -136,6 +137,7 @@ function buildBoundaryOnlyRow(userId, delta, profile) {
         avatar_url: profile.avatar_url ?? null,
         district: profile.district ?? null,
         training_level: profile.training_level ?? 0,
+        completed_lessons: profile.completed_lessons || [],
         points: delta.points,
         reading_points: delta.reading_points,
         quiz_points: delta.points - delta.reading_points,
@@ -145,6 +147,7 @@ function buildBoundaryOnlyRow(userId, delta, profile) {
             district: profile.district ?? null,
             created_at: profile.created_at ?? null,
             slm_id: profile.slm_id ?? null,
+            completed_lessons: profile.completed_lessons || [],
         },
     };
 }
@@ -178,6 +181,49 @@ function applyIstDeltasToRows(rows, deltas, profileById = {}) {
     return adjusted
         .filter((row) => (Number(row.points) || 0) !== 0 || (Number(row.total_penalties) || 0) !== 0)
         .sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0));
+}
+
+async function fetchReadingAttemptsByUserIds(userIds) {
+    const unique = [...new Set((userIds || []).filter(Boolean))];
+    const byUser = new Map();
+    const chunkSize = 80;
+
+    for (let i = 0; i < unique.length; i += chunkSize) {
+        const chunk = unique.slice(i, i + chunkSize);
+        let offset = 0;
+        while (true) {
+            const { data, error } = await supabase
+                .from('quiz_attempts')
+                .select('user_id, quiz_id, score')
+                .in('user_id', chunk)
+                .or('quiz_id.like.lesson_bonus%,quiz_id.like.life_skill_bonus%')
+                .range(offset, offset + 999);
+
+            if (error) throw error;
+            for (const row of data || []) {
+                if (!byUser.has(row.user_id)) byUser.set(row.user_id, []);
+                byUser.get(row.user_id).push(row);
+            }
+            if (!data || data.length < 1000) break;
+            offset += 1000;
+        }
+    }
+
+    return byUser;
+}
+
+/** All-time RDG from the attempt ledger; does not write profiles. */
+export async function overlayCumulativeReading(rows) {
+    if (!rows?.length) return rows || [];
+    try {
+        const attemptsByUser = await fetchReadingAttemptsByUserIds(
+            rows.map((row) => row.user_id || row.id)
+        );
+        return applyCumulativeReadingToRows(rows, attemptsByUser);
+    } catch (err) {
+        console.warn('[leaderboard] cumulative reading overlay failed:', err?.message || err);
+        return rows;
+    }
 }
 
 function missingDeltaUserIds(rows, deltas) {
@@ -332,7 +378,7 @@ export const leaderboardService = {
      * Fetch All-Time Top 50 Leaderboard
      */
     fetchAllTime: async (forceRefresh = false) => {
-        const cacheKey = 'leaderboard_full_all_time';
+        const cacheKey = 'leaderboard_full_all_time_rdg';
         return requestManager.fetch(
             cacheKey,
             async () => {
@@ -343,11 +389,12 @@ export const leaderboardService = {
                     .limit(50);
 
                 if (error) throw error;
-                return data.map(item => ({
+                const mapped = (data || []).map(item => ({
                     ...item,
                     points: item.score ?? 0,
                     reading_points: item.reading_points ?? 0
                 }));
+                return overlayCumulativeReading(mapped);
             },
             { ttl: 5, swr: true, forceRefresh }
         );
@@ -361,7 +408,7 @@ export const leaderboardService = {
         const now = new Date();
         const m = now.getMonth() + 1;
         const y = now.getFullYear();
-        const cacheKey = `leaderboard_monthly_ist_${y}_${m}`;
+        const cacheKey = `leaderboard_monthly_ist_badge_${y}_${m}`;
 
         return requestManager.fetch(
             cacheKey,
@@ -369,7 +416,7 @@ export const leaderboardService = {
                 const [viewRes, deltas] = await Promise.all([
                     supabase
                         .from('monthly_leaderboard_view')
-                        .select('*, profiles(reading_points, district, created_at)')
+                        .select('*, profiles(reading_points, district, created_at, completed_lessons)')
                         .eq('month_num', m)
                         .eq('year_num', y)
                         .order('points', { ascending: false })
@@ -405,6 +452,7 @@ export const leaderboardService = {
                         reading_points_added: readingGap,
                         all_time_reading_points: profileReading,
                         district: item.profiles?.district || null,
+                        completed_lessons: item.completed_lessons || item.profiles?.completed_lessons || [],
                         is_new_user: isNewUser
                     };
                 }).sort((a, b) => b.points - a.points);
@@ -420,7 +468,7 @@ export const leaderboardService = {
      * Fetch Hall of Fame Gallery — past months from March 2026, all board types (top 3 each).
      */
     fetchHallOfFame: async (forceRefresh = false) => {
-        const cacheKey = 'hall_of_fame_gallery_v9';
+        const cacheKey = 'hall_of_fame_gallery_v10';
         return requestManager.fetch(
             cacheKey,
             async () => {
@@ -429,7 +477,7 @@ export const leaderboardService = {
 
                 const monthlyQuery = supabase
                     .from('monthly_leaderboard_view')
-                    .select('*, profiles(slm_id, reading_points, district, created_at)')
+                    .select('*, profiles(slm_id, reading_points, district, created_at, completed_lessons)')
                     .or('year_num.gt.2026,and(year_num.eq.2026,month_num.gte.3)')
                     .order('year_num', { ascending: false })
                     .order('month_num', { ascending: false })
@@ -473,7 +521,7 @@ export const leaderboardService = {
                 if (userIds.length > 0) {
                     const { data: profilesData, error: profilesError } = await supabase
                         .from('profiles')
-                        .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points')
+                        .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points, completed_lessons')
                         .in('id', userIds);
                     if (profilesError) throw profilesError;
                     profileRows = profilesData || [];
@@ -490,7 +538,9 @@ export const leaderboardService = {
                             slm_id: row.profiles?.slm_id || prof?.slm_id || null,
                             reading_points: row.profiles?.reading_points ?? prof?.reading_points ?? 0,
                             district: row.profiles?.district || prof?.district || null,
+                            completed_lessons: row.profiles?.completed_lessons || prof?.completed_lessons || [],
                         },
+                        completed_lessons: row.completed_lessons || row.profiles?.completed_lessons || prof?.completed_lessons || [],
                     };
                 };
 
@@ -554,7 +604,7 @@ export const leaderboardService = {
                         month: m,
                         year: y,
                         boards,
-                        boardsVersion: 9,
+                        boardsVersion: 10,
                         prizeWinners: encouragement.prizeWinners,
                         winners: championWinners,
                     };
@@ -574,7 +624,7 @@ export const leaderboardService = {
         const y = now.getFullYear();
         const prevM = m === 1 ? 12 : m - 1;
         const prevY = m === 1 ? y - 1 : y;
-        const cacheKey = `leaderboard_encouragement_ist_${y}_${m}_${language}`;
+        const cacheKey = `leaderboard_encouragement_ist_badge_${y}_${m}_${language}`;
 
         return requestManager.fetch(
             cacheKey,
@@ -585,21 +635,21 @@ export const leaderboardService = {
                 const [currentRes, prevRes, joinersRes, activityRows, currentDeltas, prevDeltas] = await Promise.all([
                     supabase
                         .from('monthly_leaderboard_view')
-                        .select('*, profiles(reading_points, district, created_at, slm_id)')
+                        .select('*, profiles(reading_points, district, created_at, slm_id, completed_lessons)')
                         .eq('month_num', m)
                         .eq('year_num', y)
                         .order('points', { ascending: false })
                         .limit(100),
                     supabase
                         .from('monthly_leaderboard_view')
-                        .select('*, profiles(reading_points, district, created_at, slm_id)')
+                        .select('*, profiles(reading_points, district, created_at, slm_id, completed_lessons)')
                         .eq('month_num', prevM)
                         .eq('year_num', prevY)
                         .order('points', { ascending: false })
                         .limit(100),
                     supabase
                         .from('profiles')
-                        .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points')
+                        .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points, completed_lessons')
                         .gte('created_at', cutoff.toISOString()),
                     fetchMonthlyActivityAttempts(start, end),
                     fetchIstMonthDeltas(y, m),

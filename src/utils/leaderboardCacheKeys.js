@@ -6,7 +6,9 @@ import { cacheHelper } from './cacheHelper';
  */
 export function invalidateLeaderboardCaches(userId) {
     cacheHelper.clear('leaderboard_top_10_all_time');
+    cacheHelper.clear('leaderboard_top_10_all_time_rdg');
     cacheHelper.clear('leaderboard_full_all_time');
+    cacheHelper.clear('leaderboard_full_all_time_rdg');
     cacheHelper.clear('hall_of_fame_gallery_v3');
     cacheHelper.clear('hall_of_fame_gallery_v4');
     cacheHelper.clear('hall_of_fame_gallery_v5');
@@ -14,16 +16,21 @@ export function invalidateLeaderboardCaches(userId) {
     cacheHelper.clear('hall_of_fame_gallery_v7');
     cacheHelper.clear('hall_of_fame_gallery_v8');
     cacheHelper.clear('hall_of_fame_gallery_v9');
+    cacheHelper.clear('hall_of_fame_gallery_v10');
     if (userId) {
         cacheHelper.clear(`user_rank_all_time_${userId}`);
+        cacheHelper.clear(`user_rank_all_time_rdg_${userId}`);
         const now = new Date();
         const y = now.getFullYear();
         const m = now.getMonth() + 1;
         cacheHelper.clear(`leaderboard_monthly_${y}_${m}`);
         cacheHelper.clear(`leaderboard_monthly_ist_${y}_${m}`);
+        cacheHelper.clear(`leaderboard_monthly_ist_badge_${y}_${m}`);
         cacheHelper.clear(`leaderboard_encouragement_${y}_${m}_bn`);
         cacheHelper.clear(`leaderboard_encouragement_${y}_${m}_en`);
         cacheHelper.clear(`leaderboard_encouragement_ist_${y}_${m}_bn`);
         cacheHelper.clear(`leaderboard_encouragement_ist_${y}_${m}_en`);
+        cacheHelper.clear(`leaderboard_encouragement_ist_badge_${y}_${m}_bn`);
+        cacheHelper.clear(`leaderboard_encouragement_ist_badge_${y}_${m}_en`);
     }
 }

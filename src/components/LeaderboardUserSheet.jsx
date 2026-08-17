@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../supabaseClient';
 import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
+import { cumulativeReadingPointsFromLedger } from '../utils/cumulativeReadingPoints';
 import { requestManager } from '../utils/requestManager';
 import { leaderboardService } from '../utils/leaderboardService';
 import { getBoardTabLabel, getUserPrizeWins } from '../utils/hallOfFamePrizes';
@@ -295,6 +296,15 @@ export default function LeaderboardUserSheet({
         firstTimeReadingPointsFromLessons(merged.completed_lessons)
     );
 
+    const displayReadingPoints = useMemo(
+        () => cumulativeReadingPointsFromLedger({
+            completedLessons: merged.completed_lessons,
+            profileReadingPoints: merged.reading_points,
+            attempts,
+        }),
+        [merged.completed_lessons, merged.reading_points, attempts]
+    );
+
     const ppeEquipped = ppeAnswers.filter((a) => a.available).length;
     const coreEquipped = ppeAnswers.filter((a) => a.available && CORE_PPE_ITEMS.some((i) => i.name === a.name)).length;
     const toolsEquipped = tools.length;
@@ -457,7 +467,7 @@ export default function LeaderboardUserSheet({
                     >
                         <KV label={labels.total} value={formatLeaderboardNumber(merged.points || 0)} />
                         {tab !== 'monthly' && (
-                            <KV label={labels.readingPts} value={formatLeaderboardNumber(merged.reading_points || 0)} />
+                            <KV label={labels.readingPts} value={formatLeaderboardNumber(displayReadingPoints)} />
                         )}
                         <KV label={labels.quizPts} value={formatLeaderboardNumber(merged.quiz_points || 0)} />
                         <KV label={labels.penalty} value={formatLeaderboardNumber(stats.totalPenaltySum || merged.total_penalties || 0)} />
@@ -472,7 +482,7 @@ export default function LeaderboardUserSheet({
                         title={labels.reading}
                         summary={`${stats.lessonsRead} ${labels.lessons} · ${stats.chaptersRead} ${labels.chapters}`}
                     >
-                        <KV label={labels.level} value={`Lv ${merged.training_level || 1}`} />
+                        <KV label={labels.level} value={`Lv ${badge?.level || 1}`} />
                         <KV label={labels.badge} value={badge ? (bn ? badge.bn : badge.en) : '—'} />
                         <KV label={labels.lessons} value={String(stats.lessonsRead)} />
                         <KV label={labels.chapters} value={String(stats.chaptersRead)} />

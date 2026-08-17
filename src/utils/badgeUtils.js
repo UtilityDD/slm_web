@@ -5,6 +5,17 @@ export function firstTimeReadingPointsFromLessons(completedLessons) {
     return filterCoreCompletedLessonIds(completedLessons).length * CORE_LESSON_MONTHLY_BONUS_POINTS;
 }
 
+/** Lifetime lesson list for the L# badge — same on monthly and all-time. */
+export function completedLessonsForBadge(row) {
+    if (Array.isArray(row?.completed_lessons) && row.completed_lessons.length) return row.completed_lessons;
+    if (Array.isArray(row?.profiles?.completed_lessons) && row.profiles.completed_lessons.length) {
+        return row.profiles.completed_lessons;
+    }
+    if (Array.isArray(row?.completed_lessons)) return row.completed_lessons;
+    if (Array.isArray(row?.profiles?.completed_lessons)) return row.profiles.completed_lessons;
+    return [];
+}
+
 /**
  * Learning-path milestone badges (medal + ribbon on Training roadmap).
  * Solid mid-tones paired with dark text (Training nodes force text-slate-900).

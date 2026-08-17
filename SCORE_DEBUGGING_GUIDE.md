@@ -52,6 +52,8 @@ Database trigger (example name): **`trg_sync_profile_points`** — **BEFORE INSE
 
 It can **overwrite `points`** whenever `quiz_points` is updated — including during bulk repair. **`score_repair_with_rollback.sql` and `rollback_score_repair.sql` disable this trigger** around their `UPDATE`s. If you add new maintenance SQL that updates `quiz_points`, do the same or `points` will drift again.
 
+It can also reset **`reading_points`** to unique `completed_lessons` × 20. All-time RDG in the app therefore overlays extras from `quiz_attempts` (re-reads + Life Skill) and never writes that overlay back.
+
 To inspect the function (run in SQL Editor):
 
 ```sql
@@ -90,10 +92,10 @@ Leaderboard fetches go through **`requestManager`** + **`cacheHelper`**: TTL val
 
 **Single helper — keep keys in sync:** `src/utils/leaderboardCacheKeys.js` exports **`invalidateLeaderboardCaches(userId)`**, which clears:
 
-- `leaderboard_top_10_all_time`
-- `leaderboard_full_all_time`
+- `leaderboard_top_10_all_time` / `leaderboard_top_10_all_time_rdg`
+- `leaderboard_full_all_time` / `leaderboard_full_all_time_rdg`
 - `hall_of_fame_gallery_v3` … `hall_of_fame_gallery_v8` (current Hall of Fame payload uses **v8** + `boardsVersion: 8`)
-- `user_rank_all_time_<userId>`
+- `user_rank_all_time_<userId>` / `user_rank_all_time_rdg_<userId>`
 - `leaderboard_monthly_<year>_<month>` for the **current** local month
 - `leaderboard_encouragement_<year>_<month>_bn` and `_en` (monthly sub-tab boards; data is the same, keys differ by language slot)
 

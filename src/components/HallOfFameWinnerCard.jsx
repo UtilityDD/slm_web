@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
+import { completedLessonsForBadge, firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import {
     formatMonthlyPlayerScore,
     getRankMedal,
@@ -273,7 +273,7 @@ export default function HallOfFameWinnerCard({
                         {(() => {
                             const badge = getBadgeByLevel(
                                 winner.training_level || 0,
-                                firstTimeReadingPointsFromLessons(winner.completed_lessons)
+                                firstTimeReadingPointsFromLessons(completedLessonsForBadge(winner))
                             );
                             if (!badge) return null;
                             return (
