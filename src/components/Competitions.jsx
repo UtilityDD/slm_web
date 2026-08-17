@@ -72,7 +72,7 @@ import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
 import LeaderboardRankChip from './LeaderboardRankChip';
 import ReadingLevelAvatarFrame from './ReadingLevelAvatarFrame';
 import LeaderboardUserSheet from './LeaderboardUserSheet';
-import AvatarPhoto from './AvatarPhoto';
+import AvatarPhoto, { imagePreviewFromEvent } from './AvatarPhoto';
 import { AVATAR_EDGE } from '../utils/avatarImage';
 
 /** Sync peek of SWR monthly cache so Rank can paint before network. */
@@ -425,6 +425,13 @@ export default function Competitions({
     const [hallOfFameData, setHallOfFameData] = useState([]);
     const [loadingGallery, setLoadingGallery] = useState(false);
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
+    const openMaximizedImage = (url, event) => {
+        if (!url) return;
+        setMaximizedAvatar({
+            url,
+            previewSrc: imagePreviewFromEvent(event),
+        });
+    };
     const [showHallCelebration, setShowHallCelebration] = useState(false);
     const hallCelebrationShownRef = React.useRef(false);
     const [hallOfFamePrizeView, setHallOfFamePrizeView] = useState(() => {
@@ -2317,7 +2324,7 @@ export default function Competitions({
                                     filterUserId={hallOfFameUserPrizeFilter}
                                     onClearFilter={() => setHallOfFameUserPrizeFilter(null)}
                                     onOpenUserProgress={openUserProgress}
-                                    onMaximizeImage={setMaximizedAvatar}
+                                    onMaximizeImage={openMaximizedImage}
                                 />
                             ) : (
                             <div className="grid grid-cols-1 gap-4 sm:gap-6">
@@ -2362,7 +2369,7 @@ export default function Competitions({
                                                         encouragementCopy={encouragementCopy}
                                                         viewMode="detailed"
                                                         onOpenUserProgress={openUserProgress}
-                                                        onMaximizeImage={setMaximizedAvatar}
+                                                        onMaximizeImage={openMaximizedImage}
                                                         onViewUserPrizes={openUserPrizeHistory}
                                                     />
                                                 ))}
@@ -2488,7 +2495,7 @@ export default function Competitions({
                                                                         faded={superseded}
                                                                         onAvatarClick={(e) => {
                                                                             e.stopPropagation();
-                                                                            if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
+                                                                            openMaximizedImage(player.avatar_url, e);
                                                                         }}
                                                                         cornerSlot={(
                                                                             <LeaderboardRankChip
@@ -2558,7 +2565,7 @@ export default function Competitions({
                                                                 <div
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        if (player.avatar_url) setMaximizedAvatar(player.avatar_url);
+                                                                        openMaximizedImage(player.avatar_url, e);
                                                                     }}
                                                                     className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''}`}
                                                                 >
@@ -2661,7 +2668,7 @@ export default function Competitions({
                                                         faded={superseded}
                                                         onAvatarClick={(e) => {
                                                             e.stopPropagation();
-                                                            if (item.avatar_url) setMaximizedAvatar(item.avatar_url);
+                                                            openMaximizedImage(item.avatar_url, e);
                                                         }}
                                                         onlineSlot={onlineSlot || null}
                                                     />
@@ -2801,7 +2808,7 @@ export default function Competitions({
                                         <div 
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (userProfile?.avatar_url) setMaximizedAvatar(userProfile.avatar_url);
+                                                openMaximizedImage(userProfile?.avatar_url, e);
                                             }}
                                             className="flex h-11 w-11 shrink-0 cursor-zoom-in items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white font-black text-orange-600 shadow-lg shadow-orange-500/30 ring-2 ring-orange-400 transition-transform active:scale-95 sm:h-12 sm:w-12"
                                         >
@@ -2829,7 +2836,15 @@ export default function Competitions({
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
-                        <AvatarPhoto url={maximizedAvatar} edge={AVATAR_EDGE.full} className="h-full w-full object-cover" alt="Maximized Avatar" />
+                        <AvatarPhoto
+                            url={typeof maximizedAvatar === 'string' ? maximizedAvatar : maximizedAvatar.url}
+                            placeholderSrc={typeof maximizedAvatar === 'string' ? '' : maximizedAvatar.previewSrc}
+                            edge={AVATAR_EDGE.full}
+                            placeholderEdge={AVATAR_EDGE.card}
+                            className="h-full w-full object-cover"
+                            alt="Maximized Avatar"
+                            fetchPriority="high"
+                        />
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent px-4 pb-5 pt-16 sm:px-6 sm:pb-6">
                             <div className="avatar-slm-badge mx-auto flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-2">
                                 <img

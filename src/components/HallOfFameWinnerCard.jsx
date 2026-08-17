@@ -87,7 +87,7 @@ function PrizeFocusCard({
                     {hasPrizeImage ? (
                         <button
                             type="button"
-                            onClick={() => onMaximizeImage(resolvedImageUrl || imageCandidates[0])}
+                            onClick={(e) => onMaximizeImage(resolvedImageUrl || imageCandidates[0], e)}
                             className="group/img relative flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-b from-slate-50 to-white p-3 transition-transform active:scale-[0.99]"
                         >
                             <HallOfFamePrizeImage
@@ -212,7 +212,7 @@ export default function HallOfFameWinnerCard({
                     <div
                         onClick={(e) => {
                             e.stopPropagation();
-                            if (winner.avatar_url) onMaximizeImage(winner.avatar_url);
+                            if (winner.avatar_url) onMaximizeImage(winner.avatar_url, e);
                         }}
                         className={`h-11 w-11 cursor-zoom-in overflow-hidden rounded-full border border-orange-200/80 bg-orange-50 shadow-sm transition-transform active:scale-95 sm:h-12 sm:w-12 ${superseded ? 'opacity-40 grayscale' : ''}`}
                     >

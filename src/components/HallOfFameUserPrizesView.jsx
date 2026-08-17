@@ -103,7 +103,7 @@ export default function HallOfFameUserPrizesView({
                                     >
                                         <button
                                             type="button"
-                                            onClick={() => onMaximizeImage(win.prize.imageCandidates?.[0] || win.prize.imageUrl)}
+                                            onClick={(e) => onMaximizeImage(win.prize.imageCandidates?.[0] || win.prize.imageUrl, e)}
                                             className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white p-1.5 shadow-sm transition-transform active:scale-95"
                                         >
                                             <HallOfFamePrizeImage
