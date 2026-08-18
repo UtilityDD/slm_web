@@ -46,7 +46,6 @@ import {
   getActiveCelebrationSplash,
   getCelebrationPreviewStepIndex,
   getCelebrationSplashForPreview,
-  markDailyMaximShown,
   shouldOfferCelebrationSplash,
 } from "./config/celebrationSplash";
 import PushOptInPrompt from "./components/PushOptInPrompt";
@@ -401,7 +400,6 @@ export default function SmartLinemanUI() {
   useLayoutEffect(() => {
     if (celebrationSplashOpen) {
       celebrationShownThisOpenRef.current = true;
-      if (celebrationConfig?.useDailyMaxim) markDailyMaximShown();
       return;
     }
     if (appLoading) return;
@@ -412,7 +410,7 @@ export default function SmartLinemanUI() {
     if (blockedViews.includes(currentView)) return;
     celebrationShownThisOpenRef.current = true;
     setCelebrationSplashOpen(true);
-  }, [appLoading, nativeBootSplash, celebrationSplashOpen, celebrationConfig, currentView]);
+  }, [appLoading, nativeBootSplash, celebrationSplashOpen, currentView]);
 
   // Prefetch celebration art during boot when the window is active.
   useEffect(() => {

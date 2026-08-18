@@ -3,7 +3,7 @@
  *
  * Dates are inclusive and evaluated in Asia/Kolkata (IST).
  * Tiranga / Independence: every app open in the date window.
- * Field maxims (from 17 Aug): one random poster per user per IST day.
+ * Field maxims (from 17 Aug): every app open; one random poster per user per IST day.
  *
  * Local preview:
  *   ?celebrate=1              → campaign for today (or Independence Day if none)
@@ -265,20 +265,8 @@ function getOrCreateDailyMaximIndex(today, count) {
   if (count > 1 && Number.isFinite(stored?.index) && index === stored.index) {
     index = (index + 1 + Math.floor(Math.random() * (count - 1))) % count;
   }
-  writeDailyMaximPick({ date: today, index, shown: false });
+  writeDailyMaximPick({ date: today, index });
   return index;
-}
-
-export function hasSeenDailyMaximToday(now = new Date()) {
-  const stored = readDailyMaximPick();
-  return stored?.date === getIstCalendarDate(now) && stored.shown === true;
-}
-
-/** Call when the live maxim splash is actually shown, so it does not repeat today. */
-export function markDailyMaximShown(now = new Date()) {
-  const today = getIstCalendarDate(now);
-  const index = getOrCreateDailyMaximIndex(today, FIELD_MAXIMS.length);
-  writeDailyMaximPick({ date: today, index, shown: true });
 }
 
 function getForcedMaximIndex() {
@@ -367,11 +355,7 @@ export function isCelebrationSplashActive(now = new Date()) {
   return Boolean(getActiveCelebrationSplash(now));
 }
 
-/** True when splash should be offered after boot. */
+/** True when splash should be offered after boot (every open in the date window). */
 export function shouldOfferCelebrationSplash(now = new Date()) {
-  if (!isCelebrationSplashActive(now)) return false;
-  if (isCelebrationForceRequested()) return true;
-  const config = getActiveCelebrationSplash(now);
-  if (config?.useDailyMaxim && hasSeenDailyMaximToday(now)) return false;
-  return true;
+  return isCelebrationSplashActive(now);
 }
