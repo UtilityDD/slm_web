@@ -42,8 +42,11 @@ import OnboardingSequence from "./components/safety/OnboardingSequence";
 import AppBootSplash from "./components/AppBootSplash";
 import CelebrationSplash from "./components/CelebrationSplash";
 import {
+  CELEBRATION_PREVIEW_STEPS,
   getActiveCelebrationSplash,
+  getCelebrationPreviewStepIndex,
   getCelebrationSplashForPreview,
+  markDailyMaximShown,
   shouldOfferCelebrationSplash,
 } from "./config/celebrationSplash";
 import PushOptInPrompt from "./components/PushOptInPrompt";
@@ -238,8 +241,29 @@ export default function SmartLinemanUI() {
   const [monthWinnersPreviewReady, setMonthWinnersPreviewReady] = useState(false);
   const celebrationPreviewConfig = useMemo(() => {
     if (!celebrationPreview?.campaignId) return null;
-    return getCelebrationSplashForPreview(celebrationPreview.campaignId);
+    const maximIndex =
+      celebrationPreview.campaignId === 'field-maxims-2026'
+        ? (Number.isFinite(celebrationPreview.maximIndex) ? celebrationPreview.maximIndex : 0)
+        : undefined;
+    return getCelebrationSplashForPreview(celebrationPreview.campaignId, maximIndex);
   }, [celebrationPreview]);
+  const celebrationPreviewStepIndex = useMemo(
+    () => getCelebrationPreviewStepIndex(celebrationPreview),
+    [celebrationPreview]
+  );
+  const goCelebrationPreviewStep = (delta) => {
+    setCelebrationPreview((prev) => {
+      if (!prev) return prev;
+      const steps = CELEBRATION_PREVIEW_STEPS;
+      const current = getCelebrationPreviewStepIndex(prev);
+      const next = steps[(current + delta + steps.length) % steps.length];
+      return {
+        ...prev,
+        campaignId: next.campaignId,
+        maximIndex: next.maximIndex,
+      };
+    });
+  };
   const [onboardingPreview, setOnboardingPreview] = useState(null);
   const [sponsorAdPreview, setSponsorAdPreview] = useState(null);
   const [cultureSurveyPreview, setCultureSurveyPreview] = useState(false);
@@ -377,6 +401,7 @@ export default function SmartLinemanUI() {
   useLayoutEffect(() => {
     if (celebrationSplashOpen) {
       celebrationShownThisOpenRef.current = true;
+      if (celebrationConfig?.useDailyMaxim) markDailyMaximShown();
       return;
     }
     if (appLoading) return;
@@ -387,7 +412,7 @@ export default function SmartLinemanUI() {
     if (blockedViews.includes(currentView)) return;
     celebrationShownThisOpenRef.current = true;
     setCelebrationSplashOpen(true);
-  }, [appLoading, nativeBootSplash, celebrationSplashOpen, currentView]);
+  }, [appLoading, nativeBootSplash, celebrationSplashOpen, celebrationConfig, currentView]);
 
   // Prefetch celebration art during boot when the window is active.
   useEffect(() => {
@@ -1695,6 +1720,10 @@ export default function SmartLinemanUI() {
               onPreviewCelebration={(opts = {}) =>
                 setCelebrationPreview({
                   campaignId: opts.campaignId,
+                  maximIndex:
+                    opts.campaignId === 'field-maxims-2026'
+                      ? (Number.isFinite(opts.maximIndex) ? opts.maximIndex : 0)
+                      : undefined,
                   key: Date.now(),
                 })
               }
@@ -2584,6 +2613,16 @@ export default function SmartLinemanUI() {
           key={celebrationPreview?.key || 'live'}
           language={language}
           config={celebrationPreviewConfig || celebrationConfig}
+          previewNav={
+            celebrationPreview
+              ? {
+                  index: celebrationPreviewStepIndex,
+                  total: CELEBRATION_PREVIEW_STEPS.length,
+                  onPrev: () => goCelebrationPreviewStep(-1),
+                  onNext: () => goCelebrationPreviewStep(1),
+                }
+              : null
+          }
           onDismiss={() => {
             if (celebrationPreview) setCelebrationPreview(null);
             else setCelebrationSplashOpen(false);

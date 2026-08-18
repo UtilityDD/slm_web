@@ -2841,8 +2841,8 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               </div>
               <p className="text-[11px] text-slate-400">
                 {isEn
-                  ? 'Opens the same full-screen splash users see. Dates are IST.'
-                  : 'ব্যবহারকারীরা যে ফুল-স্ক্রিন স্প্ল্যাশ দেখেন, সেটিই খোলে। তারিখ IST।'}
+                  ? 'From 17 August, each user sees one random field maxim per day. Use the arrows here to preview every poster. Dates are IST.'
+                  : '১৭ আগস্ট থেকে প্রতিদিন ব্যবহারকারী একটি র‍্যান্ডম মাঠের কথা দেখেন। এখানে তীর দিয়ে সব পোস্টার দেখুন। তারিখ IST।'}
               </p>
             </div>
           )}

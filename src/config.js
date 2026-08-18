@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.129";
+export const CURRENT_APP_VERSION = "1.3.130";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update — Leaderboard photos now open instantly, without a blank white flash.",
-  bn: "নতুন ভার্সন আপডেট করুন—লিডারবোর্ডের ছবি এখন সঙ্গে সঙ্গে খুলবে, সাদা ফাঁকা স্ক্রিন ছাড়াই।",
+  en: "Please update — After 17 August the splash shows one field safety lesson a day, not a crowded share poster.",
+  bn: "নতুন ভার্সন আপডেট করুন—১৭ আগস্টের পর স্প্ল্যাশে এখন প্রতিদিন একটি মাঠের নিরাপত্তা কথা, শেয়ার পোস্টার নয়।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */

@@ -8062,7 +8062,7 @@ html.native-android .lesson-reader-root {
   }
 }
 
-/* —— Seasonal celebration splash (Tiranga / Independence Day / share) —— */
+/* —— Seasonal celebration splash (Tiranga / Independence Day / field maxims) —— */
 .celebration-splash {
   background: #0c1a2e;
   animation: celebrationSplashIn 0.45s ease both;
@@ -8125,14 +8125,115 @@ html.native-android .lesson-reader-root {
   transform: scale(0.96);
 }
 
-.celebration-splash--share .celebration-splash__img {
-  object-fit: contain;
-  object-position: center center;
-  background: #0c1a2e;
+.celebration-splash__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translateY(-50%);
 }
 
-.celebration-splash--share .celebration-splash__veil {
-  background: linear-gradient(180deg, transparent 0%, transparent 68%, rgba(12, 26, 46, 0.78) 100%);
+.celebration-splash__nav.is-prev {
+  left: max(0.65rem, env(safe-area-inset-left));
+}
+
+.celebration-splash__nav.is-next {
+  right: max(0.65rem, env(safe-area-inset-right));
+}
+
+.celebration-splash__nav:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.celebration-splash__nav:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.celebration-splash__nav-count {
+  position: absolute;
+  top: max(0.85rem, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 12;
+  margin: 0;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(8, 18, 34, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.celebration-splash--maxim .celebration-splash__img {
+  object-fit: cover;
+  object-position: center top;
+}
+
+.celebration-splash--maxim .celebration-splash__veil {
+  background: linear-gradient(180deg, transparent 0%, transparent 42%, rgba(8, 18, 34, 0.55) 58%, rgba(8, 18, 34, 0.88) 100%);
+}
+
+.celebration-splash__maxim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 26rem;
+  margin: 0;
+  color: #fff;
+  text-align: center;
+  font-family: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif;
+}
+
+.celebration-splash__maxim-kicker {
+  display: block;
+  margin-bottom: 0.9rem;
+  font-size: clamp(1rem, 3.2vw, 1.2rem);
+  font-weight: 700;
+  line-height: 1.5;
+  color: #ffb347;
+}
+
+.celebration-splash__maxim-line {
+  display: block;
+  font-size: clamp(1.45rem, 4.6vw, 2.05rem);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.celebration-splash__maxim-line + .celebration-splash__maxim-line {
+  margin-top: 0.4rem;
+}
+
+@media (min-width: 768px) {
+  .celebration-splash--maxim .celebration-splash__img {
+    object-fit: contain;
+    object-position: center center;
+    background:
+      radial-gradient(ellipse at 50% 28%, rgba(255, 153, 51, 0.14), transparent 58%),
+      #081222;
+  }
+
+  .celebration-splash--maxim .celebration-splash__veil {
+    background: linear-gradient(180deg, transparent 0%, transparent 38%, rgba(8, 18, 34, 0.42) 56%, rgba(8, 18, 34, 0.78) 100%);
+  }
+
+  .celebration-splash__maxim-line {
+    font-size: clamp(1.7rem, 2.4vw, 2.2rem);
+  }
 }
 
 .celebration-splash--independence .celebration-splash__veil {

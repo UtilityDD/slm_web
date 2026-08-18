@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 const FLAG_SPARKLES = [
@@ -28,19 +28,63 @@ export default function CelebrationSplash({
   language = 'bn',
   config,
   onDismiss,
+  previewNav = null,
 }) {
   const bn = language === 'bn';
   const dismissedRef = useRef(false);
-
-  if (!config?.image) return null;
-
-  const isShare = config.variant === 'share';
-  const isIndependence = config.variant === 'independence';
+  const previewNavRef = useRef(previewNav);
+  const onDismissRef = useRef(onDismiss);
+  previewNavRef.current = previewNav;
+  onDismissRef.current = onDismiss;
 
   const dismiss = () => {
     if (dismissedRef.current) return;
     dismissedRef.current = true;
-    onDismiss?.();
+    onDismissRef.current?.();
+  };
+
+  const hasPreviewNav = Boolean(previewNav);
+  useEffect(() => {
+    if (!hasPreviewNav) return undefined;
+    const onKey = (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        previewNavRef.current?.onPrev?.();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        previewNavRef.current?.onNext?.();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        dismiss();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [hasPreviewNav]);
+
+  if (!config?.image) return null;
+
+  const isIndependence = config.variant === 'independence';
+  const isMaxim = config.variant === 'maxim' && config.maxim;
+  const maximKicker = isMaxim ? (bn ? config.maxim.kicker?.bn : config.maxim.kicker?.en) : '';
+  const maximLines = isMaxim ? ((bn ? config.maxim.lines?.bn : config.maxim.lines?.en) || []) : [];
+  const maximLabel = [maximKicker, ...maximLines].filter(Boolean).join(' ');
+  const posterSrc = isMaxim
+    ? (bn ? (config.image || config.maxim.imageBn) : (config.imageEn || config.maxim.imageEn || config.image))
+    : config.image;
+  const posterDesktop = isMaxim
+    ? (bn
+      ? (config.imageDesktop || config.maxim.imageBnDesktop)
+      : (config.imageEnDesktop || config.maxim.imageEnDesktop || config.imageDesktop))
+    : config.imageDesktop;
+
+  const goPrev = (e) => {
+    e?.stopPropagation?.();
+    previewNav?.onPrev?.();
+  };
+  const goNext = (e) => {
+    e?.stopPropagation?.();
+    previewNav?.onNext?.();
   };
 
   const title = bn ? config.title?.bn : config.title?.en;
@@ -54,7 +98,7 @@ export default function CelebrationSplash({
   const footLines =
     (bn ? config.footLines?.bn : config.footLines?.en) || (title ? [title] : []);
 
-  const topCopy = !isShare && !isIndependence ? (
+  const topCopy = !isIndependence && !isMaxim ? (
     <div className="celebration-splash__copy mx-auto w-full max-w-md pt-2 text-center">
       {kicker ? (
         <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/85">
@@ -92,18 +136,18 @@ export default function CelebrationSplash({
   const node = (
     <div
       className={`celebration-splash fixed inset-0 z-[10060] flex flex-col${
-        isShare ? ' celebration-splash--share' : ''
-      }${isIndependence ? ' celebration-splash--independence' : ''}`}
+        isIndependence ? ' celebration-splash--independence' : ''
+      }${isMaxim ? ' celebration-splash--maxim' : ''}`}
       role="dialog"
       aria-modal="true"
-      aria-label={title || 'Smart Lineman'}
+      aria-label={maximLabel || title || 'Smart Lineman'}
       onClick={dismiss}
     >
       <img
-        src={config.image}
+        src={posterSrc}
         srcSet={
-          config.imageDesktop && config.imageDesktop !== config.image
-            ? `${config.image} 720w, ${config.imageDesktop} 1024w`
+          posterDesktop && posterDesktop !== posterSrc
+            ? `${posterSrc} 720w, ${posterDesktop} 1024w`
             : undefined
         }
         sizes="(max-width: 767px) 100vw, 42rem"
@@ -116,6 +160,47 @@ export default function CelebrationSplash({
         draggable={false}
       />
       <div className="celebration-splash__veil absolute inset-0" aria-hidden />
+      {previewNav ? (
+        <>
+          <p className="celebration-splash__nav-count" aria-live="polite">
+            {previewNav.index + 1} / {previewNav.total}
+          </p>
+          <button
+            type="button"
+            className="celebration-splash__nav is-prev"
+            aria-label={bn ? 'আগেরটি' : 'Previous'}
+            onClick={goPrev}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+              <path
+                d="M19 12H7m0 0 5-5M7 12l5 5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="celebration-splash__nav is-next"
+            aria-label={bn ? 'পরেরটি' : 'Next'}
+            onClick={goNext}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+              <path
+                d="M5 12h12m0 0-5-5m5 5-5 5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </>
+      ) : null}
       {isIndependence ? (
         <div className="celebration-splash__sparkles" aria-hidden>
           {FLAG_SPARKLES.map((sparkle, i) => (
@@ -133,8 +218,23 @@ export default function CelebrationSplash({
         </div>
       ) : null}
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]">
+      <div className={`relative z-10 flex min-h-0 flex-1 flex-col pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] ${previewNav ? 'px-14' : 'px-5'}`}>
         {topCopy}
+
+        {isMaxim ? (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-2">
+            <p className={`celebration-splash__maxim ${bn ? 'font-bengali' : ''}`}>
+              {maximKicker ? (
+                <span className="celebration-splash__maxim-kicker">{maximKicker}</span>
+              ) : null}
+              {maximLines.map((line, i) => (
+                <span key={`${line}-${i}`} className="celebration-splash__maxim-line">
+                  {line}
+                </span>
+              ))}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mx-auto mt-auto flex w-full max-w-lg flex-col items-center gap-4 pb-2 pt-4">
           {isIndependence && footLines.length ? (

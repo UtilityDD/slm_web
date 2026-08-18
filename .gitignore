@@ -17,6 +17,7 @@ report_summary.txt
 
 # Score-repair JSON snapshots (contain user scores)
 scripts/maintenance/backups/
+scripts/.maxim-tmp/
 
 # Temp script outputs
 ai_fix.*
@@ -51,3 +52,4 @@ public/downloads/*.aab
 # Supabase CLI local state
 supabase/.temp/
 .vercel
+.env*
