@@ -18,6 +18,7 @@ import {
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { resolveHomeLearningTopic } from '../utils/homeLearningTopic';
 import HomePrimaryActionCards from './HomePrimaryActionCards';
+import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
 import { useCachedAvatar } from '../hooks/useCachedAvatar';
 
@@ -104,6 +105,7 @@ export default function Home({
 }) {
   const bn = language === 'bn';
   const isAdmin = userProfile?.role === 'admin';
+  const isSafetyMitra = userProfile?.role === 'safety mitra';
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState(null);
   const [tipBoardOpen, setTipBoardOpen] = useState(false);
@@ -789,6 +791,10 @@ export default function Home({
           onHourlyClick={() => go('competitions')}
           onLearningClick={openLearningCard}
         />
+
+        {(isSafetyMitra || isAdmin) && user?.id ? (
+          <HomeTeamReminderCard userId={user.id} role={userProfile.role} language={language} />
+        ) : null}
 
         {typeof onOpenUserGuide === 'function' && (
           <button
