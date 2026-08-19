@@ -39,6 +39,7 @@ import SponsorAdOverlay from "./components/SponsorAdOverlay";
 import ProfileFieldNudge from "./components/ProfileFieldNudge";
 import PpeFieldNudge from "./components/PpeFieldNudge";
 import OnboardingSequence from "./components/safety/OnboardingSequence";
+import AppUserGuideShorts from "./components/AppUserGuideShorts";
 import AppBootSplash from "./components/AppBootSplash";
 import CelebrationSplash from "./components/CelebrationSplash";
 import {
@@ -230,6 +231,7 @@ export default function SmartLinemanUI() {
   const [forumPendingQuestionId, setForumPendingQuestionId] = useState(null);
   const [profileNudgeOpen, setProfileNudgeOpen] = useState(false);
   const [profileNudgePreview, setProfileNudgePreview] = useState(null);
+  const [userGuideOpen, setUserGuideOpen] = useState(false);
   const [ppeNudgeOpen, setPpeNudgeOpen] = useState(false);
   const [ppeNudgePreview, setPpeNudgePreview] = useState(null);
   const [pushOptInOpen, setPushOptInOpen] = useState(false);
@@ -1795,6 +1797,7 @@ export default function SmartLinemanUI() {
               onToggleLanguageModal={() => setShowLanguageModal(true)}
               onToggleNotifications={() => setCurrentView('notifications')}
               onLogout={() => setShowLogoutModal(true)}
+              onOpenUserGuide={() => setUserGuideOpen(true)}
             />
           );
         case 'notifications':
@@ -1837,6 +1840,7 @@ export default function SmartLinemanUI() {
               userProfile={userProfile}
               completedLessons={completedLessons}
               cultureSurveyPending={cultureSurveyPending}
+              onOpenUserGuide={() => setUserGuideOpen(true)}
             />
           );
       }
@@ -1871,6 +1875,7 @@ export default function SmartLinemanUI() {
     showSessionEndedModal ||
     userTyping ||
     onAuthFlow ||
+    userGuideOpen ||
     currentView === 'accident-stories' ||
     currentView === 'landing';
 
@@ -1914,6 +1919,7 @@ export default function SmartLinemanUI() {
     ppeNudgeOpen ||
     pushOptInOpen ||
     sidebarOpen ||
+    userGuideOpen ||
     monthWinnersRevealOpen ||
     adContactOpen ||
     userTyping ||
@@ -2009,6 +2015,7 @@ export default function SmartLinemanUI() {
               onToggleLanguageModal={() => setShowLanguageModal(true)}
               onToggleNotifications={() => navigateWithCultureGate('notifications')}
               onLogout={() => setShowLogoutModal(true)}
+              onOpenUserGuide={() => setUserGuideOpen(true)}
             />
           )}
 
@@ -2382,6 +2389,12 @@ export default function SmartLinemanUI() {
                 {renderContent()}
               </div>
             </div>
+
+            <AppUserGuideShorts
+              open={userGuideOpen}
+              language={language}
+              onClose={() => setUserGuideOpen(false)}
+            />
 
             <IdleStoryReminder
               language={language}

@@ -8381,3 +8381,235 @@ html.native-android .lesson-reader-root {
     transform: none;
   }
 }
+
+/* In-app how-to YouTube Shorts (not the training Video Guide). */
+.app-guide-player {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: #050505;
+  animation: celebrationSplashIn 0.22s ease-out both;
+}
+
+.app-guide-player__stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.app-guide-player__frame {
+  aspect-ratio: 9 / 16;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: min(100dvh, calc(100vw * 16 / 9));
+  overflow: hidden;
+  background: #000;
+}
+
+.app-guide-player__frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.app-guide-player__chrome {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  pointer-events: none;
+  transform: translateZ(0);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.18) 62%, transparent 100%);
+  padding:
+    max(0.55rem, env(safe-area-inset-top, 0px))
+    max(0.75rem, env(safe-area-inset-right, 0px))
+    1.75rem
+    max(0.85rem, env(safe-area-inset-left, 0px));
+}
+
+.app-guide-player__kicker {
+  min-width: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+
+.app-guide-player__close {
+  pointer-events: auto;
+  touch-action: manipulation;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(15, 15, 15, 0.55);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.app-guide-player__close:hover {
+  background: rgba(15, 15, 15, 0.72);
+}
+
+.app-guide-player__close:active {
+  transform: scale(0.95);
+}
+
+.app-guide-player__title {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  margin: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.55) 0%, transparent 100%);
+  padding:
+    1.6rem
+    max(0.9rem, env(safe-area-inset-right, 0px))
+    max(0.85rem, env(safe-area-inset-bottom, 0px))
+    max(0.9rem, env(safe-area-inset-left, 0px));
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.92);
+  text-align: center;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+.app-guide-player__nav {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  padding: 0 0.35rem;
+}
+
+.app-guide-player__nav-btn {
+  pointer-events: auto;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.app-guide-player__nav-btn:disabled {
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.app-guide-player__dots {
+  position: absolute;
+  right: 0;
+  bottom: max(3.4rem, calc(2.4rem + env(safe-area-inset-bottom, 0px)));
+  left: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  pointer-events: none;
+}
+
+.app-guide-player__dot {
+  pointer-events: auto;
+  height: 0.35rem;
+  width: 0.35rem;
+  border-radius: 9999px;
+  border: 0;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.app-guide-player__dot.is-active {
+  width: 0.85rem;
+  background: #fff;
+}
+
+.app-guide-chip {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(245 208 254 / 0.9);
+  background: linear-gradient(90deg, #fdf4ff 0%, #fae8ff 55%, #fff 100%);
+  padding: 0.55rem 0.7rem 0.55rem 0.55rem;
+  text-align: left;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.app-guide-chip:active {
+  transform: scale(0.99);
+}
+
+.app-guide-chip__icon {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #d946ef;
+  color: #fff;
+  box-shadow: 0 4px 10px rgb(217 70 239 / 0.28);
+}
+
+.app-guide-chip__copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.app-guide-chip__title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #701a75;
+}
+
+.app-guide-chip__hint {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgb(134 25 143 / 0.78);
+}
+
+.app-guide-chip__chevron {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  color: rgb(192 38 211 / 0.7);
+}

@@ -100,6 +100,7 @@ export default function Home({
   userProfile,
   completedLessons: completedLessonsProp,
   cultureSurveyPending = false,
+  onOpenUserGuide,
 }) {
   const bn = language === 'bn';
   const isAdmin = userProfile?.role === 'admin';
@@ -788,6 +789,35 @@ export default function Home({
           onHourlyClick={() => go('competitions')}
           onLearningClick={openLearningCard}
         />
+
+        {typeof onOpenUserGuide === 'function' && (
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(5);
+              onOpenUserGuide();
+            }}
+            className="app-guide-chip mb-4 sm:mb-5"
+            aria-label={bn ? 'অ্যাপ গাইড দেখুন' : 'Watch app guide'}
+          >
+            <span className="app-guide-chip__icon" aria-hidden>
+              <svg className="ml-px h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="m7 4 12 8-12 8V4z" />
+              </svg>
+            </span>
+            <span className="app-guide-chip__copy">
+              <span className={`app-guide-chip__title ${bn ? 'font-bengali' : ''}`}>
+                {bn ? 'অ্যাপ গাইড' : 'App guide'}
+              </span>
+              <span className={`app-guide-chip__hint ${bn ? 'font-bengali' : ''}`}>
+                {bn ? 'অ্যাপ কীভাবে ব্যবহার করবেন' : 'How to use this app'}
+              </span>
+            </span>
+            <svg className="app-guide-chip__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        )}
 
         {/* Shortcuts — old compact tiles in 2 columns */}
         <div className="mb-4 grid grid-cols-2 gap-2.5 sm:mb-5 sm:gap-3">

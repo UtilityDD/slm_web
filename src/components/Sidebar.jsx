@@ -22,7 +22,8 @@ export default function Sidebar({
   onToggleLanguageModal,
   onToggleNotifications,
   unreadNotificationsCount,
-  onLogout
+  onLogout,
+  onOpenUserGuide,
 }) {
   const { startRadio, loading: radioLoading } = useLifeSkillRadio();
   const bn = language === 'bn';
@@ -35,6 +36,7 @@ export default function Sidebar({
         { id: 'home', label: bn ? 'হোম' : 'Home', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'training', label: bn ? 'প্রশিক্ষণ' : 'Training', icon: '📚', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'video-guide', label: bn ? 'ভিডিও গাইড' : 'Video Guide', icon: '📺', tint: 'bg-sky-100 text-sky-700', show: true },
+        { id: 'app-guide', label: bn ? 'অ্যাপ গাইড' : 'App guide', icon: '▶', tint: 'bg-fuchsia-100 text-fuchsia-700', show: typeof onOpenUserGuide === 'function' },
         { id: 'aro-janun', label: bn ? 'আরো জানুন' : 'Know More', icon: '🧰', tint: 'bg-violet-100 text-violet-700', show: true },
         { id: 'training-faq', label: bn ? FAQ_PAGE_TITLE.bn : FAQ_PAGE_TITLE.en, icon: '💡', tint: 'bg-yellow-100 text-yellow-700', show: true, redirectTo: 'training', tab: 'faq' },
         { id: 'my-progress', label: bn ? 'আমার অগ্রগতি' : 'My Progress', icon: '📈', tint: 'bg-emerald-100 text-emerald-700', show: true },
@@ -110,6 +112,11 @@ export default function Sidebar({
     }
     if (item.id === 'notifications') {
       if (onToggleNotifications) onToggleNotifications();
+      onClose();
+      return;
+    }
+    if (item.id === 'app-guide') {
+      if (onOpenUserGuide) onOpenUserGuide();
       onClose();
       return;
     }
