@@ -8,6 +8,7 @@ import LandingSponsorsScroll from './LandingSponsorsScroll';
 import LandingSupportContact from './LandingSupportContact';
 import LandingVisitCounter from './LandingVisitCounter';
 import LandingNonprofitLineman from './LandingNonprofitLineman';
+import LandingPromoPeek from './LandingPromoPeek';
 import { fetchVisitCount } from '../utils/landingVisitService';
 import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
@@ -886,6 +887,8 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
           </a>
         )}
       </div>
+
+      <LandingPromoPeek language={language} ready={ambientOn} />
     </div>
   );
 }

@@ -63,6 +63,23 @@ export function appGuideShortThumb(videoId) {
   return `https://i.ytimg.com/vi/${videoId}/hq2.jpg`;
 }
 
+/** Original-aspect poster (best for Shorts); fall back to hq2 on error. */
+export function youtubeShortsPoster(videoId) {
+  return `https://i.ytimg.com/vi/${videoId}/oardefault.jpg`;
+}
+
+export function youtubeShortsEmbedSrc(videoId) {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    playsinline: '1',
+    rel: '0',
+    modestbranding: '1',
+    iv_load_policy: '3',
+    fs: '0',
+  });
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
 export async function loadAppUserGuideVideos() {
   try {
     const response = await fetch('/guide/appUserGuideVideos.json', { cache: 'no-store' });

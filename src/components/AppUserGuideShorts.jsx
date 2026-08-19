@@ -8,19 +8,8 @@ import {
   appGuideShortTitle,
   loadAppUserGuideVideos,
   normalizeAppGuideSeries,
+  youtubeShortsEmbedSrc,
 } from '../data/appUserGuideShorts';
-
-function youtubeEmbedSrc(videoId) {
-  const params = new URLSearchParams({
-    autoplay: '1',
-    playsinline: '1',
-    rel: '0',
-    modestbranding: '1',
-    iv_load_policy: '3',
-    fs: '0',
-  });
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
-}
 
 export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
   const bn = language === 'bn';
@@ -217,7 +206,7 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
             <div className="app-guide-player__frame">
               <iframe
                 key={playing.videoId}
-                src={youtubeEmbedSrc(playing.videoId)}
+                src={youtubeShortsEmbedSrc(playing.videoId)}
                 title={title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 referrerPolicy="strict-origin-when-cross-origin"
