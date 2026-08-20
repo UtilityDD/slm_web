@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import NativeSheetHandle from './NativeSheetHandle';
 import { pushNativeBackHandler } from '../utils/nativeAndroidUx';
@@ -7,18 +7,37 @@ import {
   appGuideShortThumb,
   appGuideShortTitle,
   loadAppUserGuideVideos,
+  loadYoutubeIframeApi,
   normalizeAppGuideSeries,
-  youtubeShortsEmbedSrc,
+  youtubeShortsPoster,
 } from '../data/appUserGuideShorts';
+
+const SWIPE_DISTANCE = 56;
+const FLICK_DISTANCE = 22;
+const FLICK_VELOCITY = 0.42;
 
 export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
   const bn = language === 'bn';
   const [series, setSeries] = useState(() => normalizeAppGuideSeries(APP_USER_GUIDE_SHORTS));
   const [playingIndex, setPlayingIndex] = useState(null);
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [hasSwiped, setHasSwiped] = useState(false);
+
+  const startY = useRef(null);
+  const startT = useRef(0);
+  const wheelLock = useRef(false);
+  const playerRootRef = useRef(null);
+  const ytPlayerRef = useRef(null);
+  const playingIndexRef = useRef(null);
+  const totalRef = useRef(0);
 
   useEffect(() => {
     if (!open) {
       setPlayingIndex(null);
+      setDragY(0);
+      setDragging(false);
+      setHasSwiped(false);
       return undefined;
     }
     let cancelled = false;
@@ -37,6 +56,31 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
   const playing = open && playingIndex != null && series[playingIndex];
   const showPicker = open && !playing;
   const total = series.length;
+  playingIndexRef.current = playingIndex;
+  totalRef.current = total;
+
+  const goTo = useCallback((index) => {
+    setPlayingIndex((current) => {
+      if (current == null) return current;
+      const next = Math.max(0, Math.min(totalRef.current - 1, index));
+      if (next === current) return current;
+      if (navigator.vibrate) navigator.vibrate(5);
+      setHasSwiped(true);
+      return next;
+    });
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    const player = ytPlayerRef.current;
+    if (!player?.getPlayerState) return;
+    try {
+      const state = player.getPlayerState();
+      if (state === 1) player.pauseVideo();
+      else player.playVideo();
+    } catch {
+      /* API not ready */
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -63,10 +107,12 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
       }
       if (playingIndex == null) return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        setPlayingIndex((i) => Math.min(total - 1, i + 1));
+        e.preventDefault();
+        goTo(playingIndex + 1);
       }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        setPlayingIndex((i) => Math.max(0, i - 1));
+        e.preventDefault();
+        goTo(playingIndex - 1);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -76,7 +122,7 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
       pop();
       window.removeEventListener('keydown', onKey);
     };
-  }, [open, onClose, playingIndex, total]);
+  }, [open, onClose, playingIndex, goTo]);
 
   useEffect(() => {
     if (!playing) return undefined;
@@ -93,6 +139,134 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
     };
   }, [playing]);
 
+  useEffect(() => {
+    if (!playing) {
+      ytPlayerRef.current = null;
+      return undefined;
+    }
+    let cancelled = false;
+    let player;
+
+    loadYoutubeIframeApi()
+      .then((YT) => {
+        if (cancelled) return;
+        const host = document.getElementById('app-guide-yt');
+        if (!host) return;
+        player = new YT.Player(host, {
+          videoId: playing.videoId,
+          width: '100%',
+          height: '100%',
+          playerVars: {
+            autoplay: 1,
+            playsinline: 1,
+            rel: 0,
+            modestbranding: 1,
+            iv_load_policy: 3,
+            fs: 0,
+            ...(window.location.protocol === 'http:' || window.location.protocol === 'https:'
+              ? { origin: window.location.origin }
+              : {}),
+          },
+          events: {
+            onReady: (event) => {
+              try { event.target.playVideo(); } catch { /* autoplay blocked */ }
+            },
+            onStateChange: (event) => {
+              if (event.data !== YT.PlayerState.ENDED) return;
+              const index = playingIndexRef.current;
+              const last = totalRef.current - 1;
+              if (typeof index === 'number' && index < last) {
+                goTo(index + 1);
+                return;
+              }
+              try {
+                event.target.seekTo(0, true);
+                event.target.playVideo();
+              } catch {
+                /* ignore */
+              }
+            },
+          },
+        });
+        ytPlayerRef.current = player;
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      ytPlayerRef.current = null;
+      try {
+        player?.destroy?.();
+      } catch {
+        /* React may have already removed the node */
+      }
+    };
+  }, [playing?.videoId, goTo]);
+
+  useEffect(() => {
+    if (!playing || total < 2) return undefined;
+    const root = playerRootRef.current;
+    if (!root) return undefined;
+    const onWheel = (e) => {
+      e.preventDefault();
+      if (wheelLock.current) return;
+      if (e.deltaY > 24) goTo(playingIndex + 1);
+      else if (e.deltaY < -24) goTo(playingIndex - 1);
+      else return;
+      wheelLock.current = true;
+      window.setTimeout(() => {
+        wheelLock.current = false;
+      }, 520);
+    };
+    root.addEventListener('wheel', onWheel, { passive: false });
+    return () => root.removeEventListener('wheel', onWheel);
+  }, [playing, playingIndex, total, goTo]);
+
+  const onPointerDown = (e) => {
+    if (!e.isPrimary) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    startY.current = e.clientY;
+    startT.current = Date.now();
+    if (total > 1) setDragging(true);
+  };
+
+  const onPointerMove = (e) => {
+    if (startY.current == null || total < 2) return;
+    let dy = e.clientY - startY.current;
+    if (playingIndex <= 0 && dy > 0) dy *= 0.28;
+    if (playingIndex >= total - 1 && dy < 0) dy *= 0.28;
+    setDragY(dy);
+  };
+
+  const endPointer = (e) => {
+    if (startY.current == null) return;
+    const dy = e.clientY - startY.current;
+    const dt = Math.max(1, Date.now() - startT.current);
+    const velocity = dy / dt;
+    startY.current = null;
+    setDragging(false);
+    setDragY(0);
+
+    if (total > 1) {
+      const goNext = dy < -SWIPE_DISTANCE || (dy < -FLICK_DISTANCE && velocity < -FLICK_VELOCITY);
+      const goPrev = dy > SWIPE_DISTANCE || (dy > FLICK_DISTANCE && velocity > FLICK_VELOCITY);
+      if (goNext) {
+        goTo(playingIndex + 1);
+        return;
+      }
+      if (goPrev) {
+        goTo(playingIndex - 1);
+        return;
+      }
+    }
+    if (Math.abs(dy) < 10 && dt < 450) togglePlay();
+  };
+
+  const onPointerUp = (e) => {
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
+    endPointer(e);
+  };
+
   if (!open || typeof document === 'undefined') return null;
 
   const title = playing ? appGuideShortTitle(playing, language) : '';
@@ -105,7 +279,18 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
 
   const playAt = (index) => {
     if (navigator.vibrate) navigator.vibrate(5);
+    setHasSwiped(false);
+    setDragY(0);
     setPlayingIndex(index);
+  };
+
+  const trackClass = [
+    'app-guide-player__track',
+    dragging ? 'is-dragging' : '',
+  ].filter(Boolean).join(' ');
+
+  const trackStyle = {
+    transform: `translate3d(0, calc(${-((playingIndex || 0) * 100)}% + ${dragY}px), 0)`,
   };
 
   return createPortal(
@@ -197,23 +382,45 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
 
       {playing && (
         <div
+          ref={playerRootRef}
           className="app-guide-player"
           role="dialog"
           aria-modal="true"
           aria-label={title || (bn ? 'অ্যাপ গাইড' : 'App guide')}
         >
-          <div className="app-guide-player__stage">
-            <div className="app-guide-player__frame">
-              <iframe
-                key={playing.videoId}
-                src={youtubeShortsEmbedSrc(playing.videoId)}
-                title={title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen={false}
-              />
-            </div>
+          <div className={trackClass} style={trackStyle}>
+            {series.map((item, index) => {
+              const active = index === playingIndex;
+              return (
+                <div key={item.id} className="app-guide-player__slide">
+                  <div className="app-guide-player__frame">
+                    <img
+                      className="app-guide-player__poster"
+                      src={youtubeShortsPoster(item.videoId)}
+                      alt=""
+                      draggable={false}
+                      onError={(e) => {
+                        e.currentTarget.src = appGuideShortThumb(item.videoId);
+                      }}
+                    />
+                    {active ? (
+                      <div className="app-guide-player__yt-host">
+                        <div id="app-guide-yt" />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          <div
+            className="app-guide-player__swipe"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+          />
 
           <div className="app-guide-player__chrome">
             <p className={`app-guide-player__kicker ${bn ? 'font-bengali' : ''}`}>
@@ -235,26 +442,39 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
             <p className={`app-guide-player__title ${bn ? 'font-bengali' : ''}`}>{title}</p>
           ) : null}
 
+          {total > 1 && playingIndex < total - 1 && !hasSwiped && !dragging && (
+            <div className={`app-guide-player__hint ${bn ? 'font-bengali' : ''}`} aria-hidden>
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M12 19V5M6 11l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{bn ? 'উপরে সোয়াইপ' : 'Swipe up'}</span>
+            </div>
+          )}
+
           {total > 1 && (
             <>
               <div className="app-guide-player__nav">
                 <button
                   type="button"
                   disabled={playingIndex <= 0}
-                  onClick={() => setPlayingIndex((i) => Math.max(0, i - 1))}
+                  onClick={() => goTo(playingIndex - 1)}
                   className="app-guide-player__nav-btn"
                   aria-label={bn ? 'আগের ভিডিও' : 'Previous video'}
                 >
-                  ‹
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                    <path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
                 <button
                   type="button"
                   disabled={playingIndex >= total - 1}
-                  onClick={() => setPlayingIndex((i) => Math.min(total - 1, i + 1))}
+                  onClick={() => goTo(playingIndex + 1)}
                   className="app-guide-player__nav-btn"
                   aria-label={bn ? 'পরের ভিডিও' : 'Next video'}
                 >
-                  ›
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                    <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
               </div>
               <div className="app-guide-player__dots" aria-hidden>

@@ -14,6 +14,12 @@ export const APP_USER_GUIDE_SHORTS = [
     titleBn: 'পেশাগত জ্ঞান ও লাইফ স্কিল',
     titleEn: 'Professional knowledge & life skills',
   },
+  {
+    id: 'wa-group-join',
+    url: 'https://youtube.com/shorts/8l1va2_Zejw',
+    titleBn: 'WA গ্রুপে কিভাবে জয়েন করবেন',
+    titleEn: 'How to join the WhatsApp group',
+  },
 ];
 
 export function extractYoutubeVideoId(input) {
@@ -78,6 +84,32 @@ export function youtubeShortsEmbedSrc(videoId) {
     fs: '0',
   });
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
+let youtubeApiPromise;
+
+export function loadYoutubeIframeApi() {
+  if (typeof window === 'undefined') {
+    return Promise.reject(new Error('no window'));
+  }
+  if (window.YT?.Player) return Promise.resolve(window.YT);
+  if (!youtubeApiPromise) {
+    youtubeApiPromise = new Promise((resolve) => {
+      const previous = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        try { previous?.(); } catch { /* ignore */ }
+        resolve(window.YT);
+      };
+      const src = 'https://www.youtube.com/iframe_api';
+      if (!document.querySelector(`script[src="${src}"]`)) {
+        const tag = document.createElement('script');
+        tag.src = src;
+        tag.async = true;
+        document.head.appendChild(tag);
+      }
+    });
+  }
+  return youtubeApiPromise;
 }
 
 export async function loadAppUserGuideVideos() {
