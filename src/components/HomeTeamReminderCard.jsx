@@ -9,11 +9,17 @@ import {
   buildTeamRoster,
   markRemindedToday,
   openTeamReminderComposer,
+  pickIdleLotIds,
   pickTeamReminderStory,
   readRemindedDates,
   readRemindedIdsToday,
   reminderSendLimit,
 } from '../utils/teamReminder';
+import {
+  listWhatsAppApps,
+  readWhatsAppPackageChoice,
+  writeWhatsAppPackageChoice,
+} from '../utils/whatsappLauncher';
 
 const TEAM_SELECT = 'id, full_name, phone, phone_number, last_login_at, role, supervisor_id';
 
@@ -127,11 +133,15 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
   const [story, setStory] = useState(null);
   const [storyLoading, setStoryLoading] = useState(false);
   const [index, setIndex] = useState(0);
-  const [openedOnce, setOpenedOnce] = useState(false);
   const [draft, setDraft] = useState('');
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [sentTick, setSentTick] = useState(0);
+  const [waApps, setWaApps] = useState([]);
+  const [waPackage, setWaPackage] = useState('');
+  const [waPickOpen, setWaPickOpen] = useState(false);
+  const [waRemember, setWaRemember] = useState(true);
   const editedRef = useRef(false);
+  const waPickThenSendRef = useRef(false);
 
   const loadTeam = useCallback(async () => {
     if (!userId) return;
@@ -156,6 +166,24 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
   useEffect(() => {
     void loadTeam();
   }, [loadTeam]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const apps = await listWhatsAppApps();
+      if (cancelled) return;
+      setWaApps(apps);
+      const saved = readWhatsAppPackageChoice();
+      if (saved && apps.some((app) => app.packageName === saved)) {
+        setWaPackage(saved);
+      } else if (saved) {
+        writeWhatsAppPackageChoice('');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const sentDates = useMemo(() => readRemindedDates(userId), [userId, sheetOpen, sentTick]);
   const alreadyIds = useMemo(() => readRemindedIdsToday(userId), [userId, sheetOpen, sentTick]);
@@ -193,12 +221,25 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
   const closeSheet = useCallback(() => {
     setSheetOpen(false);
     setSheetStep('roster');
-    setOpenedOnce(false);
+    setWaPickOpen(false);
+    waPickThenSendRef.current = false;
   }, []);
 
   const closeGuide = useCallback(() => {
     setGuideOpen(false);
   }, []);
+
+  const backToRoster = useCallback(() => {
+    setIndex(0);
+    setSelectedIds((prev) => {
+      const next = new Set();
+      for (const id of prev) {
+        if (!alreadyIds.has(id)) next.add(id);
+      }
+      return next;
+    });
+    setSheetStep('roster');
+  }, [alreadyIds]);
 
   const overlayOpen = sheetOpen || guideOpen;
 
@@ -211,9 +252,13 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
         closeGuide();
         return true;
       }
+      if (waPickOpen) {
+        setWaPickOpen(false);
+        waPickThenSendRef.current = false;
+        return true;
+      }
       if (sheetStep === 'compose') {
-        setSheetStep('roster');
-        setOpenedOnce(false);
+        backToRoster();
         return true;
       }
       closeSheet();
@@ -222,9 +267,11 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
     const onKey = (event) => {
       if (event.key !== 'Escape') return;
       if (guideOpen) closeGuide();
-      else if (sheetStep === 'compose') {
-        setSheetStep('roster');
-        setOpenedOnce(false);
+      else if (waPickOpen) {
+        setWaPickOpen(false);
+        waPickThenSendRef.current = false;
+      } else if (sheetStep === 'compose') {
+        backToRoster();
       } else closeSheet();
     };
     window.addEventListener('keydown', onKey);
@@ -233,22 +280,15 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
       pop();
       window.removeEventListener('keydown', onKey);
     };
-  }, [overlayOpen, guideOpen, sheetStep, closeSheet, closeGuide]);
+  }, [overlayOpen, guideOpen, sheetStep, waPickOpen, closeSheet, closeGuide, backToRoster]);
 
   const openSheet = (nextChannel) => {
     if (navigator.vibrate) navigator.vibrate(5);
     setChannel(nextChannel);
     setIndex(0);
-    setOpenedOnce(false);
     setGuideOpen(false);
     setSheetStep('roster');
-    const next = new Set();
-    for (const row of roster) {
-      if (row.status !== 'idle' || !row.digits) continue;
-      next.add(row.id);
-      if (next.size >= sendLimit) break;
-    }
-    setSelectedIds(next);
+    setSelectedIds(new Set(pickIdleLotIds(roster, sendLimit)));
     setSheetOpen(true);
   };
 
@@ -270,7 +310,6 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
     if (!recipients.length) return;
     if (navigator.vibrate) navigator.vibrate(5);
     setIndex(0);
-    setOpenedOnce(false);
     setSheetStep('compose');
     void loadStory();
   };
@@ -289,28 +328,59 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
     });
   };
 
-  const sendCurrent = async () => {
+  const sendCurrent = async (packageName = waPackage) => {
     if (!current?.digits || !message) return;
+    const pkg = packageName || (waApps.length === 1 ? waApps[0].packageName : '');
+    if (channel === 'whatsapp' && waApps.length > 1 && !pkg) {
+      waPickThenSendRef.current = true;
+      setWaPickOpen(true);
+      return;
+    }
     if (navigator.vibrate) navigator.vibrate(8);
     void hapticImpact('Light');
-    const ok = await openTeamReminderComposer(channel, current.digits, message);
-    if (ok) {
-      markRemindedToday(userId, current.id);
-      setSentTick((n) => n + 1);
-      setOpenedOnce(true);
+    const ok = await openTeamReminderComposer(channel, current.digits, message, { packageName: pkg });
+    if (!ok) return;
+    markRemindedToday(userId, current.id);
+    setSentTick((n) => n + 1);
+    if (index < recipients.length - 1) {
+      setIndex((n) => n + 1);
+      return;
+    }
+    const skip = new Set(alreadyIds);
+    skip.add(current.id);
+    for (const row of recipients) skip.add(row.id);
+    const nextIds = pickIdleLotIds(roster, sendLimit, skip);
+    if (nextIds.length) {
+      setIndex(0);
+      setSelectedIds(new Set(nextIds));
+      setSheetStep('roster');
     }
   };
 
-  const goNext = () => {
+  const chooseWhatsApp = (pkg) => {
     if (navigator.vibrate) navigator.vibrate(5);
-    setOpenedOnce(false);
-    setIndex((n) => Math.min(n + 1, Math.max(0, recipients.length - 1)));
+    setWaPackage(pkg);
+    writeWhatsAppPackageChoice(waRemember ? pkg : '');
+    setWaPickOpen(false);
+    const thenSend = waPickThenSendRef.current;
+    waPickThenSendRef.current = false;
+    if (thenSend) void sendCurrent(pkg);
+  };
+
+  const changeWhatsApp = () => {
+    if (navigator.vibrate) navigator.vibrate(5);
+    waPickThenSendRef.current = false;
+    setWaPackage('');
+    writeWhatsAppPackageChoice('');
+    setWaPickOpen(true);
   };
 
   const font = bn ? 'font-bengali' : '';
   const canCompose = recipients.length > 0;
   const canOpen = !loading && !fetchError;
   const countLabel = loading || fetchError ? '' : bn ? `${team.length} জন` : `${team.length}`;
+  const waChosen = waApps.find((app) => app.packageName === waPackage) || null;
+  const showWaSwitch = channel === 'whatsapp' && waApps.length > 1;
 
   const openGuide = () => {
     if (navigator.vibrate) navigator.vibrate(5);
@@ -400,19 +470,44 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
                       id="team-reminder-title"
                       className={`min-w-0 truncate font-black text-slate-900 ${bn ? 'font-bengali text-lg' : 'text-base'}`}
                     >
-                      {sheetStep === 'compose' && current
-                        ? `${current.firstName || current.fullName}${recipients.length > 1 ? `  ${index + 1}/${recipients.length}` : ''}`
-                        : bn
-                          ? 'আমার টিম'
-                          : 'My team'}
+                      {waPickOpen
+                        ? bn
+                          ? 'কোন WhatsApp?'
+                          : 'Which WhatsApp?'
+                        : sheetStep === 'compose' && current
+                          ? `${current.firstName || current.fullName}${recipients.length > 1 ? `  ${index + 1}/${recipients.length}` : ''}`
+                          : recipients.length
+                            ? bn
+                              ? `এই বার ${recipients.length} জন`
+                              : `This round: ${recipients.length}`
+                            : bn
+                              ? 'আমার টিম'
+                              : 'My team'}
                     </h2>
                     <button
                       type="button"
-                      onClick={sheetStep === 'compose' ? () => { setSheetStep('roster'); setOpenedOnce(false); } : closeSheet}
+                      onClick={
+                        waPickOpen
+                          ? () => {
+                              setWaPickOpen(false);
+                              waPickThenSendRef.current = false;
+                            }
+                          : sheetStep === 'compose'
+                            ? backToRoster
+                            : closeSheet
+                      }
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600"
-                      aria-label={sheetStep === 'compose' ? (bn ? 'তালিকা' : 'List') : (bn ? 'বন্ধ' : 'Close')}
+                      aria-label={
+                        waPickOpen || sheetStep !== 'compose'
+                          ? bn
+                            ? 'বন্ধ'
+                            : 'Close'
+                          : bn
+                            ? 'তালিকা'
+                            : 'List'
+                      }
                     >
-                      {sheetStep === 'compose' ? (
+                      {!waPickOpen && sheetStep === 'compose' ? (
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
@@ -424,8 +519,42 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
                     </button>
                   </div>
 
-                  {sheetStep === 'roster' ? (
+                  {waPickOpen ? (
                     <>
+                      <div className="space-y-2">
+                        {waApps.map((app) => (
+                          <button
+                            key={app.packageName}
+                            type="button"
+                            onClick={() => chooseWhatsApp(app.packageName)}
+                            className={`inline-flex min-h-[48px] w-full items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-left font-bold text-emerald-950 ${font}`}
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                              <WhatsAppIcon className="h-5 w-5" />
+                            </span>
+                            <span className="min-w-0 truncate">{app.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <label className={`mt-4 flex min-h-[44px] cursor-pointer items-center gap-2.5 text-slate-700 ${bn ? 'font-bengali text-sm' : 'text-sm font-semibold'}`}>
+                        <input
+                          type="checkbox"
+                          checked={waRemember}
+                          onChange={(event) => setWaRemember(event.target.checked)}
+                          className="h-5 w-5 accent-emerald-600"
+                        />
+                        {bn ? 'মনে রাখুন' : 'Remember this'}
+                      </label>
+                    </>
+                  ) : sheetStep === 'roster' ? (
+                    <>
+                      {roster.length > 0 ? (
+                        <p className={`mb-2 text-slate-500 ${bn ? 'font-bengali text-xs leading-snug' : 'text-xs font-semibold leading-snug'}`}>
+                          {bn
+                            ? `যাদের বাদ দিতে চান, ট্যাপ করুন। একবারে ${sendLimit} জন।`
+                            : `Tap a name to leave them out. ${sendLimit} per round.`}
+                        </p>
+                      ) : null}
                       <div className="max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain">
                         {roster.length === 0 ? (
                           <p className={`px-1 py-6 text-center text-slate-500 ${bn ? 'font-bengali text-sm' : 'text-sm font-semibold'}`}>
@@ -502,13 +631,28 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
                             type="button"
                             disabled={!canCompose}
                             onClick={goCompose}
-                            className={`min-h-[48px] w-full rounded-xl px-3 font-black text-white disabled:opacity-40 ${font} ${
+                            className={`inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl px-3 font-black text-white disabled:opacity-40 ${font} ${
                               channel === 'sms' ? 'bg-sky-600' : 'bg-[#25D366]'
                             }`}
                           >
-                            {bn ? 'মেসেজ' : 'Message'}
+                            {channel === 'sms' ? <SmsIcon className="h-5 w-5" /> : <WhatsAppIcon className="h-5 w-5" />}
+                            <span>{channel === 'sms' ? 'SMS' : 'WhatsApp'}</span>
+                            <span className="tabular-nums">{recipients.length}</span>
                           </button>
                         )}
+                        {showWaSwitch && roster.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={changeWhatsApp}
+                            className={`mt-2 w-full text-center text-xs font-bold text-slate-500 ${font}`}
+                          >
+                            {waChosen
+                              ? `${waChosen.label} · ${bn ? 'বদলান' : 'Change'}`
+                              : bn
+                                ? 'কোন WhatsApp?'
+                                : 'Which WhatsApp?'}
+                          </button>
+                        ) : null}
                       </div>
                     </>
                   ) : (
@@ -527,37 +671,41 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
                         className={`w-full resize-none rounded-2xl border border-orange-100 bg-white px-3.5 py-3 text-slate-800 outline-none ring-orange-300 focus:ring-2 ${bn ? 'font-bengali text-[15px] leading-relaxed' : 'text-sm leading-relaxed'}`}
                       />
 
-                      <div className="mt-4 flex gap-2">
-                        {current && index < recipients.length - 1 && (
-                          <button
-                            type="button"
-                            onClick={goNext}
-                            className={`min-h-[48px] flex-1 rounded-xl border border-slate-200 bg-white px-3 font-bold text-slate-700 ${font}`}
-                          >
-                            {bn ? 'পরের' : 'Next'}
-                          </button>
-                        )}
-                        {current && (
+                      <div className="mt-4">
+                        {current ? (
                           <button
                             type="button"
                             disabled={storyLoading || !message}
                             onClick={() => void sendCurrent()}
-                            className={`min-h-[48px] flex-[1.4] rounded-xl px-3 font-black text-white disabled:opacity-40 ${font} ${
+                            className={`inline-flex min-h-[52px] w-full items-center justify-center rounded-xl text-white disabled:opacity-40 ${
                               channel === 'sms' ? 'bg-sky-600' : 'bg-[#25D366]'
                             }`}
+                            aria-label={channel === 'sms' ? 'SMS' : 'WhatsApp'}
                           >
-                            {openedOnce ? (bn ? 'আবার' : 'Again') : bn ? 'খুলুন' : 'Open'}
+                            {channel === 'sms' ? <SmsIcon className="h-7 w-7" /> : <WhatsAppIcon className="h-7 w-7" />}
                           </button>
-                        )}
-                        {!current && (
+                        ) : (
                           <button
                             type="button"
-                            onClick={() => { setSheetStep('roster'); setOpenedOnce(false); }}
-                            className={`min-h-[48px] flex-1 rounded-xl bg-slate-800 font-black text-white ${font}`}
+                            onClick={backToRoster}
+                            className={`min-h-[48px] w-full rounded-xl bg-slate-800 font-black text-white ${font}`}
                           >
                             {bn ? 'ঠিক আছে' : 'OK'}
                           </button>
                         )}
+                        {current && showWaSwitch ? (
+                          <button
+                            type="button"
+                            onClick={changeWhatsApp}
+                            className={`mt-2 w-full text-center text-xs font-bold text-slate-500 ${font}`}
+                          >
+                            {waChosen
+                              ? `${waChosen.label} · ${bn ? 'বদলান' : 'Change'}`
+                              : bn
+                                ? 'কোন WhatsApp?'
+                                : 'Which WhatsApp?'}
+                          </button>
+                        ) : null}
                       </div>
                     </>
                   )}
@@ -616,6 +764,16 @@ export default function HomeTeamReminderCard({ userId, role = 'safety mitra', la
                           : 'Linemen tagged to you.'}
                     </li>
                     <li>{bn ? 'একজন করে। গ্রুপ নয়। আপনি পাঠাবেন।' : 'One person at a time. You send it.'}</li>
+                    <li>
+                      {bn
+                        ? `একবারে সর্বোচ্চ ${sendLimit} জন। শেষ হলে আবার বাছাই।`
+                        : `Up to ${sendLimit} per round. Then pick the next lot.`}
+                    </li>
+                    <li>
+                      {bn
+                        ? 'দুই WhatsApp থাকলে একবার বেছে মনে রাখুন।'
+                        : 'If you have two WhatsApp apps, pick one and remember it.'}
+                    </li>
                   </ul>
                   <button
                     type="button"

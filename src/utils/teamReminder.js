@@ -3,12 +3,26 @@ import { BOARD_IDS } from './monthlyEncouragementBoards';
 import { collectAllUserPrizeWins } from './hallOfFamePrizes';
 import { getLatestDeclaredPrizeMonth } from './monthWinnersReveal';
 import { storageUtils } from './storageUtils';
+import { openWhatsAppUrl } from './whatsappLauncher';
 
 export const TEAM_REMINDER_INACTIVE_DAYS = 7;
 export const TEAM_REMINDER_MAX_SEND = 30;
 
 export function reminderSendLimit(_role) {
   return TEAM_REMINDER_MAX_SEND;
+}
+
+/** First idle-with-phone row ids, capped per round. Not a bulk send. */
+export function pickIdleLotIds(roster = [], limit = TEAM_REMINDER_MAX_SEND, excludeIds) {
+  const ids = [];
+  const cap = Math.max(0, Number(limit) || 0);
+  const skip = excludeIds instanceof Set ? excludeIds : new Set(excludeIds || []);
+  for (const row of roster || []) {
+    if (!row?.id || row.status !== 'idle' || !row.digits || skip.has(row.id)) continue;
+    ids.push(row.id);
+    if (ids.length >= cap) break;
+  }
+  return ids;
 }
 
 const APP_LINK = String(WEBSITE_URL || 'https://smartlineman.in')
@@ -300,7 +314,7 @@ async function tryNativeBrowser(url) {
 }
 
 /** Opens the phone's WhatsApp or SMS composer for one number. Never a group. */
-export async function openTeamReminderComposer(channel, digits, body) {
+export async function openTeamReminderComposer(channel, digits, body, { packageName = '' } = {}) {
   const phone = indianMobileDigits(digits) || String(digits || '').replace(/\D/g, '');
   if (!phone || phone.length !== 10) return false;
 
@@ -308,6 +322,8 @@ export async function openTeamReminderComposer(channel, digits, body) {
   const nativeWa = `whatsapp://send?phone=91${phone}&text=${encodeURIComponent(body)}`;
 
   if (channel === 'whatsapp') {
+    if (await openWhatsAppUrl(nativeWa, packageName)) return true;
+    if (await openWhatsAppUrl(webUrl, packageName)) return true;
     if (await tryNativeOpenUrl(nativeWa)) return true;
     if (await tryNativeOpenUrl(webUrl)) return true;
     if (await tryNativeBrowser(webUrl)) return true;
