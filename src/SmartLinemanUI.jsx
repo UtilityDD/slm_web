@@ -1760,6 +1760,7 @@ export default function SmartLinemanUI() {
             <ContactResponsesPage
               language={language}
               setCurrentView={setCurrentView}
+              userProfile={userProfile}
             />
           );
         case 'safety-culture-survey':

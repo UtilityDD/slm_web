@@ -45,6 +45,10 @@ function writeCountCache(pending) {
   }
 }
 
+export function cacheContactPendingCount(pending) {
+  writeCountCache(Number(pending) || 0);
+}
+
 export async function fetchContactPendingCount({ force = false } = {}) {
   if (!force) {
     const cached = readCountCache();
@@ -67,4 +71,27 @@ export async function fetchSheetContacts() {
   const rows = Array.isArray(json.rows) ? json.rows : [];
   if (json.pending != null) writeCountCache(Number(json.pending) || 0);
   return rows;
+}
+
+/**
+ * Writes Contacted On / Contacted By / Remarks for one sheet row.
+ * Same no-cors POST as the landing form so the browser can reach Apps Script.
+ */
+export async function saveContactFollowUp({ id, contactedOn, contactedBy, remarks } = {}) {
+  const rowId = String(id || '').trim();
+  if (!/^\d+$/.test(rowId) || Number(rowId) < 2) return { ok: false };
+  await fetch(LANDING_CONTACT_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      source: 'smartlineman-contact-followup',
+      pull: CONTACT_PULL_KEY,
+      id: rowId,
+      contactedOn: String(contactedOn || '').trim().slice(0, 80),
+      contactedBy: String(contactedBy || '').trim().slice(0, 120),
+      remarks: String(remarks || '').trim().slice(0, 500),
+    }),
+  });
+  return { ok: true };
 }

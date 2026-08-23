@@ -5,6 +5,7 @@ import ContactResponsesCard from './ContactResponsesCard';
 export default function ContactResponsesPage({
   language = 'bn',
   setCurrentView,
+  userProfile = null,
 }) {
   const bn = language === 'bn';
 
@@ -26,6 +27,7 @@ export default function ContactResponsesPage({
           language={language}
           defaultOpen
           standalone
+          userProfile={userProfile}
         />
       </div>
     </div>

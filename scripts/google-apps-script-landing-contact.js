@@ -14,6 +14,9 @@
  * Opening the /exec URL in a browser should show: {"ok":true,"service":"landing-contact"}
  * Admin inbox: /exec?pull=slmPull_8f3c1a9e2b
  * Pending count only: /exec?pull=slmPull_8f3c1a9e2b&count=1
+ * Follow-up write (Contact Us card): POST JSON
+ *   { source: "smartlineman-contact-followup", pull, id, contactedOn, contactedBy, remarks }
+ *   id = sheet row number. Landing posts (source smartlineman-landing) are unchanged.
  *
  * Sheet tab: Landing Contacts
  * Columns: Timestamp | Name | Phone | Email | Topic | Message | Formatted digest | Language | District
@@ -44,6 +47,12 @@ function doPost(e) {
   try {
     var raw = (e && e.postData && e.postData.contents) || '{}';
     var data = JSON.parse(raw);
+    if (data.source === 'smartlineman-contact-followup') {
+      if (String(data.pull || '') !== PULL_KEY) {
+        return jsonOut({ ok: false, error: 'bad pull' });
+      }
+      return jsonOut(writeFollowUp_(data));
+    }
     if (data.source !== 'smartlineman-landing') {
       return jsonOut({ ok: false, error: 'bad source' });
     }
@@ -146,6 +155,24 @@ function followUpIndexes_(sheet) {
     by: findHeader_(header, 'Contacted By'),
     remarks: findHeader_(header, 'Remarks'),
   };
+}
+
+function writeFollowUp_(data) {
+  var rowNum = parseInt(data.id, 10);
+  if (!rowNum || rowNum < 2) return { ok: false, error: 'bad row' };
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) return { ok: false, error: 'no sheet' };
+  if (rowNum > sheet.getLastRow()) return { ok: false, error: 'bad row' };
+
+  var cols = followUpIndexes_(sheet);
+  var onVal = String(data.contactedOn || '').trim().slice(0, 80);
+  var byVal = String(data.contactedBy || '').trim().slice(0, 120);
+  var remarksVal = String(data.remarks || '').trim().slice(0, 500);
+  if (cols.on >= 0) sheet.getRange(rowNum, cols.on + 1).setValue(onVal);
+  if (cols.by >= 0) sheet.getRange(rowNum, cols.by + 1).setValue(byVal);
+  if (cols.remarks >= 0) sheet.getRange(rowNum, cols.remarks + 1).setValue(remarksVal);
+  return { ok: true, id: String(rowNum) };
 }
 
 function isPendingFollowUp_(row, cols) {
