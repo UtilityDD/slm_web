@@ -50,6 +50,13 @@ export const cacheHelper = {
         storageUtils.removeItem(CACHE_PREFIX + key);
     },
 
+    clearByPrefix: (prefix) => {
+        const fullPrefix = CACHE_PREFIX + prefix;
+        Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith(fullPrefix)) storageUtils.removeItem(key);
+        });
+    },
+
     /**
      * Clear all slm_cache items
      */

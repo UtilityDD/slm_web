@@ -771,6 +771,15 @@ function UserProfileCard({
           {row('block', '🗺️', isEn ? 'Block' : 'ব্লক', display(targetUser.block), targetUser.block ? 'neutral' : 'muted', true, selectEditor('block', targetUser.block, blocks))}
           {row('job', '👷', isEn ? 'Job type' : 'কাজের ধরন', display(targetUser.job), targetUser.job ? 'neutral' : 'muted', true, selectEditor('job', targetUser.job, jobs))}
           {isAdmin && row('role', '🎖️', isEn ? 'Role' : 'ভূমিকা', formatRoleLabel(targetUser.role), 'neutral', true, selectEditor('role', targetUser.role, ['lineman', 'guest', 'safety mitra', 'admin']))}
+          {isAdmin && targetUser.role === 'safety mitra' && row(
+            'can_handle_contact_responses',
+            '📬',
+            'Contact Us',
+            targetUser.can_handle_contact_responses ? '✓' : '✗',
+            targetUser.can_handle_contact_responses ? 'good' : 'muted',
+            true,
+            boolEditor('can_handle_contact_responses', !!targetUser.can_handle_contact_responses)
+          )}
           {isAdmin && row('supervisor_id', '👔', isEn ? 'Supervisor' : 'সুপারভাইজার',
             (supervisors || []).find((s) => s.id === targetUser.supervisor_id)?.full_name || emptyLabel(isEn),
             'neutral', true,
@@ -995,7 +1004,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     fetchUsers(currentPage, debouncedSearch, teamSortMode);
   }, [currentPage, userProfile?.role, debouncedSearch, teamSortMode]);
 
-  const profileSelectFields = 'id, slm_id, full_name, email, role, district, block, job, avatar_url, created_at, updated_at, last_login_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties';
+  const profileSelectFields = 'id, slm_id, full_name, email, role, district, block, job, avatar_url, created_at, updated_at, last_login_at, dob, age, education, children_count, children_ages, parents_stay, parents_occupation, major_diseases, regular_medicines, accidents_details, accident_count, accident_voltage, is_donor, last_donation_date, blood_group, phone, phone_number, supervisor_id, total_penalties, can_handle_contact_responses';
 
   useEffect(() => {
     if (!user?.id || userProfile?.role === 'lineman') return;
@@ -1020,14 +1029,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   }, [users, user?.id, userProfile?.role]);
 
   const clearAdminUserCaches = () => {
-    for (let i = 1; i <= 10; i++) {
-      cacheHelper.clear(`admin_users_page_${i}`);
-      cacheHelper.clear(`admin_users_admin_all_page_${i}`);
-      cacheHelper.clear(`admin_users_safety mitra_${user.id}_page_${i}`);
-      cacheHelper.clear(`admin_users_v2_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
-      cacheHelper.clear(`admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}`);
-      cacheHelper.clear(`admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_page_${i}_q_all`);
-    }
+    cacheHelper.clearByPrefix('admin_users_');
   };
 
   const loadAdminBroadcasts = async () => {
@@ -1142,16 +1144,18 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     fetchSupervisors();
   }, [userProfile?.role]);
 
-  const fetchUsers = async (page = 1, search = '', sortMode = teamSortMode) => {
+  const fetchUsers = async (page = 1, search = '', sortMode = teamSortMode, { skipCache = false } = {}) => {
     const searchKey = search.trim().toLowerCase();
     const groupAll = sortMode === 'supervisor';
-    const cacheKey = `admin_users_v3_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_${groupAll ? 'group_all' : `page_${page}`}_q_${searchKey || 'all'}`;
-    const cachedData = cacheHelper.get(cacheKey);
-    if (cachedData) {
-      setUsers(cachedData.users);
-      setTotalUsers(cachedData.total);
-      setLoading(false);
-      return;
+    const cacheKey = `admin_users_v5_${userProfile?.role}_${userProfile?.role === 'safety mitra' ? user.id : 'all'}_${groupAll ? 'group_all' : `page_${page}`}_q_${searchKey || 'all'}`;
+    if (!skipCache) {
+      const cachedData = cacheHelper.get(cacheKey);
+      if (cachedData) {
+        setUsers(cachedData.users);
+        setTotalUsers(cachedData.total);
+        setLoading(false);
+        return;
+      }
     }
 
     setLoading(true);
@@ -1181,7 +1185,29 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
         query = query.order('full_name', { ascending: true }).limit(2000);
       }
 
-      const { data, error, count } = await query;
+      let { data, error, count } = await query;
+
+      if (error && /can_handle_contact_responses/i.test(error.message || '')) {
+        const fallbackFields = profileSelectFields.replace(', can_handle_contact_responses', '');
+        let fallback = supabase.from('profiles').select(`${fallbackFields}`, { count: 'exact' });
+        if (userProfile?.role === 'lineman') {
+          fallback = fallback.eq('id', user.id);
+        } else if (userProfile?.role === 'safety mitra') {
+          fallback = fallback.or(`id.eq.${user.id},supervisor_id.eq.${user.id}`);
+        }
+        if (userProfile?.role === 'admin' && searchKey) {
+          const searchFilter = buildProfileSearchFilter(searchKey);
+          if (searchFilter) fallback = fallback.or(searchFilter);
+        }
+        if (!groupAll) {
+          const start = (page - 1) * usersPerPage;
+          const end = start + usersPerPage - 1;
+          fallback = fallback.order('created_at', { ascending: false }).range(start, end);
+        } else {
+          fallback = fallback.order('full_name', { ascending: true }).limit(2000);
+        }
+        ({ data, error, count } = await fallback);
+      }
 
       if (error) throw error;
 
@@ -1737,6 +1763,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       delete payload.full_name;
       delete payload.phone_number;
       delete payload.phone;
+      delete payload.can_handle_contact_responses;
+    }
+    if (payload.role && payload.role !== 'safety mitra') {
+      payload.can_handle_contact_responses = false;
     }
     if (payload.supervisor_id === '') payload.supervisor_id = null;
     if (payload.district && payload.district !== targetUser.district) {
@@ -1771,11 +1801,28 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     delete payload.points;
     delete payload.created_at;
 
-    const { error } = await supabase.from('profiles').update(payload).eq('id', userId);
+    const { data: savedRow, error } = await supabase
+      .from('profiles')
+      .update(payload)
+      .eq('id', userId)
+      .select()
+      .maybeSingle();
     if (error) {
+      if (/can_handle_contact_responses/i.test(error.message || '')) {
+        alert(
+          language === 'en'
+            ? 'Contact Us permission is not set up yet. Run 20260820180000_contact_response_authority.sql in Supabase, then try again.'
+            : 'Contact Us অনুমতি এখনও সেটআপ হয়নি। Supabase-এ SQL চালান, তারপর আবার চেষ্টা করুন।'
+        );
+        return;
+      }
       alert(`Failed to save: ${error.message}`);
       return;
     }
+
+    const merged = { ...targetUser, ...(savedRow || {}), ...payload };
+    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...merged } : u)));
+    setOwnProfileRow((prev) => (prev?.id === userId ? { ...prev, ...merged } : prev));
 
     if (clearingAvatar) {
       await removeStoredAvatar(supabase, targetUser.avatar_url);
@@ -1783,7 +1830,9 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     }
 
     clearAdminUserCaches();
-    await fetchUsers(currentPage, debouncedSearch, teamSortMode);
+    await fetchUsers(currentPage, debouncedSearch, teamSortMode, { skipCache: true });
+    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...merged } : u)));
+    setOwnProfileRow((prev) => (prev?.id === userId ? { ...prev, ...merged } : prev));
     setSuccessMessage({
       title: language === 'en' ? 'Saved' : 'সংরক্ষিত',
       message: clearingAvatar

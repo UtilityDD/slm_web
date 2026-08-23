@@ -16,6 +16,7 @@ import { filterCoreCompletedLessonIds } from './utils/trainingLessonIds';
 import { cacheHelper } from './utils/cacheHelper';
 import { storageUtils } from './utils/storageUtils';
 import { requestManager } from './utils/requestManager';
+import { canViewContactResponses } from './utils/landingContactAdmin';
 import { ensureAvatarCached } from './utils/avatarCache';
 import AvatarPhoto from "./components/AvatarPhoto";
 import { AVATAR_EDGE } from "./utils/avatarImage";
@@ -99,6 +100,7 @@ const MorePage = lazy(() => import("./components/MorePage"));
 const AmaderKotha = lazy(() => import("./components/AmaderKotha"));
 const SafetyCultureSurvey = lazy(() => import("./components/safety/SafetyCultureSurvey"));
 const SafetyCultureAdminPage = lazy(() => import("./components/safety/SafetyCultureAdminPage"));
+const ContactResponsesPage = lazy(() => import("./components/ContactResponsesPage"));
 // const SafetyHero = lazy(() => import("./components/safety/SafetyHero"));
 
 // Smooth transition pre-loader
@@ -752,14 +754,14 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state, ppe_nudge_state')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state, ppe_nudge_state, can_handle_contact_responses')
             .eq('id', targetUser.id)
             .single();
 
           if (error) {
             // Migration not applied yet: retry without nudge columns so login still works.
             const missingNudgeCol =
-              /profile_nudge_state|ppe_nudge_state/i.test(error.message || '') ||
+              /profile_nudge_state|ppe_nudge_state|can_handle_contact_responses/i.test(error.message || '') ||
               error.code === '42703';
             if (missingNudgeCol) {
               const retry = await supabase
@@ -1568,6 +1570,7 @@ export default function SmartLinemanUI() {
       currentView !== 'safety-culture-survey' &&
       view !== 'safety-culture-survey' &&
       view !== 'safety-culture-admin' &&
+      view !== 'contact-responses' &&
       view !== 'admin' &&
       view !== 'login' &&
       view !== 'landing';
@@ -1746,6 +1749,17 @@ export default function SmartLinemanUI() {
                 setCultureSurveyPreview(true);
                 setCurrentView('safety-culture-survey');
               }}
+            />
+          );
+        case 'contact-responses':
+          if (!canViewContactResponses(userProfile)) {
+            setCurrentView('home');
+            return null;
+          }
+          return (
+            <ContactResponsesPage
+              language={language}
+              setCurrentView={setCurrentView}
             />
           );
         case 'safety-culture-survey':

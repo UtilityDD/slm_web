@@ -21,6 +21,7 @@ import HomePrimaryActionCards from './HomePrimaryActionCards';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
 import { useCachedAvatar } from '../hooks/useCachedAvatar';
+import { fetchContactPendingCount, canViewContactResponses } from '../utils/landingContactAdmin';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -106,6 +107,7 @@ export default function Home({
   const bn = language === 'bn';
   const isAdmin = userProfile?.role === 'admin';
   const isSafetyMitra = userProfile?.role === 'safety mitra';
+  const canViewResponses = canViewContactResponses(userProfile);
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState(null);
   const [tipBoardOpen, setTipBoardOpen] = useState(false);
@@ -116,12 +118,40 @@ export default function Home({
   const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
   const [userRank, setUserRank] = useState(null);
   const [learningTopic, setLearningTopic] = useState(null);
+  const [contactPending, setContactPending] = useState(0);
+  const [contactPendingReady, setContactPendingReady] = useState(false);
   const avatarSrc = useCachedAvatar(user?.id, userProfile?.avatar_url, !!userProfile);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setLoading(false);
   }, [userProfile, user]);
+
+  useEffect(() => {
+    if (!canViewResponses) {
+      setContactPending(0);
+      setContactPendingReady(true);
+      return undefined;
+    }
+    let cancelled = false;
+    setContactPendingReady(false);
+    fetchContactPendingCount()
+      .then((n) => {
+        if (!cancelled) {
+          setContactPending(n);
+          setContactPendingReady(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setContactPending(0);
+          setContactPendingReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canViewResponses]);
 
   // Match Rank/Training/PPE: keep cream chrome while Home is open (desktop defaults to html.dark).
   useEffect(() => {
@@ -500,6 +530,27 @@ export default function Home({
           },
         ]
       : []),
+    ...(canViewResponses
+      ? [
+          {
+            id: 'contact-responses',
+            label: 'Contact Us',
+            value: null,
+            onClick: () => go('contact-responses'),
+            accent: 'border-sky-200 bg-sky-50/80 text-sky-950',
+            iconWrap: 'bg-white/80 text-sky-700 border-sky-200/70',
+            icon: (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            ),
+            ariaLabel: 'Contact Us',
+            badge: contactPending > 0 ? contactPending : null,
+            badgeLoading: !contactPendingReady,
+          },
+        ]
+      : []),
     {
       id: 'progress',
       label: bn ? 'অগ্রগতি' : 'Progress',
@@ -836,10 +887,17 @@ export default function Home({
               className={`flex items-center gap-3 rounded-2xl border text-left shadow-sm transition-all active:scale-[0.99] ${card.accent} ${bn ? 'px-3 py-3' : 'px-3 py-2.5'}`}
             >
               <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${card.iconWrap}`}
+                className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${card.iconWrap}`}
                 aria-hidden
               >
                 {card.icon}
+                {card.badgeLoading ? (
+                  <span className="absolute -right-1 -top-1 h-4 min-w-[1.25rem] animate-pulse rounded-full bg-rose-300 ring-2 ring-white" />
+                ) : card.badge ? (
+                  <span className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-rose-600 px-1 text-center text-[10px] font-black leading-4 text-white shadow-sm shadow-rose-600/50 ring-2 ring-white">
+                    {card.badge > 99 ? '99+' : card.badge}
+                  </span>
+                ) : null}
               </span>
               <span className="min-w-0 flex-1">
                 <p className={`leading-snug ${bn ? 'font-bengali font-bold text-[15px]' : 'font-black text-sm'}`}>
