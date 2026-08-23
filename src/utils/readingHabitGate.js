@@ -143,6 +143,17 @@ export async function checkReadingGate({ userId, completedLessons, trainingChapt
     };
 }
 
+/** Lesson the 48h lock currently names for this progress. */
+export function getAssignedGateLesson(userId, completedLessons, trainingChapters = null) {
+    if (!userId) return null;
+    if (hasCompletedAllCoreLessons(completedLessons, trainingChapters)) {
+        const review = getReviewAssignment(userId, completedLessons);
+        return review?.lessonId ? { mode: 'review', lessonId: String(review.lessonId) } : null;
+    }
+    const nextId = findNextSequentialLessonId(completedLessons, trainingChapters);
+    return nextId ? { mode: 'next', lessonId: String(nextId) } : null;
+}
+
 export function formatGateHoursRemaining(lastActivityAt) {
     if (!lastActivityAt) return null;
     const elapsed = Date.now() - new Date(lastActivityAt).getTime();

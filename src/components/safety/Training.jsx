@@ -45,7 +45,9 @@ import {
     CORE_LESSON_MONTHLY_BONUS_POINTS,
 } from '../../utils/trainingLessonIds';
 import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
+import { getAssignedGateLesson } from '../../utils/readingHabitGate';
 import {
+    consumeGateAskedLesson,
     consumeGateNavigation,
     consumeGateReviewTarget,
     consumeGateUnlockPending,
@@ -3326,12 +3328,20 @@ export default function Training({
 
         const current = Array.isArray(completedLessons) ? completedLessons : [];
         const updated = filterCoreCompletedLessonIds([...new Set([...current, lessonId])].filter(Boolean));
-        const alreadyCompleted = completedLessons.includes(lessonId);
+        const alreadyCompleted = current.map(String).includes(String(lessonId));
         const gateUnlock = user ? consumeGateUnlockPending(user.id, lessonId) : null;
         const gateReviewTarget = user && !gateUnlock ? consumeGateReviewTarget(user.id, lessonId) : false;
-        const gateDrivenReview = alreadyCompleted && (gateUnlock?.kind === 'review' || gateReviewTarget);
+        const asked = user ? consumeGateAskedLesson(user.id, lessonId) : null;
+        const assigned = user ? getAssignedGateLesson(user.id, current, trainingChapters) : null;
+        const matchesAssigned = Boolean(assigned && String(assigned.lessonId) === String(lessonId));
+        const askedThisLesson = alreadyCompleted && (
+            gateUnlock
+            || gateReviewTarget
+            || asked
+            || matchesAssigned
+        );
 
-        if (gateDrivenReview) {
+        if (askedThisLesson) {
             logReadingHabitReview(user.id, lessonId, profile);
             if (typeof showNotification === 'function') {
                 showNotification(

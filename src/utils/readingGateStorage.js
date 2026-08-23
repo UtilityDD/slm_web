@@ -5,6 +5,7 @@ const GATE_STATE_PREFIX = 'slm_reading_gate_v1_';
 const GATE_NAV_KEY = 'slm_reading_gate_nav_v1';
 const GATE_REVIEW_TARGET_PREFIX = 'slm_gate_review_target_';
 const GATE_UNLOCK_PREFIX = 'slm_gate_unlock_pending_v1_';
+const GATE_ASKED_PREFIX = 'slm_gate_asked_v1_';
 const GATE_UNLOCK_TTL_MS = 24 * 60 * 60 * 1000;
 
 export function gateStateKey(userId) {
@@ -149,6 +150,42 @@ export function peekGateUnlockPending(userId) {
         const o = JSON.parse(raw);
         if (!o?.lessonId || Date.now() - (o.ts || 0) > GATE_UNLOCK_TTL_MS) return null;
         return { lessonId: String(o.lessonId), kind: o.kind === 'review' ? 'review' : 'next' };
+    } catch {
+        return null;
+    }
+}
+
+/** Remember the lesson the lock named, including after Not now. */
+export function setGateAskedLesson(userId, lessonId, mode = 'next') {
+    if (!userId || !lessonId) return;
+    storageUtils.setItem(
+        `${GATE_ASKED_PREFIX}${userId}`,
+        JSON.stringify({
+            lessonId: String(lessonId),
+            mode: mode === 'review' ? 'review' : 'next',
+            ts: Date.now(),
+        })
+    );
+}
+
+/**
+ * Consume only when this pass is the lesson the lock named.
+ * @returns {{ lessonId: string, mode: 'next' | 'review' } | null}
+ */
+export function consumeGateAskedLesson(userId, lessonId) {
+    if (!userId || !lessonId) return null;
+    const key = `${GATE_ASKED_PREFIX}${userId}`;
+    try {
+        const raw = storageUtils.getItem(key);
+        if (!raw) return null;
+        const o = JSON.parse(raw);
+        if (!o?.lessonId || Date.now() - (o.ts || 0) > GATE_UNLOCK_TTL_MS) {
+            storageUtils.removeItem(key);
+            return null;
+        }
+        if (String(o.lessonId) !== String(lessonId)) return null;
+        storageUtils.removeItem(key);
+        return { lessonId: String(o.lessonId), mode: o.mode === 'review' ? 'review' : 'next' };
     } catch {
         return null;
     }

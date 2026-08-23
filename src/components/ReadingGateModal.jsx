@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { setGateNavigation, setGateReviewTarget, setGateUnlockPending } from '../utils/readingGateStorage';
+import { setGateAskedLesson, setGateNavigation, setGateReviewTarget, setGateUnlockPending } from '../utils/readingGateStorage';
 
 export default function ReadingGateModal({
     block,
@@ -14,7 +14,10 @@ export default function ReadingGateModal({
 
     useEffect(() => {
         setShowDetails(false);
-    }, [block?.lessonId, block?.mode]);
+        if (block?.userId && block?.lessonId) {
+            setGateAskedLesson(block.userId, block.lessonId, block.mode === 'review' ? 'review' : 'next');
+        }
+    }, [block?.userId, block?.lessonId, block?.mode]);
 
     if (!block) return null;
 
