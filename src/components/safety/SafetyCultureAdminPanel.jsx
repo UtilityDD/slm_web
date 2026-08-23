@@ -424,7 +424,7 @@ function UserList({ bn, users, profiles, onSelect }) {
                 <p className="truncate text-[10px] text-slate-500">
                   {p.phone_number || u.userId.slice(0, 8)}
                   {u.submittedAt
-                    ? ` · ${new Date(u.submittedAt).toLocaleString(bn ? 'bn-BD' : 'en-IN')}`
+                    ? ` · ${new Date(u.submittedAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', numberingSystem: 'latn' })}`
                     : ''}
                 </p>
               </div>

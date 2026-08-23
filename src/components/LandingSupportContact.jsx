@@ -1,5 +1,17 @@
-import React, { useEffect, useImperativeHandle, useMemo, useState, forwardRef } from 'react';
-import { submitLandingContact } from '../utils/landingContactService';
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  extractIndianMobileDigits,
+  formatIndianMobileMask,
+  maskEmailInput,
+  normalizeLandingName,
+  submitLandingContact,
+  validateLandingContact,
+} from '../utils/landingContactService';
+
+const EMPTY_FORM = { name: '', phone: '', email: '', district: '', topic: 'other', message: '', website: '' };
+const NAME_MAX = 120;
+const MESSAGE_MAX = 4000;
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import wbLocations from '../data/wb_locations.json';
 const SUPPORT_WAYS = [
@@ -105,6 +117,77 @@ function WayIcon({ name }) {
   );
 }
 
+function ContactThanksModal({ isBn, onClose, copy }) {
+  const okRef = useRef(null);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const tId = window.setTimeout(() => okRef.current?.focus(), 40);
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.clearTimeout(tId);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[260] flex items-end justify-center bg-slate-900/55 p-0 animate-fade-in sm:items-center sm:p-4"
+      role="presentation"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="landing-contact-thanks-title"
+        className={`w-full max-w-sm rounded-t-3xl border border-slate-200/80 bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5 shadow-2xl animate-slide-up-sheet sm:rounded-3xl sm:animate-scale-in ${isBn ? 'font-bengali' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3
+          id="landing-contact-thanks-title"
+          className="text-center text-lg font-black text-slate-900"
+        >
+          {copy.title}
+        </h3>
+        <p className="mt-2 text-center text-sm font-medium leading-relaxed text-slate-600">
+          {copy.received}
+        </p>
+        <p className="mt-1 text-center text-sm font-semibold leading-relaxed text-slate-700">
+          {copy.withinTwoDays}
+        </p>
+        <button
+          ref={okRef}
+          type="button"
+          onClick={onClose}
+          className="mt-5 w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98]"
+        >
+          {copy.ok}
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function FieldError({ id, show, children, isBn }) {
+  if (!show || !children) return null;
+  return (
+    <p id={id} className={`landing-contact-error ${isBn ? 'font-bengali' : ''}`} role="alert">
+      {children}
+    </p>
+  );
+}
+
 const LandingSupportContact = forwardRef(function LandingSupportContact(
   {
     language = 'bn',
@@ -117,17 +200,15 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
 ) {
   const isBn = language === 'bn';
   const districts = useMemo(() => Object.keys(wbLocations || {}).sort(), []);
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    district: '',
-    topic: 'other',
-    message: '',
-    website: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState('idle'); // idle | sending | ok | error
   const [errorMsg, setErrorMsg] = useState('');
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState({});
+  const nameRef = useRef(null);
+  const phoneRef = useRef(null);
+  const emailRef = useRef(null);
+  const messageRef = useRef(null);
 
   const t = isBn
     ? {
@@ -145,9 +226,19 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         message: 'আপনার কথা',
         submit: 'পাঠিয়ে দিন',
         sending: 'পাঠানো হচ্ছে…',
-        success: 'ধন্যবাদ। আপনার বার্তা পৌঁছে গেছে।',
+        thanksTitle: 'ধন্যবাদ',
+        thanksReceived: 'আপনার বার্তা পৌঁছে গেছে।',
+        thanksSoon: 'আমরা 2 দিনের মধ্যে যোগাযোগ করব।',
+        thanksOk: 'ঠিক আছে',
         errorFallback: 'এখন পাঠানো যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।',
         phoneOrEmail: 'মোবাইল বা ইমেইল—অন্তত একটি দিন',
+        phoneHint: '10 অঙ্কের মোবাইল',
+        phonePlaceholder: '98765 43210',
+        emailPlaceholder: 'name@example.com',
+        nameErr: 'অনুগ্রহ করে আপনার নাম লিখুন।',
+        phoneErr: 'সঠিক 10 অঙ্কের মোবাইল নম্বর লিখুন (6–9 দিয়ে শুরু)।',
+        emailErr: 'সঠিক ইমেইল ঠিকানা লিখুন।',
+        messageErr: 'আরেকটু বিস্তারিত লিখুন।',
       }
     : {
         supportTitle: 'How can you support us?',
@@ -164,14 +255,42 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
         message: 'Message',
         submit: 'Send message',
         sending: 'Sending…',
-        success: 'Thank you. Your message has been received.',
+        thanksTitle: 'Thank you',
+        thanksReceived: 'Your message was received.',
+        thanksSoon: 'We shall contact you within 2 days.',
+        thanksOk: 'OK',
         errorFallback: 'Could not send right now. Please try again shortly.',
         phoneOrEmail: 'Phone or email — at least one is required',
+        phoneHint: '10-digit mobile',
+        phonePlaceholder: '98765 43210',
+        emailPlaceholder: 'name@example.com',
+        nameErr: 'Please enter your name.',
+        phoneErr: 'Enter a valid 10-digit mobile number (starting 6–9).',
+        emailErr: 'Enter a valid email address.',
+        messageErr: 'Please write a bit more in your message.',
       };
 
   const TOPIC_MESSAGES_LANG = topicMessagesFor(language);
+  const validation = useMemo(() => validateLandingContact(form), [form]);
+  const fieldErrors = validation.errors;
+
+  const showNameErr = (attempted || touched.name) && fieldErrors.name;
+  const showPhoneErr = (attempted || touched.phone) && fieldErrors.phone;
+  const showEmailErr = (attempted || touched.email) && fieldErrors.email;
+  const showMessageErr = (attempted || touched.message) && fieldErrors.message;
+  const showContactHint = attempted && fieldErrors.contact;
+  const phoneInvalid = Boolean(showPhoneErr || showContactHint);
+  const emailInvalid = Boolean(showEmailErr || showContactHint);
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const markTouched = (key) => setTouched((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+
+  const focusFirstError = (errors) => {
+    if (errors.name) nameRef.current?.focus();
+    else if (errors.phone || errors.contact) phoneRef.current?.focus();
+    else if (errors.email) emailRef.current?.focus();
+    else if (errors.message) messageRef.current?.focus();
+  };
 
   const scrollToContact = () => {
     const el = document.getElementById('contact');
@@ -219,41 +338,50 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (status === 'sending') return;
-    setStatus('sending');
+    if (status === 'sending' || status === 'ok') return;
+    setAttempted(true);
     setErrorMsg('');
+    const next = validateLandingContact(form);
+    if (!next.ok) {
+      setStatus('idle');
+      window.requestAnimationFrame(() => focusFirstError(next.errors));
+      return;
+    }
+    setStatus('sending');
     try {
       const result = await submitLandingContact({ ...form, language });
       if (!result.ok) {
         setStatus('error');
         setErrorMsg(
           result.code === 'NAME'
-            ? isBn
-              ? 'অনুগ্রহ করে আপনার নাম লিখুন।'
-              : 'Please enter your name.'
+            ? t.nameErr
             : result.code === 'MESSAGE'
-              ? isBn
-                ? 'আরেকটু বিস্তারিত লিখুন।'
-                : 'Please write a bit more in your message.'
-              : result.code === 'CONTACT' || result.code === 'EMAIL'
-                ? t.phoneOrEmail
-                : t.errorFallback
+              ? t.messageErr
+              : result.code === 'PHONE'
+                ? t.phoneErr
+                : result.code === 'EMAIL'
+                  ? t.emailErr
+                  : result.code === 'CONTACT'
+                    ? t.phoneOrEmail
+                    : t.errorFallback
         );
+        focusFirstError(result.errors || { [String(result.code || '').toLowerCase()]: result.code });
         return;
       }
       setStatus('ok');
-      setForm({ name: '', phone: '', email: '', district: '', topic: 'other', message: '', website: '' });
+      setForm(EMPTY_FORM);
+      setAttempted(false);
+      setTouched({});
     } catch {
       setStatus('error');
       setErrorMsg(t.errorFallback);
     }
   };
 
-  useEffect(() => {
-    if (status !== 'ok') return undefined;
-    const tId = window.setTimeout(() => setStatus('idle'), 5000);
-    return () => window.clearTimeout(tId);
-  }, [status]);
+  const closeThanks = useCallback(() => {
+    setStatus('idle');
+    setErrorMsg('');
+  }, []);
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -358,15 +486,27 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
           />
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="landing-contact-field">
+            <label className={`landing-contact-field ${showNameErr ? 'is-invalid' : ''}`}>
               <span className={isBn ? 'font-bengali' : ''}>{t.name} *</span>
               <input
-                required
+                ref={nameRef}
                 value={form.name}
-                onChange={(e) => setField('name', e.target.value)}
+                onChange={(e) => setField('name', e.target.value.slice(0, NAME_MAX))}
+                onBlur={(e) => {
+                  setField('name', normalizeLandingName(e.target.value));
+                  markTouched('name');
+                }}
                 className={isBn ? 'font-bengali' : ''}
                 autoComplete="name"
+                autoCapitalize="words"
+                maxLength={NAME_MAX}
+                aria-invalid={showNameErr ? 'true' : 'false'}
+                aria-describedby={showNameErr ? 'landing-contact-name-err' : undefined}
+                disabled={status === 'sending' || status === 'ok'}
               />
+              <FieldError id="landing-contact-name-err" show={showNameErr} isBn={isBn}>
+                {t.nameErr}
+              </FieldError>
             </label>
             <label className="landing-contact-field">
               <span className={isBn ? 'font-bengali' : ''}>{t.topic}</span>
@@ -374,6 +514,7 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
                 value={form.topic}
                 onChange={(e) => setField('topic', e.target.value)}
                 className={isBn ? 'font-bengali' : ''}
+                disabled={status === 'sending' || status === 'ok'}
               >
                 {TOPICS.map((topic) => (
                   <option key={topic.id} value={topic.id}>
@@ -385,27 +526,70 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="landing-contact-field">
-              <span className={isBn ? 'font-bengali' : ''}>{t.phone}</span>
-              <input
-                value={form.phone}
-                onChange={(e) => setField('phone', e.target.value)}
-                inputMode="tel"
-                autoComplete="tel"
-                className={isBn ? 'font-bengali' : ''}
-              />
+            <label className={`landing-contact-field ${phoneInvalid ? 'is-invalid' : ''}`}>
+              <span className={`flex items-center justify-between gap-2 ${isBn ? 'font-bengali' : ''}`}>
+                <span>{t.phone}</span>
+                <span className="font-mono text-[10px] font-bold tabular-nums tracking-wide text-slate-400">
+                  {form.phone.length}/10
+                </span>
+              </span>
+              <div className={`landing-contact-phone ${phoneInvalid ? 'is-invalid' : ''}`}>
+                <span className="landing-contact-phone-cc" aria-hidden>
+                  +91
+                </span>
+                <input
+                  ref={phoneRef}
+                  type="tel"
+                  value={formatIndianMobileMask(form.phone)}
+                  onChange={(e) => setField('phone', extractIndianMobileDigits(e.target.value))}
+                  onBlur={() => markTouched('phone')}
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  maxLength={11}
+                  placeholder={t.phonePlaceholder}
+                  aria-invalid={phoneInvalid ? 'true' : 'false'}
+                  aria-describedby={showPhoneErr ? 'landing-contact-phone-err' : undefined}
+                  disabled={status === 'sending' || status === 'ok'}
+                />
+              </div>
+              <FieldError id="landing-contact-phone-err" show={showPhoneErr} isBn={isBn}>
+                {t.phoneErr}
+              </FieldError>
+              {!phoneInvalid && (
+                <p className={`text-[11px] font-semibold text-slate-400 ${isBn ? 'font-bengali' : ''}`}>{t.phoneHint}</p>
+              )}
             </label>
-            <label className="landing-contact-field">
+            <label className={`landing-contact-field ${emailInvalid ? 'is-invalid' : ''}`}>
               <span className={isBn ? 'font-bengali' : ''}>{t.email}</span>
               <input
+                ref={emailRef}
                 type="email"
+                inputMode="email"
                 value={form.email}
-                onChange={(e) => setField('email', e.target.value)}
+                onChange={(e) => setField('email', maskEmailInput(e.target.value))}
+                onBlur={() => markTouched('email')}
                 autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+                maxLength={120}
+                placeholder={t.emailPlaceholder}
+                aria-invalid={emailInvalid ? 'true' : 'false'}
+                aria-describedby={showEmailErr ? 'landing-contact-email-err' : undefined}
+                disabled={status === 'sending' || status === 'ok'}
               />
+              <FieldError id="landing-contact-email-err" show={showEmailErr} isBn={isBn}>
+                {t.emailErr}
+              </FieldError>
             </label>
           </div>
-          <p className={`text-[11px] font-semibold text-slate-500 ${isBn ? 'font-bengali' : ''}`}>{t.phoneOrEmail}</p>
+          <p
+            className={`text-[11px] font-semibold ${showContactHint ? 'text-rose-600' : 'text-slate-500'} ${isBn ? 'font-bengali' : ''}`}
+          >
+            {t.phoneOrEmail}
+          </p>
 
           <label className="landing-contact-field">
             <span className={isBn ? 'font-bengali' : ''}>{t.district}</span>
@@ -413,6 +597,7 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
               value={form.district}
               onChange={(e) => setField('district', e.target.value)}
               className={isBn ? 'font-bengali' : ''}
+              disabled={status === 'sending' || status === 'ok'}
             >
               <option value="">{t.districtPlaceholder}</option>
               {districts.map((dist) => (
@@ -423,33 +608,55 @@ const LandingSupportContact = forwardRef(function LandingSupportContact(
             </select>
           </label>
 
-          <label className="landing-contact-field">
-            <span className={isBn ? 'font-bengali' : ''}>{t.message} *</span>
+          <label className={`landing-contact-field ${showMessageErr ? 'is-invalid' : ''}`}>
+            <span className={`flex items-center justify-between gap-2 ${isBn ? 'font-bengali' : ''}`}>
+              <span>{t.message} *</span>
+              <span className="font-mono text-[10px] font-bold tabular-nums tracking-wide text-slate-400">
+                {form.message.length}/{MESSAGE_MAX}
+              </span>
+            </span>
             <textarea
-              required
+              ref={messageRef}
               rows={4}
               value={form.message}
-              onChange={(e) => setField('message', e.target.value)}
+              onChange={(e) => setField('message', e.target.value.slice(0, MESSAGE_MAX))}
+              onBlur={() => markTouched('message')}
               className={isBn ? 'font-bengali' : ''}
+              maxLength={MESSAGE_MAX}
+              aria-invalid={showMessageErr ? 'true' : 'false'}
+              aria-describedby={showMessageErr ? 'landing-contact-message-err' : undefined}
+              disabled={status === 'sending' || status === 'ok'}
             />
+            <FieldError id="landing-contact-message-err" show={showMessageErr} isBn={isBn}>
+              {t.messageErr}
+            </FieldError>
           </label>
 
-          {status === 'ok' && (
-            <p className={`text-sm font-bold text-emerald-700 ${isBn ? 'font-bengali' : ''}`}>{t.success}</p>
-          )}
           {status === 'error' && (
             <p className={`text-sm font-bold text-rose-600 ${isBn ? 'font-bengali' : ''}`}>{errorMsg || t.errorFallback}</p>
           )}
 
           <button
             type="submit"
-            disabled={status === 'sending'}
+            disabled={status === 'sending' || status === 'ok'}
             className="landing-contact-submit touch-manipulation disabled:opacity-60"
           >
             <span className={isBn ? 'font-bengali' : ''}>{status === 'sending' ? t.sending : t.submit}</span>
           </button>
         </form>
       </section>
+      {status === 'ok' && (
+        <ContactThanksModal
+          isBn={isBn}
+          onClose={closeThanks}
+          copy={{
+            title: t.thanksTitle,
+            received: t.thanksReceived,
+            withinTwoDays: t.thanksSoon,
+            ok: t.thanksOk,
+          }}
+        />
+      )}
     </div>
   );
 });

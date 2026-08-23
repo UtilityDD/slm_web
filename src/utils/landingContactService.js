@@ -17,11 +17,110 @@ const TOPIC_LABELS = {
 
 const WB_DISTRICTS = new Set(Object.keys(wbLocations || {}));
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const MOBILE_RE = /^[6-9]\d{9}$/;
+const NAME_MAX = 120;
+const EMAIL_MAX = 120;
+const MESSAGE_MIN = 8;
+const MESSAGE_MAX = 4000;
+
 function trimStr(v, max = 2000) {
   return String(v || '')
     .replace(/\r\n/g, '\n')
     .trim()
     .slice(0, max);
+}
+
+/** Bengali / Arabic-Indic digits → 0-9 */
+export function toLatinDigits(value) {
+  return String(value || '').replace(/[\u09E6-\u09EF\u0660-\u0669]/g, (ch) => {
+    const code = ch.charCodeAt(0);
+    if (code >= 0x09e6 && code <= 0x09ef) return String(code - 0x09e6);
+    if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
+    return ch;
+  });
+}
+
+/** Up to 10 Indian mobile digits. Strips +91 / 0 when pasted. */
+export function extractIndianMobileDigits(raw) {
+  let digits = toLatinDigits(raw).replace(/\D/g, '');
+  if (digits.length >= 12 && digits.startsWith('91')) digits = digits.slice(2);
+  else if (digits.length >= 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return digits.slice(0, 10);
+}
+
+export function formatIndianMobileMask(raw) {
+  const digits = extractIndianMobileDigits(raw);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)} ${digits.slice(5)}`;
+}
+
+export function isValidIndianMobile(raw) {
+  return MOBILE_RE.test(extractIndianMobileDigits(raw));
+}
+
+export function maskEmailInput(raw) {
+  return toLatinDigits(raw).replace(/\s+/g, '').toLowerCase().slice(0, EMAIL_MAX);
+}
+
+export function isValidEmail(raw) {
+  return EMAIL_RE.test(maskEmailInput(raw));
+}
+
+export function normalizeLandingName(raw) {
+  return String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, NAME_MAX);
+}
+
+function isUsableName(name) {
+  if (!name || name.length < 2) return false;
+  if (/^[\d\s.'’\-_,/]+$/.test(name)) return false;
+  return true;
+}
+
+/**
+ * Shared landing-form rules.
+ * `errors.phone` / `errors.email` = format. `errors.contact` = both left empty.
+ */
+export function validateLandingContact({ name, phone, email, district, topic, message } = {}) {
+  const errors = {};
+  const cleanName = normalizeLandingName(name);
+  const cleanPhone = extractIndianMobileDigits(phone);
+  const cleanEmail = maskEmailInput(email);
+  const cleanDistrictRaw = trimStr(district, 80);
+  const cleanDistrict = WB_DISTRICTS.has(cleanDistrictRaw) ? cleanDistrictRaw : '';
+  const cleanTopic = trimStr(topic, 40) || 'other';
+  const cleanMessage = trimStr(message, MESSAGE_MAX);
+
+  if (!isUsableName(cleanName)) errors.name = 'NAME';
+
+  if (cleanPhone && !isValidIndianMobile(cleanPhone)) errors.phone = 'PHONE';
+  if (cleanEmail && !isValidEmail(cleanEmail)) errors.email = 'EMAIL';
+
+  const hasValidPhone = isValidIndianMobile(cleanPhone);
+  const hasValidEmail = isValidEmail(cleanEmail);
+  if (!hasValidPhone && !hasValidEmail && !cleanPhone && !cleanEmail) {
+    errors.contact = 'CONTACT';
+  }
+
+  if (!cleanMessage || cleanMessage.length < MESSAGE_MIN) errors.message = 'MESSAGE';
+
+  if (!TOPIC_LABELS[cleanTopic]) errors.topic = 'TOPIC';
+
+  return {
+    ok: Object.keys(errors).length === 0,
+    errors,
+    values: {
+      name: cleanName,
+      phone: hasValidPhone ? cleanPhone : '',
+      email: hasValidEmail ? cleanEmail : '',
+      district: cleanDistrict,
+      topic: TOPIC_LABELS[cleanTopic] ? cleanTopic : 'other',
+      message: cleanMessage,
+    },
+  };
 }
 
 function topicLabel(topic, language) {
@@ -70,30 +169,35 @@ export async function submitLandingContact({
     return { ok: true };
   }
 
-  const cleanName = trimStr(name, 120);
-  const cleanPhone = trimStr(phone, 40);
-  const cleanEmail = trimStr(email, 120);
-  const cleanDistrictRaw = trimStr(district, 80);
-  const cleanDistrict = WB_DISTRICTS.has(cleanDistrictRaw) ? cleanDistrictRaw : '';
-  const cleanTopic = trimStr(topic, 40) || 'other';
-  const cleanMessage = trimStr(message, 4000);
   const lang = language === 'en' ? 'en' : 'bn';
+  const { ok, errors, values } = validateLandingContact({
+    name,
+    phone,
+    email,
+    district,
+    topic,
+    message,
+  });
 
-  if (!cleanName || cleanName.length < 2) {
-    return { ok: false, code: 'NAME', error: 'Name is required.' };
+  if (!ok) {
+    const code = errors.name
+      ? 'NAME'
+      : errors.message
+        ? 'MESSAGE'
+        : errors.phone
+          ? 'PHONE'
+          : errors.email
+            ? 'EMAIL'
+            : errors.contact
+              ? 'CONTACT'
+              : errors.topic
+                ? 'TOPIC'
+                : 'INVALID';
+    return { ok: false, code, errors };
   }
-  if (!cleanMessage || cleanMessage.length < 8) {
-    return { ok: false, code: 'MESSAGE', error: 'Message is too short.' };
-  }
-  if (!cleanPhone && !cleanEmail) {
-    return { ok: false, code: 'CONTACT', error: 'Phone or email is required.' };
-  }
-  if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-    return { ok: false, code: 'EMAIL', error: 'Invalid email.' };
-  }
-  if (!TOPIC_LABELS[cleanTopic]) {
-    return { ok: false, code: 'TOPIC', error: 'Invalid topic.' };
-  }
+
+  const { name: cleanName, phone: cleanPhone, email: cleanEmail, district: cleanDistrict, topic: cleanTopic, message: cleanMessage } =
+    values;
 
   const payload = {
     timestamp: new Date().toISOString(),

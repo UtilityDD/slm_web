@@ -47,15 +47,15 @@ import {
 
 const ADMIN_THEME = {
   shell: 'min-h-full bg-[#fffdf7] text-slate-900',
-  page: 'mx-auto max-w-5xl px-4 sm:px-6 py-5 sm:py-8 md:mb-6',
+  page: 'mx-auto max-w-5xl px-3 sm:px-5 py-3 sm:py-5 md:mb-6',
   card: 'overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm',
-  tabBar: 'flex gap-1.5 rounded-full border border-slate-200/80 bg-white p-1.5 shadow-sm',
-  tabActive: 'flex-1 rounded-full py-2.5 text-sm font-bold bg-orange-500 text-white shadow-sm',
-  tabIdle: 'flex-1 rounded-full py-2.5 text-sm font-bold text-slate-600 hover:bg-orange-50/70 hover:text-orange-700',
-  inset: 'rounded-xl border border-slate-200/70 bg-orange-50/50',
-  input: 'w-full min-h-[48px] rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200/60',
-  menuBtn: 'inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95',
-  primaryBtn: 'rounded-full bg-orange-500 px-3 py-2 text-sm font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95',
+  tabBar: 'flex gap-0.5 rounded-full border border-slate-200/80 bg-slate-50 p-0.5',
+  tabActive: 'rounded-full px-3 py-1.5 text-[11px] font-bold bg-orange-500 text-white shadow-sm',
+  tabIdle: 'rounded-full px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-white hover:text-orange-700',
+  inset: 'rounded-xl border border-slate-200/70 bg-orange-50/40',
+  input: 'w-full min-h-[40px] rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-orange-300 focus:bg-white focus:ring-2 focus:ring-orange-200/60',
+  menuBtn: 'inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95',
+  primaryBtn: 'inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95',
 };
 
 const EMPTY_SPONSOR_FORM = {
@@ -141,21 +141,45 @@ const NOTIFICATION_URGENCY_STYLES = {
 };
 
 const ProfileCardSkeleton = () => (
-  <div className="space-y-3">
-    {[1, 2, 3].map((i) => (
-      <div key={i} className={`${ADMIN_THEME.card} p-4 animate-pulse`}>
-        <div className="flex gap-3 items-center">
-          <div className="w-14 h-14 rounded-full bg-slate-200 shrink-0" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 w-36 bg-slate-200 rounded" />
-            <div className="h-3 w-24 bg-slate-200 rounded" />
-            <div className="h-3 w-40 bg-slate-100 rounded" />
+  <div className="space-y-2">
+    {[1, 2, 3, 4].map((i) => (
+      <div key={i} className={`${ADMIN_THEME.card} px-3 py-2.5 animate-pulse`}>
+        <div className="flex gap-2.5 items-center">
+          <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-3 w-32 bg-slate-200 rounded" />
+            <div className="h-2.5 w-44 bg-slate-100 rounded" />
           </div>
         </div>
       </div>
     ))}
   </div>
 );
+
+const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩';
+
+function toEnglishChars(value) {
+  return String(value ?? '').replace(/[০-৯٠-٩]/g, (ch) => {
+    const bn = BN_DIGITS.indexOf(ch);
+    if (bn >= 0) return String(bn);
+    const ar = AR_DIGITS.indexOf(ch);
+    return ar >= 0 ? String(ar) : ch;
+  });
+}
+
+function formatDateEn(value, withTime = false) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return toEnglishChars(value);
+  return d.toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+    numberingSystem: 'latn',
+  });
+}
 
 function formatProfileLastActive(value, isEn) {
   if (!value) return isEn ? 'Never' : 'কখনো নয়';
@@ -172,13 +196,7 @@ function formatProfileLastActive(value, isEn) {
     const h = Math.floor(diffSec / 3600);
     return isEn ? `${h}h ago` : `${h} ঘ. আগে`;
   }
-  return date.toLocaleString(isEn ? 'en-IN' : 'bn-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatDateEn(date, true);
 }
 
 function resolveProfileAvatarUrl(url) {
@@ -197,10 +215,11 @@ function ProfileAvatar({ url, name, size = 'lg', className = '' }) {
   const avatarUrl = resolveProfileAvatarUrl(url);
   const initials = name?.trim()?.charAt(0)?.toUpperCase() || '?';
   const sizeClass = {
-    md: 'w-16 h-16 text-lg',
-    lg: 'w-24 h-24 text-2xl',
-    xl: 'w-28 h-28 text-3xl',
-  }[size] || 'w-24 h-24 text-2xl';
+    sm: 'w-10 h-10 text-sm',
+    md: 'w-12 h-12 text-base',
+    lg: 'w-20 h-20 text-xl',
+    xl: 'w-24 h-24 text-2xl',
+  }[size] || 'w-20 h-20 text-xl';
 
   useEffect(() => {
     setFailed(false);
@@ -337,9 +356,9 @@ function ProfileRow({
   }[tone] || 'text-slate-700';
 
   return (
-    <div className="py-2 border-b border-slate-100 last:border-0">
+    <div className="py-1.5 border-b border-slate-100 last:border-0">
       {!isEditing ? (
-        <div className="flex items-center gap-2 min-h-[28px]">
+        <div className="flex items-center gap-2 min-h-[24px]">
           <span className="w-6 text-center text-sm shrink-0" aria-hidden>{icon}</span>
           <span className="text-xs text-slate-500 flex-1 min-w-0">{label}</span>
           <span className={`text-xs font-semibold text-right max-w-[45%] truncate ${toneClass}`}>{value}</span>
@@ -456,7 +475,8 @@ function ProfileCompletenessBadge({ pct, isEn }) {
 
   return (
     <span
-      className={`text-[10px] font-black px-2 py-1 rounded-full ${toneClass}`}
+      className={`font-sans tabular-nums text-[9px] font-black px-1.5 py-0.5 rounded-full ${toneClass}`}
+      lang="en"
       title={isEn ? `${pct}% profile updated` : `${pct}% প্রোফাইল আপডেট`}
     >
       {pct}%
@@ -504,7 +524,7 @@ function UserProfileCard({
 
   const display = (val, fallback) => {
     if (val === null || val === undefined || val === '') return fallback ?? emptyLabel(isEn);
-    return String(val);
+    return toEnglishChars(val);
   };
 
   const truncate = (val, len = 48) => {
@@ -660,43 +680,35 @@ function UserProfileCard({
           type="button"
           onClick={onToggleExpand}
           aria-expanded={isExpanded}
-          className="w-full p-3 sm:p-4 text-left hover:bg-orange-50/60 transition-colors"
+          className="w-full px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <div className="relative shrink-0">
-              <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="md" />
+              <ProfileAvatar url={targetUser.avatar_url} name={targetUser.full_name} size="sm" />
               {isOnline && (
-                <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden />
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-bold text-slate-900 truncate">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <p className="text-[13px] font-bold text-slate-900 truncate">
                   {targetUser.full_name || (isEn ? 'Unnamed' : 'নাম নেই')}
                 </p>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${roleBadgeClass(targetUser.role)}`}>
+                <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${roleBadgeClass(targetUser.role)}`}>
                   {formatRoleLabel(targetUser.role)}
                 </span>
                 <ProfileCompletenessBadge pct={completeness.pct} isEn={isEn} />
               </div>
-              <p className="mt-0.5 text-xs text-slate-500 truncate">
-                📍 {targetUser.district || emptyLabel(isEn)}
+              <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                {targetUser.district || emptyLabel(isEn)}
                 {targetUser.block ? ` · ${targetUser.block}` : ''}
-              </p>
-              {supervisorName ? (
-                <p className="mt-0.5 text-xs text-slate-500 truncate" title={isEn ? 'Safety Mitra' : 'সেফটি মিত্র'}>
-                  👔 {supervisorName}
-                </p>
-              ) : targetUser.supervisor_id ? (
-                <p className="mt-0.5 text-xs text-slate-400 truncate">
-                  👔 {isEn ? 'Supervisor assigned' : 'সুপারভাইজার আছে'}
-                </p>
-              ) : null}
-              <p className={`mt-0.5 text-[11px] font-medium ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
-                ⏱ {lastActiveLabel}
+                {supervisorName ? ` · ${supervisorName}` : ''}
+                <span className={`font-sans tabular-nums ${isOnline ? ' text-emerald-600' : ' text-slate-400'}`} lang="en">
+                  {` · ${lastActiveLabel}`}
+                </span>
               </p>
             </div>
-            <span className="shrink-0 text-slate-400 text-lg font-bold" aria-hidden>
+            <span className="shrink-0 text-slate-400 text-base font-bold" aria-hidden>
               {isExpanded ? '−' : '+'}
             </span>
           </div>
@@ -723,10 +735,10 @@ function UserProfileCard({
                   {formatRoleLabel(targetUser.role)}
                 </span>
                 {targetUser.slm_id && (
-                  <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
+                  <span className="font-sans text-[10px] font-mono tabular-nums text-slate-400" lang="en">ID {targetUser.slm_id}</span>
                 )}
               </div>
-              <p className={`mt-2 text-xs ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
+              <p className={`mt-2 text-xs font-sans tabular-nums ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`} lang="en">
                 ⏱ {lastActiveLabel}
               </p>
             </div>
@@ -752,7 +764,7 @@ function UserProfileCard({
               </div>
               <div className="min-w-0">
                 {targetUser.slm_id && (
-                  <span className="text-[10px] font-mono text-slate-400">ID {targetUser.slm_id}</span>
+                  <span className="font-sans text-[10px] font-mono tabular-nums text-slate-400" lang="en">ID {targetUser.slm_id}</span>
                 )}
                 <p className="text-sm font-bold text-slate-800 truncate">
                   {targetUser.full_name || emptyLabel(isEn)}
@@ -791,7 +803,7 @@ function UserProfileCard({
         <p className="text-sm mb-1" aria-label={isEn ? 'Health & safety' : 'স্বাস্থ্য ও নিরাপত্তা'} title={isEn ? 'Health & safety' : 'স্বাস্থ্য ও নিরাপত্তা'}>🩺</p>
         <div className={`${ADMIN_THEME.inset} px-3 py-1`}>
           {row('blood_group', '🩸', isEn ? 'Blood group' : 'রক্তের গ্রুপ', display(targetUser.blood_group), targetUser.blood_group ? 'neutral' : 'muted', true, selectEditor('blood_group', targetUser.blood_group, bloodGroups))}
-          {row('age', '🎂', isEn ? 'Age' : 'বয়স', targetUser.age ? `${targetUser.age} ${isEn ? 'yrs' : 'বছর'}` : emptyLabel(isEn), targetUser.age ? 'neutral' : 'muted', true, numberEditor('age', targetUser.age))}
+          {row('age', '🎂', isEn ? 'Age' : 'বয়স', targetUser.age ? `${toEnglishChars(targetUser.age)} ${isEn ? 'yrs' : 'বছর'}` : emptyLabel(isEn), targetUser.age ? 'neutral' : 'muted', true, numberEditor('age', targetUser.age))}
           {row('dob', '📅', isEn ? 'Date of birth' : 'জন্ম তারিখ', display(targetUser.dob), targetUser.dob ? 'neutral' : 'muted', true, dateEditor('dob', targetUser.dob))}
           {row('major_diseases', '🏥', isEn ? 'Health conditions' : 'স্বাস্থ্য সমস্যা', truncate(targetUser.major_diseases), targetUser.major_diseases ? 'warn' : 'good', true, textareaEditor('major_diseases', targetUser.major_diseases))}
           {row('regular_medicines', '💊', isEn ? 'Daily medicines' : 'নিয়মিত ওষুধ', truncate(targetUser.regular_medicines), targetUser.regular_medicines ? 'warn' : 'good', true, textareaEditor('regular_medicines', targetUser.regular_medicines))}
@@ -978,7 +990,9 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [sponsorSaving, setSponsorSaving] = useState(false);
   const [sponsorImageUploading, setSponsorImageUploading] = useState(false);
   const [sponsorForm, setSponsorForm] = useState(EMPTY_SPONSOR_FORM);
-  const [showManageMenu, setShowManageMenu] = useState(false);
+  const [adminDesk, setAdminDesk] = useState('people'); // people | tools
+  const [showCollectionsSection, setShowCollectionsSection] = useState(false);
+  const showManageMenu = adminDesk === 'tools';
   const [profileSection, setProfileSection] = useState('team'); // 'team' | 'mine' for admin / safety mitra
   const [ownProfileRow, setOwnProfileRow] = useState(null);
   const [expandedUserId, setExpandedUserId] = useState(null);
@@ -2030,13 +2044,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
   const pageTitle = isLineman
     ? (isEn ? 'My Profile' : 'আমার প্রোফাইল')
-    : (isEn ? 'Update Profile' : 'প্রোফাইল আপডেট');
-
-  const pageSubtitle = isAdmin
-    ? (isEn ? 'Tap the pen icon on any row to update details.' : 'যেকোনো সারিতে কলম চিহ্ন চাপুন আপডেট করতে।')
-    : isSafetyMitra
-      ? (isEn ? 'Update your profile or your team.' : 'আপনার প্রোফাইল বা দল আপডেট করুন।')
-      : null;
+    : (isEn ? 'Manage' : 'পরিচালনা');
 
   const teamUsers = users.filter((u) => u.id !== user.id);
 
@@ -2105,65 +2113,66 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const sectionTabBtn = (active) =>
     active ? ADMIN_THEME.tabActive : ADMIN_THEME.tabIdle;
 
-  const moreMenuBtn = `${ADMIN_THEME.card} w-full text-left px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-orange-50/60 transition-colors flex items-center gap-2`;
+  const moreMenuBtn = `${ADMIN_THEME.card} w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:bg-orange-50/60 transition-colors flex items-center gap-2`;
 
   return (
     <div className={ADMIN_THEME.shell}>
     <div className={ADMIN_THEME.page}>
-      {/* Page header */}
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-        {pageSubtitle && (
-          <p className="mt-1 text-sm text-slate-500">{pageSubtitle}</p>
-        )}
-      </div>
-
-      {/* My profile / Team toggle — admin & safety mitra */}
-      {!isLineman && !showAnalytics && (
-        <div className={`mb-5 ${ADMIN_THEME.tabBar}`}>
-          <button
-            type="button"
-            onClick={() => {
-              setProfileSection('mine');
-              setExpandedUserId(null);
-            }}
-            className={sectionTabBtn(profileSection === 'mine')}
-          >
-            👤 {isEn ? 'My Profile' : 'আমার প্রোফাইল'}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setProfileSection('team');
-              setExpandedUserId(null);
-            }}
-            className={sectionTabBtn(profileSection === 'team')}
-          >
-            👥 {isSafetyMitra ? (isEn ? 'My Team' : 'আমার দল') : (isEn ? 'Team' : 'দল')}
-          </button>
+      {isLineman && (
+        <div className="mb-3">
+          <h1 className="text-lg font-black text-slate-900">{pageTitle}</h1>
         </div>
       )}
 
-      {/* Compact manage menu — admin / safety mitra only */}
-      {setCurrentView && !showAnalytics && (isAdmin || isSafetyMitra) && (
-        <div className="mb-5">
-          <button
-            type="button"
-            onClick={() => setShowManageMenu((v) => !v)}
-            className="text-sm font-semibold text-slate-500 hover:text-orange-600 transition-colors"
-          >
-            {showManageMenu
-              ? (isEn ? '▲ Hide manage options' : '▲ অপশন লুকান')
-              : (isEn ? '▼ Manage (add people, notices…)' : '▼ পরিচালনা (যোগ, বিজ্ঞপ্তি…)')}
-          </button>
-          {showManageMenu && (
-            <div className={`mt-3 flex flex-wrap gap-2 p-3 ${ADMIN_THEME.inset}`}>
+      {!isLineman && !showAnalytics && (
+        <div className={`${ADMIN_THEME.card} mb-3`}>
+          <div className="flex items-center justify-between gap-2 px-3 py-2">
+            <h1 className="text-[15px] font-black leading-none text-slate-900">
+              {isEn ? 'Manage' : 'পরিচালনা'}
+            </h1>
+            <div className={ADMIN_THEME.tabBar}>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileSection('mine');
+                  setAdminDesk('people');
+                  setExpandedUserId(null);
+                }}
+                className={sectionTabBtn(profileSection === 'mine' && adminDesk === 'people')}
+              >
+                {isEn ? 'Me' : 'আমি'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileSection('team');
+                  setAdminDesk('people');
+                  setExpandedUserId(null);
+                }}
+                className={sectionTabBtn(profileSection === 'team' && adminDesk === 'people')}
+              >
+                {isSafetyMitra ? (isEn ? 'Team' : 'দল') : (isEn ? 'People' : 'দল')}
+              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setAdminDesk((d) => (d === 'tools' ? 'people' : 'tools'))}
+                  className={sectionTabBtn(adminDesk === 'tools')}
+                >
+                  {isEn ? 'Tools' : 'টুলস'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {(isAdmin || isSafetyMitra) && (
+            <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 px-3 py-2">
               <button
                 type="button"
                 onClick={() => setShowInviteModal(true)}
                 className={ADMIN_THEME.primaryBtn}
               >
-                ➕ {isEn ? 'Add Lineman' : 'লাইনম্যান যোগ'}
+                ➕ {isEn ? 'Add' : 'যোগ'}
               </button>
               <button
                 type="button"
@@ -2179,7 +2188,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                     onClick={() => setShowNotificationModal(true)}
                     className={ADMIN_THEME.menuBtn}
                   >
-                    📢 {isEn ? 'Send Notice' : 'বিজ্ঞপ্তি'}
+                    📢 {isEn ? 'Notice' : 'বিজ্ঞপ্তি'}
                   </button>
                   <button
                     type="button"
@@ -2188,28 +2197,33 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   >
                     📊 {isEn ? 'Reports' : 'রিপোর্ট'}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentView('visual-quiz-preview')}
-                    className={ADMIN_THEME.menuBtn}
-                  >
-                    🖼️ {isEn ? 'Quiz Preview' : 'কুইজ প্রিভিউ'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowMoreMenu((v) => !v)}
-                    className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-500"
-                  >
-                    {isEn ? 'More…' : 'আরও…'}
-                  </button>
+                  {adminDesk === 'tools' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentView('visual-quiz-preview')}
+                        className={ADMIN_THEME.menuBtn}
+                      >
+                        🖼️ {isEn ? 'Quiz' : 'কুইজ'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowMoreMenu((v) => !v)}
+                        className={ADMIN_THEME.menuBtn}
+                      >
+                        {isEn ? 'More' : 'আরও'}
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </div>
           )}
-          {isAdmin && showMoreMenu && showManageMenu && (
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+          {isAdmin && showMoreMenu && adminDesk === 'tools' && (
+            <div className="grid grid-cols-2 gap-1.5 border-t border-slate-100 px-3 py-2">
               <button type="button" onClick={() => setCurrentView('admin-services')} className={moreMenuBtn}>
-                🚨 {isEn ? 'Emergency Contacts' : 'জরুরি নম্বর'}
+                🚨 {isEn ? 'Emergency' : 'জরুরি'}
               </button>
               <button
                 type="button"
@@ -2220,8 +2234,68 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 }}
                 className={`${moreMenuBtn} text-rose-700 border-rose-200`}
               >
-                ⚠️ {isEn ? 'Reset All Scores' : 'সব স্কোর রিসেট'}
+                ⚠️ {isEn ? 'Reset scores' : 'স্কোর রিসেট'}
               </button>
+            </div>
+          )}
+
+          {profileSection === 'team' && adminDesk === 'people' && (
+            <div className="space-y-2 border-t border-slate-100 px-3 py-2">
+              {isAdmin && (
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden>🔍</span>
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={isEn ? 'Name, phone, district, ID…' : 'নাম, ফোন, জেলা, ID…'}
+                    className={`${ADMIN_THEME.input} pl-8 pr-8 py-2 placeholder:text-slate-400`}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-1 overflow-x-auto">
+                {[
+                  { id: 'recent', label: isEn ? 'Recent' : 'সাম্প্রতিক' },
+                  { id: 'supervisor', label: isEn ? 'By Mitra' : 'মিত্র' },
+                  { id: 'name', label: isEn ? 'Name' : 'নাম' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setTeamSortMode(opt.id);
+                      setExpandedUserId(null);
+                      if (opt.id === 'supervisor') setCurrentPage(1);
+                    }}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
+                      teamSortMode === opt.id
+                        ? 'bg-orange-500 text-white shadow-sm'
+                        : 'bg-slate-50 text-slate-600 hover:bg-orange-50 hover:text-orange-700'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+                {!loading && profileUsers.length > 0 && (
+                  <span className="ml-auto shrink-0 self-center font-sans text-[11px] font-semibold tabular-nums text-slate-400" lang="en">
+                    {debouncedSearch
+                      ? `${totalUsers}`
+                      : isSafetyMitra
+                        ? teamTotal
+                        : teamTotal}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -2242,13 +2316,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin-only collapsible panels — only when manage menu open */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className={`mb-4 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowNoticesSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               📢 {isEn ? 'Sent notices' : 'পাঠানো বিজ্ঞপ্তি'}
               {!adminBroadcastsLoading && adminBroadcasts.length > 0 && (
                 <span className="ml-2 text-xs font-normal text-slate-400">({adminBroadcasts.length})</span>
@@ -2296,7 +2370,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                                 {rowIsActive ? (isEn ? 'Live' : 'চালু') : (isEn ? 'Off' : 'বন্ধ')}
                               </span>
                               {row.created_at && (
-                                <span className="text-[10px] text-slate-400">{new Date(row.created_at).toLocaleDateString()}</span>
+                                <span className="font-sans text-[10px] tabular-nums text-slate-400" lang="en">{formatDateEn(row.created_at)}</span>
                               )}
                             </div>
                             <p className="font-semibold text-sm text-slate-900 truncate">{row.title}</p>
@@ -2331,7 +2405,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: Web Push re-engagement test */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => {
@@ -2341,9 +2415,9 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 return next;
               });
             }}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🔔 {isEn ? 'Push reminder test' : 'পুশ রিমাইন্ডার টেস্ট'}
               {pushStats?.mine != null && (
                 <span className="ml-2 text-xs font-normal text-slate-400">
@@ -2514,10 +2588,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                         </p>
                         <p className="mt-0.5 text-slate-500">
                           {isEn ? 'Added' : 'যোগ'}:{' '}
-                          {d.created_at ? new Date(d.created_at).toLocaleString() : '—'}
+                          {d.created_at ? formatDateEn(d.created_at, true) : '—'}
                           {' · '}
                           {isEn ? 'Last push' : 'শেষ পুশ'}:{' '}
-                          {d.last_pushed_at ? new Date(d.last_pushed_at).toLocaleString() : '—'}
+                          {d.last_pushed_at ? formatDateEn(d.last_pushed_at, true) : '—'}
                         </p>
                       </li>
                     ))}
@@ -2537,13 +2611,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Notice system check — only inside manage menu */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowSystemCheckSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🔧 {isEn ? 'Notice system check' : 'বিজ্ঞপ্তি সিস্টেম চেক'}
             </span>
             <span className="text-slate-400 text-xs">{showSystemCheckSection ? '▲' : '▼'}</span>
@@ -2587,7 +2661,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               </div>
               {deliveryHealth.checkedAt && (
                 <p className="mt-2 text-[10px] text-slate-400">
-                  {isEn ? 'Last checked:' : 'সর্বশেষ:'} {new Date(deliveryHealth.checkedAt).toLocaleString()}
+                  {isEn ? 'Last checked:' : 'সর্বশেষ:'} {formatDateEn(deliveryHealth.checkedAt, true)}
                 </p>
               )}
               {deliveryHealth.error && (
@@ -2600,13 +2674,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: preview Home hourly + learning CTAs (open vs done) */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowHomeCtaPreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🏠 {isEn ? 'Preview Home CTAs' : 'হোম CTA প্রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showHomeCtaPreviewSection ? '▲' : '▼'}</span>
@@ -2666,25 +2740,42 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
         </div>
       )}
 
-      {/* Admin: essential profile (nudge) collection summary + pending */}
+      {/* Admin: collections — collapsed until opened */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <ProfileNudgeStatusPanel language={language} />
-      )}
-
-      {/* Admin: field PPE collection summary + pending */}
-      {isAdmin && !showAnalytics && showManageMenu && (
-        <PpeNudgeStatusPanel language={language} />
+        <div className={`mb-3 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowCollectionsSection((v) => !v)}
+            className="flex w-full items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60"
+          >
+            <span className="text-xs font-bold text-slate-800">
+              📋 {isEn ? 'Collections' : 'সংগ্রহ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showCollectionsSection ? '▲' : '▼'}</span>
+          </button>
+          {showCollectionsSection && (
+            <div className="space-y-2 border-t border-slate-100 px-2 pb-2 pt-2">
+              <ProfileNudgeStatusPanel language={language} />
+              <PpeNudgeStatusPanel language={language} />
+              <SafetyCultureAdminPanel
+                language={language}
+                callerId={user?.id}
+                onPreviewFlow={() => onPreviewCultureSurvey?.()}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       {/* Admin: review progressive profile prompt modals (preview only — no DB write) */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewProfileNudge === 'function' && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowProfileNudgePreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🧩 {isEn ? 'Review profile prompts' : 'প্রোফাইল প্রম্পট রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showProfileNudgePreviewSection ? '▲' : '▼'}</span>
@@ -2741,13 +2832,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: review progressive PPE prompt modals (preview only — no DB write) */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewPpeNudge === 'function' && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowPpeNudgePreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🦺 {isEn ? 'Review PPE prompts' : 'PPE প্রম্পট রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showPpeNudgePreviewSection ? '▲' : '▼'}</span>
@@ -2805,24 +2896,17 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
         </div>
       )}
 
-      {/* Admin: safety culture survey waves + report + preview */}
-      {isAdmin && !showAnalytics && showManageMenu && (
-        <SafetyCultureAdminPanel
-          language={language}
-          callerId={user?.id}
-          onPreviewFlow={() => onPreviewCultureSurvey?.()}
-        />
-      )}
+      {/* Admin: safety culture survey is inside Collections */}
 
       {/* Admin: preview first-login welcome pass (4 steps) */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewOnboarding === 'function' && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowOnboardingPreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🎫 {isEn ? 'Preview welcome pass' : 'ওয়েলকাম পাস প্রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showOnboardingPreviewSection ? '▲' : '▼'}</span>
@@ -2848,13 +2932,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: preview seasonal full-screen celebration splash */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewCelebration === 'function' && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowCelebrationPreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🇮🇳 {isEn ? 'Preview celebration splash' : 'সেলিব্রেশন স্প্ল্যাশ প্রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showCelebrationPreviewSection ? '▲' : '▼'}</span>
@@ -2900,13 +2984,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: preview monthly leaderboard winners celebration */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewMonthWinners === 'function' && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowMonthWinnersPreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🏆 {isEn ? 'Preview month winners' : 'মাসের বিজয়ী প্রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showMonthWinnersPreviewSection ? '▲' : '▼'}</span>
@@ -2932,13 +3016,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: preview idle full-screen story overlay */}
       {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewIdleStory === 'function' && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowIdleStoryPreviewSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               {isEn ? 'Preview idle story' : 'আইডল স্টোরি প্রিভিউ'}
             </span>
             <span className="text-slate-400 text-xs">{showIdleStoryPreviewSection ? '▲' : '▼'}</span>
@@ -2976,13 +3060,13 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
 
       {/* Admin: sponsor full-screen ad */}
       {isAdmin && !showAnalytics && showManageMenu && (
-        <div className={`mb-5 ${ADMIN_THEME.card}`}>
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
             type="button"
             onClick={() => setShowSponsorAdSection((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50/60 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
-            <span className="font-semibold text-slate-800 text-sm">
+            <span className="font-bold text-slate-800 text-xs">
               🎬 {isEn ? 'Sponsor ad (full screen)' : 'স্পনসর অ্যাড (ফুল স্ক্রিন)'}
               {!sponsorAdsLoading && sponsorAds.length > 0 && (
                 <span className="ml-2 text-xs font-normal text-slate-400">({sponsorAds.length})</span>
@@ -3324,7 +3408,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 capitalize">{row.theme}</span>
                                 {(row.starts_at || row.ends_at) && (
                                   <span className="text-[10px] text-slate-400">
-                                    {row.starts_at ? new Date(row.starts_at).toLocaleDateString() : '…'} – {row.ends_at ? new Date(row.ends_at).toLocaleDateString() : '…'}
+                                    {row.starts_at ? formatDateEn(row.starts_at) : '…'} – {row.ends_at ? formatDateEn(row.ends_at) : '…'}
                                   </span>
                                 )}
                               </div>
@@ -3366,96 +3450,31 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
         </div>
       )}
 
-      {/* Admin search + team sort — team tab only */}
-      {!isLineman && !showAnalytics && profileSection === 'team' && (
-        <div className="mb-4 space-y-3">
-          {isAdmin && (
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden>🔍</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isEn ? 'Search name, phone, email, district, ID…' : 'নাম, ফোন, ইমেইল, জেলা, ID…'}
-                className={`${ADMIN_THEME.input} pl-9 pr-9 py-2.5 placeholder:text-slate-400`}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label={isEn ? 'Clear search' : 'অনুসন্ধান মুছুন'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          )}
-          <div className={`${ADMIN_THEME.tabBar} overflow-x-auto`}>
-            {[
-              { id: 'recent', label: isEn ? '⏱ Recent' : '⏱ সাম্প্রতিক' },
-              { id: 'supervisor', label: isEn ? '👔 By Safety Mitra' : '👔 সেফটি মিত্র অনুযায়ী' },
-              { id: 'name', label: isEn ? '🔤 Name' : '🔤 নাম' },
-            ].map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => {
-                  setTeamSortMode(opt.id);
-                  setExpandedUserId(null);
-                  if (opt.id === 'supervisor') setCurrentPage(1);
-                }}
-                className={`shrink-0 rounded-full px-3 py-2 text-xs font-bold transition-all ${
-                  teamSortMode === opt.id
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-orange-50/70 hover:text-orange-700'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* People list section label */}
-      {!showAnalytics && !loading && profileUsers.length > 0 && !isLineman && profileSection === 'team' && (
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-700">
-            {debouncedSearch
-              ? (isEn ? `${totalUsers} found` : `${totalUsers}টি পাওয়া গেছে`)
-              : isSafetyMitra
-                ? (isEn ? `${teamTotal} in my team` : `আমার দলে ${teamTotal} জন`)
-                : (isEn ? `${teamTotal} people` : `${teamTotal} জন`)}
-          </h2>
-        </div>
-      )}
-
-      {loading ? (
+      {showAnalytics ? (
+        <AdminAnalytics language={language} userRole={userProfile?.role} />
+      ) : adminDesk === 'tools' && isAdmin ? (
+        null
+      ) : loading ? (
         <ProfileCardSkeleton />
       ) : fetchError ? (
-        <div className={`${ADMIN_THEME.card} p-12 text-center border-red-300`}>
-          <div className="text-4xl mb-4">📡</div>
-          <h3 className="text-lg font-bold text-slate-800 mb-2">
+        <div className={`${ADMIN_THEME.card} p-8 text-center border-red-300`}>
+          <h3 className="text-base font-bold text-slate-800 mb-1">
             {language === 'en' ? 'Connection Error' : 'কানেকশন এরর'}
           </h3>
-          <p className="text-slate-500 mb-6 max-w-xs mx-auto">
+          <p className="text-sm text-slate-500 mb-4">
             {language === 'en'
               ? 'Unable to load user data. Please check your internet connection.'
               : 'ইউজার ডাটা লোড করা সম্ভব হয়নি। আপনার ইন্টারনেট কানেকশন চেক করুন।'}
           </p>
           <button
             onClick={() => fetchUsers(currentPage, debouncedSearch, teamSortMode)}
-            className="rounded-full bg-orange-500 px-8 py-2.5 font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95"
+            className="rounded-full bg-orange-500 px-6 py-2 text-sm font-bold text-white shadow-sm shadow-orange-500/30 transition-all active:scale-95"
           >
             {language === 'en' ? 'Retry' : 'আবার চেষ্টা করুন'}
           </button>
         </div>
-      ) : showAnalytics ? (
-        <AdminAnalytics language={language} userRole={userProfile?.role} />
-      ) : (
-        profileUsers.length === 0 ? (
-          <div className={`${ADMIN_THEME.card} p-12 text-center`}>
+      ) : profileUsers.length === 0 ? (
+          <div className={`${ADMIN_THEME.card} p-8 text-center`}>
             <div className="text-4xl mb-4">{profileSection === 'mine' ? '👤' : '👥'}</div>
             <h3 className="text-lg font-bold text-slate-800 mb-2">
               {profileSection === 'mine'
@@ -3483,7 +3502,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
           </div>
         ) : (
           profileSection === 'mine' || isLineman ? (
-            <div className="grid grid-cols-1 gap-3 max-w-xl mx-auto">
+            <div className="grid grid-cols-1 gap-2 max-w-xl mx-auto">
               {profileUsers.map((targetUser) => {
                 const canManage = !(isSafetyMitra && targetUser.role === 'admin');
                 return (
@@ -3520,7 +3539,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
               })}
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-3">
               {(teamGroups || []).map((group) => (
                 <section key={group.key}>
                   {group.title && (
@@ -3537,7 +3556,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                       </h3>
                     </div>
                   )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {group.users.map((targetUser) => {
                       const canManage = !(isSafetyMitra && targetUser.role === 'admin');
                       const isExpanded = expandedUserId === targetUser.id;
@@ -3582,10 +3601,10 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             </div>
           )
         )
-      )}
+      }
 
       {/* Pagination Controls — hidden for Safety Mitra grouping (full list loaded) */}
-      {!loading && !isLineman && profileSection === 'team' && teamSortMode !== 'supervisor' && totalUsers > usersPerPage && (
+      {!loading && !isLineman && adminDesk === 'people' && profileSection === 'team' && teamSortMode !== 'supervisor' && totalUsers > usersPerPage && (
         <div className="mt-4 flex items-center justify-between gap-3 py-3">
           <button
             type="button"
@@ -3595,7 +3614,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
           >
             {isEn ? '← Previous' : '← আগে'}
           </button>
-          <span className="text-sm text-slate-500">
+          <span className="font-sans text-sm tabular-nums text-slate-500" lang="en">
             {isEn ? `Page ${currentPage} of ${Math.ceil(totalUsers / usersPerPage)}` : `পৃষ্ঠা ${currentPage} / ${Math.ceil(totalUsers / usersPerPage)}`}
           </span>
           <button
