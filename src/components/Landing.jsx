@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { requestManager } from '../utils/requestManager';
-import { leaderboardService } from '../utils/leaderboardService';
 import { storageUtils } from '../utils/storageUtils';
+import { fetchLandingBoards } from '../utils/landingBoardsService';
 import LandingPrizeCarousel from './LandingPrizeCarousel';
 import LandingSponsorsScroll from './LandingSponsorsScroll';
 import LandingSupportContact from './LandingSupportContact';
@@ -533,7 +533,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
     async function loadStats() {
       setLoading(true);
       try {
-        const [profilesResult, monthlyLeaderboard, hallOfFame] = await Promise.all([
+        const [profilesResult, boards] = await Promise.all([
           requestManager.fetch(
             'landing_registered_count_v1',
             async () => {
@@ -542,37 +542,23 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
             },
             { ttl: 2, swr: false }
           ),
-          leaderboardService.fetchMonthly(false).catch(() => []),
-          leaderboardService.fetchHallOfFame(false).catch(() => []),
+          fetchLandingBoards(supabase).catch(() => ({ thisMonthTop: [], hallOfFameData: [] })),
         ]);
 
-        const thisMonthTopThree = (monthlyLeaderboard || []).slice(0, 3).map(mapLandingPlayer);
-
-        let prizesCount = 0;
-        let prizeMonths = 0;
-        if (Array.isArray(hallOfFame)) {
-          prizeMonths = hallOfFame.length;
-          prizesCount = hallOfFame.reduce((acc, month) => {
-            if (month.prizeWinners?.winners?.length) {
-              return acc + month.prizeWinners.winners.length;
-            }
-            if (month.boards) {
-              return acc + Object.values(month.boards).reduce(
-                (s, arr) => s + (arr?.filter((w) => w.prize_rank != null && w.prize_status !== 'superseded').length || 0),
-                0
-              );
-            }
-            return acc + (month.winners?.length || 0);
-          }, 0);
-        }
+        const hallOfFame = Array.isArray(boards?.hallOfFameData) ? boards.hallOfFameData : [];
+        const thisMonthTopThree = (boards?.thisMonthTop || []).slice(0, 3).map(mapLandingPlayer);
+        const prizesCount = hallOfFame.reduce((acc, month) => {
+          const champions = month.boards?.main_champion || [];
+          return acc + champions.filter((w) => w.prize_rank != null).length;
+        }, 0);
 
         if (!cancelled) {
           setStats({
             users: profilesResult?.users ?? 0,
             thisMonthTop: thisMonthTopThree,
             prizesCount,
-            prizeMonths,
-            hallOfFameData: Array.isArray(hallOfFame) ? hallOfFame : [],
+            prizeMonths: hallOfFame.length,
+            hallOfFameData: hallOfFame,
           });
         }
       } catch (err) {

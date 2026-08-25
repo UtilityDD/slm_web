@@ -660,23 +660,12 @@ export default function SmartLinemanUI() {
     };
   }, []);
 
-  // Background Pre-fetching for Leaderboard & Monthly Stars
-  // Warm-cache only — Rank opens cache-first (no force refresh on mount).
-  // Deferred longer after login so Supabase lesson sync is not starved.
+  // Last-active ping only. Rank / Prizes / Play fetch boards when those screens open
+  // (cache-first). Prefetching HoF + monthly + encouragement on every login was a
+  // large uncached egress cost for users who never open Rank.
   useEffect(() => {
-    if (user) {
-      // Update last active status
-      updateLastActive();
-
-      const timer = setTimeout(() => {
-        leaderboardService.fetchAllTime();
-        leaderboardService.fetchMonthly();
-        leaderboardService.fetchEncouragementBoards(false, language);
-        leaderboardService.fetchHallOfFame();
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [user, language]);
+    if (user) updateLastActive();
+  }, [user]);
 
   // Silent Web Push sync when permission already granted (no prompt, no existing-flow changes).
   useEffect(() => {

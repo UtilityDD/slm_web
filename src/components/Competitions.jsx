@@ -840,11 +840,11 @@ export default function Competitions({
                         });
                     }
                 } else {
-                    promises.push(fetchLeaderboard());
+                    // Play: hourly quiz + compact ladder only. Do not pull monthly/HoF
+                    // (those belong to Rank/Prizes and were the fat uncached path).
+                    promises.push(fetchLeaderboard(forceRefresh));
                     promises.push(fetchTodayAttempts());
                     promises.push(fetchUserRank(forceRefresh));
-                    fetchMonthlyLeaderboard(forceRefresh);
-                    fetchHallOfFameGallery(forceRefresh);
                 }
             }
 
@@ -857,9 +857,8 @@ export default function Competitions({
     };
 
     useEffect(() => {
-        // Rank/Prizes: cache-first open. Play: keep force refresh (hourly ladder freshness).
-        // Quiz submit / pull-to-refresh still force monthly elsewhere.
-        loadData(isFullLeaderboard ? false : true);
+        // All surfaces open cache-first. Quiz submit still force-refreshes the ladder.
+        loadData(false);
         window.scrollTo({ top: 0, behavior: 'instant' });
         const mainContent = document.getElementById('main-scroll-container');
         if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'instant' });
