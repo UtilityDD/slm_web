@@ -75,23 +75,52 @@ export async function fetchSheetContacts() {
 
 /**
  * Writes Contacted On / Contacted By / Remarks for one sheet row.
- * Same no-cors POST as the landing form so the browser can reach Apps Script.
+ * Uses GET so the browser can read the Apps Script JSON response (POST is opaque under no-cors).
+ * Empty remarks do not clear an existing Remarks cell unless clearRemarks is true.
  */
-export async function saveContactFollowUp({ id, contactedOn, contactedBy, remarks } = {}) {
+export async function saveContactFollowUp({
+  id,
+  phone,
+  contactedOn,
+  contactedBy,
+  remarks,
+  clearRemarks = false,
+} = {}) {
   const rowId = String(id || '').trim();
-  if (!/^\d+$/.test(rowId) || Number(rowId) < 2) return { ok: false };
-  await fetch(LANDING_CONTACT_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({
-      source: 'smartlineman-contact-followup',
-      pull: CONTACT_PULL_KEY,
-      id: rowId,
-      contactedOn: String(contactedOn || '').trim().slice(0, 80),
-      contactedBy: String(contactedBy || '').trim().slice(0, 120),
-      remarks: String(remarks || '').trim().slice(0, 500),
-    }),
-  });
-  return { ok: true };
+  if (!/^\d+$/.test(rowId) || Number(rowId) < 2) {
+    return { ok: false, error: 'bad row' };
+  }
+
+  const params = {
+    followup: '1',
+    id: rowId,
+    phone: String(phone || '').trim(),
+    contactedOn: String(contactedOn || '').trim().slice(0, 80),
+    contactedBy: String(contactedBy || '').trim().slice(0, 120),
+    remarks: String(remarks || '').trim().slice(0, 500),
+  };
+  if (clearRemarks) params.clearRemarks = '1';
+
+  const res = await fetch(sheetUrl(params));
+  if (!res.ok) return { ok: false, error: 'network' };
+  let json;
+  try {
+    json = await res.json();
+  } catch {
+    return { ok: false, error: 'bad response' };
+  }
+  if (!json || json.ok === false) {
+    return { ok: false, error: String(json?.error || 'sheet') };
+  }
+  // Old script ignores followup=1 and returns the inbox ({ rows }) — treat as not deployed.
+  if (Array.isArray(json.rows) || String(json.id || '') !== rowId) {
+    return { ok: false, error: 'script outdated' };
+  }
+  return {
+    ok: true,
+    id: String(json.id),
+    contactedOn: String(json.contactedOn || params.contactedOn),
+    contactedBy: String(json.contactedBy || params.contactedBy),
+    remarks: String(json.remarks || params.remarks),
+  };
 }

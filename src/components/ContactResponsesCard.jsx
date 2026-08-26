@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { cacheContactPendingCount, fetchSheetContacts, saveContactFollowUp, topicShortLabel } from '../utils/landingContactAdmin';
 import { extractIndianMobileDigits } from '../utils/landingContactService';
 import SaveSuccessModal from './SaveSuccessModal';
@@ -62,10 +62,6 @@ function displayPhone(phone) {
   const digits = extractIndianMobileDigits(phone);
   if (digits.length === 10) return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
   return toEnglishChars(phone);
-}
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function PendingBadge({ count }) {
@@ -149,28 +145,46 @@ function CallPhoneButton({ phone, isEn, variant = 'icon' }) {
 }
 
 function FollowUpForm({ row, isEn, responderName, saving, error, onSave }) {
-  const [contactedOn, setContactedOn] = useState(() => toDatetimeLocal(row.contactedOn || Date.now()));
-  const [contactedBy, setContactedBy] = useState(() => row.contactedBy || responderName || '');
+  const hadFollowUp = Boolean(row.contactedOn || row.contactedBy || row.remarks);
+  const [contactedOn, setContactedOn] = useState(() =>
+    row.contactedOn ? toDatetimeLocal(row.contactedOn) : ''
+  );
+  const [contactedBy, setContactedBy] = useState(() => row.contactedBy || '');
   const [remarks, setRemarks] = useState(() => row.remarks || '');
+  const [localError, setLocalError] = useState('');
 
   useEffect(() => {
-    setContactedOn(toDatetimeLocal(row.contactedOn || Date.now()));
-    setContactedBy(row.contactedBy || responderName || '');
+    setContactedOn(row.contactedOn ? toDatetimeLocal(row.contactedOn) : '');
+    setContactedBy(row.contactedBy || '');
     setRemarks(row.remarks || '');
-  }, [row.id, row.contactedOn, row.contactedBy, row.remarks, responderName]);
+    setLocalError('');
+  }, [row.id, row.contactedOn, row.contactedBy, row.remarks]);
 
   const fieldClass =
     'w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-800 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100';
+
+  const showError = localError || error;
 
   return (
     <form
       className="space-y-2 rounded-xl border border-slate-200 bg-white p-2.5"
       onSubmit={(e) => {
         e.preventDefault();
+        setLocalError('');
+        const by = contactedBy.trim() || String(responderName || '').trim();
+        const note = remarks.trim();
+        if (!by) {
+          setLocalError(isEn ? 'Enter who contacted them.' : 'কে যোগাযোগ করেছেন লিখুন।');
+          return;
+        }
+        if (!note && !hadFollowUp) {
+          setLocalError(isEn ? 'Add a short remark before Update.' : 'আপডেটের আগে সংক্ষিপ্ত মন্তব্য লিখুন।');
+          return;
+        }
         onSave({
-          contactedOn: fromDatetimeLocal(contactedOn),
-          contactedBy: contactedBy.trim(),
-          remarks: remarks.trim(),
+          contactedOn: fromDatetimeLocal(contactedOn || undefined),
+          contactedBy: by,
+          remarks: note,
         });
       }}
     >
@@ -188,6 +202,11 @@ function FollowUpForm({ row, isEn, responderName, saving, error, onSave }) {
           onChange={(e) => setContactedOn(e.target.value)}
           className={`${fieldClass} font-sans tabular-nums`}
         />
+        {!contactedOn ? (
+          <span className={`mt-1 block text-[10px] text-slate-400 ${isEn ? '' : 'font-bengali'}`}>
+            {isEn ? 'Leave blank to use now on Update.' : 'খালি রাখলে আপডেটে এখনকার সময় যাবে।'}
+          </span>
+        ) : null}
       </label>
       <label className="block">
         <span className={`mb-1 block text-[11px] font-semibold text-slate-600 ${isEn ? '' : 'font-bengali'}`}>
@@ -199,7 +218,7 @@ function FollowUpForm({ row, isEn, responderName, saving, error, onSave }) {
           value={contactedBy}
           onChange={(e) => setContactedBy(e.target.value)}
           className={fieldClass}
-          placeholder={isEn ? 'Your name' : 'আপনার নাম'}
+          placeholder={responderName || (isEn ? 'Your name' : 'আপনার নাম')}
         />
       </label>
       <label className="block">
@@ -215,8 +234,8 @@ function FollowUpForm({ row, isEn, responderName, saving, error, onSave }) {
           placeholder={isEn ? 'What you said or agreed' : 'কী বলা হয়েছে'}
         />
       </label>
-      {error ? (
-        <p className={`text-[11px] font-semibold text-rose-600 ${isEn ? '' : 'font-bengali'}`}>{error}</p>
+      {showError ? (
+        <p className={`text-[11px] font-semibold text-rose-600 ${isEn ? '' : 'font-bengali'}`}>{showError}</p>
       ) : null}
       <button
         type="submit"
@@ -252,6 +271,7 @@ export default function ContactResponsesCard({
   const [savingId, setSavingId] = useState(null);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const savingLockRef = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -273,7 +293,8 @@ export default function ContactResponsesCard({
 
   const handleSave = async (row, values) => {
     const id = row.id;
-    if (!id || savingId) return;
+    if (!id || savingLockRef.current) return;
+    savingLockRef.current = true;
     setSavingId(id);
     setSaveError('');
     setSaveSuccess(false);
@@ -283,36 +304,64 @@ export default function ContactResponsesCard({
       remarks: values.remarks,
     };
     try {
-      await saveContactFollowUp({ id, ...next });
+      const result = await saveContactFollowUp({
+        id,
+        phone: row.phone,
+        ...next,
+      });
+      if (!result?.ok) {
+        const err = String(result?.error || '');
+        if (err === 'phone mismatch') {
+          setSaveError(
+            isEn
+              ? 'Row no longer matches this phone. Refresh and try again.'
+              : 'এই ফোনের সাথে সারি মিলছে না। রিফ্রেশ করে আবার চেষ্টা করুন।'
+          );
+        } else if (err === 'script outdated') {
+          setSaveError(
+            isEn
+              ? 'Apps Script is outdated. Paste scripts/google-apps-script-landing-contact.js and deploy a new version.'
+              : 'Apps Script পুরনো। নতুন স্ক্রিপ্ট পেস্ট করে নতুন ভার্সন ডিপ্লয় করুন।'
+          );
+        } else {
+          setSaveError(
+            isEn
+              ? 'Could not update the sheet. Redeploy the Apps Script if this keeps failing.'
+              : 'শিট আপডেট হয়নি। বারবার হলে Apps Script আবার ডিপ্লয় করুন।'
+          );
+        }
+        return;
+      }
+      const saved = {
+        contactedOn: result.contactedOn || next.contactedOn,
+        contactedBy: result.contactedBy || next.contactedBy,
+        remarks: result.remarks || next.remarks || row.remarks || '',
+      };
       setRows((prev) => {
         const updated = prev.map((item) =>
           item.id === id
             ? {
                 ...item,
-                ...next,
-                pending: !(next.contactedOn || next.contactedBy || next.remarks),
+                ...saved,
+                pending: !(saved.contactedOn || saved.contactedBy || saved.remarks),
               }
             : item
         );
         cacheContactPendingCount(updated.filter((item) => item.pending !== false).length);
         return updated;
       });
-      await wait(1200);
-      const fresh = await fetchSheetContacts();
-      setRows(fresh);
-      const updated = fresh.find((item) => item.id === id);
-      if (updated?.pending) {
-        setSaveError(
-          isEn
-            ? 'Sheet did not update yet. Paste the new Apps Script and deploy a new version, then try Update again.'
-            : 'শিট এখনও আপডেট হয়নি। নতুন Apps Script পেস্ট করে নতুন ভার্সন ডিপ্লয় করুন, তারপর আবার আপডেট করুন।'
-        );
-      } else {
-        setSaveSuccess(true);
+      setSaveSuccess(true);
+      // Soft refresh — do not treat a laggy pull as failure (avoids overwrite retries).
+      try {
+        const fresh = await fetchSheetContacts();
+        setRows(fresh);
+      } catch {
+        /* keep optimistic rows */
       }
     } catch {
       setSaveError(isEn ? 'Could not update. Try again.' : 'আপডেট হয়নি। আবার চেষ্টা করুন।');
     } finally {
+      savingLockRef.current = false;
       setSavingId(null);
     }
   };
