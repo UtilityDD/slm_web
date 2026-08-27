@@ -11,8 +11,30 @@ import { App } from '@capacitor/app';
 const ApkInstaller = registerPlugin('ApkInstaller');
 
 function parseVersionCode(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
+  const s = String(value ?? '').trim();
+  if (!/^\d+$/.test(s)) return 0;
+  const n = Number(s);
+  return Number.isSafeInteger(n) ? n : 0;
+}
+
+/** Compare dotted version names (e.g. 1.3.141). Returns 1 / 0 / -1, or null if unparseable. */
+function compareVersionNames(a, b) {
+  const parse = (value) => {
+    const parts = String(value ?? '').trim().split('.').map((p) => Number(p));
+    if (!parts.length || parts.some((n) => !Number.isFinite(n))) return null;
+    return parts;
+  };
+  const left = parse(a);
+  const right = parse(b);
+  if (!left || !right) return null;
+  const len = Math.max(left.length, right.length);
+  for (let i = 0; i < len; i += 1) {
+    const lv = left[i] || 0;
+    const rv = right[i] || 0;
+    if (lv > rv) return 1;
+    if (lv < rv) return -1;
+  }
+  return 0;
 }
 
 function toWwwUrl(url) {
@@ -65,6 +87,11 @@ export async function checkNativeAndroidUpdate() {
 
   const remoteCode = parseVersionCode(remote.version_code);
   if (!remoteCode || remoteCode <= installedCode) return null;
+
+  // Hosted APK may lag android-latest.json. Never nag if the installed
+  // versionName is already the advertised (or newer) build.
+  const nameCmp = compareVersionNames(installed.version, remote.version_name);
+  if (nameCmp !== null && nameCmp >= 0) return null;
 
   const minSupported = parseVersionCode(remote.min_supported_version_code);
   const forceUpdate = Boolean(remote.force_update) || (minSupported > 0 && installedCode < minSupported);
