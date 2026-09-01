@@ -28,39 +28,13 @@ Native loads those from `https://smartlineman.in`. A small first-paint kit stays
 | `public/downloads/smartlineman.apk` | Hosted sideload APK (tracked so Vercel/Git can serve it; other `*.apk` stay ignored) |
 | `src/config.js` | `CURRENT_APP_VERSION`, `ANDROID_VERSION_CODE`, download URLs |
 
-## Release checklist (every APK + web ship)
+## How to ship
 
-Keep these **three** in sync on every release:
+**Canonical checklist:** [Production deployment](./deployment.md)
 
-1. `package.json` → `version`
-2. `src/config.js` → `CURRENT_APP_VERSION` + `ANDROID_VERSION_CODE` + `CURRENT_APP_RELEASE_NOTES`
-3. `android/app/build.gradle` → `versionName` + `versionCode`
-4. `public/android-latest.json` → `version_name` + `version_code` + notes + `apk_url`
+Do not bump `public/android-latest.json` on a PWA-only release. That JSON must match `aapt` of `public/downloads/smartlineman.apk` or phones will loop the update modal.
 
-Then:
-
-```powershell
-npm run android:sync
-cd android
-.\gradlew.bat assembleRelease
-```
-
-Copy:
-
-`android/app/build/outputs/apk/release/app-release.apk`  
-→ `public/downloads/smartlineman.apk`
-
-Deploy the website so **both** the web build and `android-latest.json` / APK URL are live.
-
-### PWA-only message
-
-Bump `CURRENT_APP_VERSION` and set clear `CURRENT_APP_RELEASE_NOTES` (EN + BN).  
-Stale PWA clients see the force refresh modal when the built version string changes.
-
-### APK-only message
-
-Update `public/android-latest.json` `release_notes` and raise `version_code`.  
-Installed apps open the update modal when remote `version_code` > installed build.
+GitHub push does **not** publish. Use `npx vercel --prod --yes`.
 
 ## Do
 
@@ -100,6 +74,7 @@ Installed apps open the update modal when remote `version_code` > installed buil
 - **Don’t** set `StatusBar.overlaysWebView: true` / immersive splash without re-testing every screen’s top bar.
 - **Don’t** assume Play Store rules apply — this is sideload distribution; guide users to allow unknown apps.
 - **Don’t** ship an APK without updating live `android-latest.json` (users will never get the in-app update prompt).
+- **Don’t** raise `android-latest.json` `version_code` without replacing `public/downloads/smartlineman.apk` with that exact build (update modal loops forever).
 - **Don’t** mix PWA “Refresh” updates with APK “Download Update” URLs in one code path.
 
 ## UI differences (by design)
@@ -123,6 +98,7 @@ Installed apps open the update modal when remote `version_code` > installed buil
 | Symptom | Likely cause |
 |---------|----------------|
 | Update modal never appears on APK | Live `android-latest.json` not deployed or `version_code` not higher |
+| Update modal repeats after install (same version name) | JSON `version_code` is higher than the **hosted** APK’s `aapt` `versionCode` — set JSON back to the file, deploy Vercel |
 | Images missing in APK | Offline, or path not rewritten / not on live site |
 | Visit count stuck on Android | Client not calling live `/api/landing-visits` (fixed via CapacitorHttp + absolute URL) |
 | Status bar covers header | Overlay/immersive splash; keep overlay off + shell safe-area spacer |
@@ -159,7 +135,8 @@ $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
 npm run android:sync
 cd android; .\gradlew.bat assembleRelease; cd ..
 Copy-Item -Force android\app\build\outputs\apk\release\app-release.apk public\downloads\smartlineman.apk
-# commit + push so Vercel serves the new APK + android-latest.json
+# aapt must match android-latest.json, then: npx vercel --prod --yes
+# GitHub push does not publish this project.
 
 # 4) On the phone: cold-start SmartLineman → Update Available → Download Update
 #    Allow “Install unknown apps” for SmartLineman if prompted, then confirm install.
@@ -188,6 +165,7 @@ cd android
 
 ## Related
 
+- **Ship procedure:** [Production deployment](./deployment.md)
 - Workflow: `.agent/workflows/android-deploy.md`
 - Update checker: `src/utils/androidAppUpdate.js`
 - Remote media: `src/utils/nativeRemoteAssets.js`

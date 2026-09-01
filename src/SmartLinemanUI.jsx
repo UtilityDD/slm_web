@@ -274,6 +274,8 @@ export default function SmartLinemanUI() {
   const [cultureSurveyWave, setCultureSurveyWave] = useState(null);
   const [adContactOpen, setAdContactOpen] = useState(false);
   const [sponsorAdOpen, setSponsorAdOpen] = useState(false);
+  /** True while the timed hourly quiz modal is open (pack timer running). */
+  const [hourlyQuizPlaying, setHourlyQuizPlaying] = useState(false);
   const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
   /** True while a text field is focused — never interrupt with ads/nudges. */
   const [userTyping, setUserTyping] = useState(false);
@@ -1632,7 +1634,7 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} surface="play" userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
+          return <Competitions language={language} user={user} setCurrentView={setCurrentView} surface="play" userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} onHourlyQuizPlayChange={setHourlyQuizPlaying} />;
         case 'leaderboard':
           return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="rank" isFullLeaderboard={true} onOpenUserProgress={(userId) => openMyProgress(userId, 'leaderboard')} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'prizes':
@@ -1905,9 +1907,10 @@ export default function SmartLinemanUI() {
     profileNudgeOpen ||
     ppeNudgeOpen ||
     pushOptInOpen ||
+    hourlyQuizPlaying ||
     shellInterruptBusy;
 
-  // Soft ads: landing only for guests; never during login/PIN/typing or other critical flows.
+  // Soft ads: landing only for guests; never during login/PIN/typing, timed hourly quiz, or other critical flows.
   const sponsorAdBlocked =
     appLoading ||
     globalLoading ||
@@ -1927,6 +1930,7 @@ export default function SmartLinemanUI() {
     monthWinnersRevealOpen ||
     adContactOpen ||
     userTyping ||
+    hourlyQuizPlaying ||
     onAuthFlow ||
     shouldSuppressOverlay('sponsor', activeShellOverlay) ||
     currentView === 'accident-stories' ||
@@ -1944,6 +1948,7 @@ export default function SmartLinemanUI() {
     sponsorAdOpen ||
     pushOptInOpen ||
     ppeNudgeOpen ||
+    hourlyQuizPlaying ||
     shouldSuppressOverlay('profileNudge', activeShellOverlay) ||
     authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 
@@ -1953,6 +1958,7 @@ export default function SmartLinemanUI() {
     sponsorAdOpen ||
     pushOptInOpen ||
     profileNudgeOpen ||
+    hourlyQuizPlaying ||
     shouldSuppressOverlay('ppeNudge', activeShellOverlay) ||
     authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 
@@ -1962,6 +1968,7 @@ export default function SmartLinemanUI() {
     sponsorAdOpen ||
     profileNudgeOpen ||
     ppeNudgeOpen ||
+    hourlyQuizPlaying ||
     shouldSuppressOverlay('pushOptIn', activeShellOverlay) ||
     authFlowViews.concat(['landing', 'accident-stories']).includes(currentView);
 

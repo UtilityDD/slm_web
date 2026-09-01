@@ -1,0 +1,20 @@
+---
+description: PWA vs APK production shipping — read before any version bump or Vercel deploy
+alwaysApply: true
+---
+
+# Production shipping
+
+Before any version bump, `android-latest.json` edit, APK copy, or Vercel publish, follow `docs/developer-guides/deployment.md`.
+
+## Hard rules
+
+- **GitHub push does not go live.** Publish with `npx vercel --prod --yes`, then verify `www.smartlineman.in`.
+- **Two channels.** PWA = `CURRENT_APP_VERSION`. APK prompt = live `android-latest.json` vs installed `versionCode`. They may differ.
+- **Never raise `public/android-latest.json` `version_code`** until `aapt dump badging public/downloads/smartlineman.apk` matches that code **and** that file is what Vercel will serve.
+- **PWA-only ships must not touch** `android-latest.json` or `public/downloads/smartlineman.apk`.
+- Gradle / `ANDROID_VERSION_CODE` may be ahead (next signing build). Live JSON stays on the **last hosted** APK.
+
+## Loop you must not recreate
+
+Advertising 1.3.142 / 139 while the hosted APK is still 1.3.141 / 138 makes every install re-download the same APK and nag forever. Fix by setting JSON back to `aapt`, then Vercel prod — phones fetch JSON live.

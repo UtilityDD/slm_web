@@ -11,9 +11,11 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 
 | Guide | Scope |
 |--------|--------|
+| [Production deployment](./deployment.md) | **Read first before any ship.** PWA vs APK channels, Vercel CLI, `android-latest.json` gate, verify live |
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
 | [Admin Broadcast Notifications](./admin-broadcast-notifications.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, Supabase RPCs for create/list/toggle/delete, startup modal behavior |
-| [Hourly Visual Quiz](./hourly-visual-quiz.md) | Live sheet CSV, image migration, answer-leak sanitization, admin `VisualQuizPreview`, catalog scripts (`vq-120+`) |
+| [Hourly Visual Quiz](./hourly-visual-quiz.md) | Live sheet CSV, image migration, answer-leak sanitization, admin `VisualQuizPreview`, catalog scripts (`vq-120+`); timed play blocks shell ads/nudges |
+| [Shell interrupts](./shell-interrupts.md) | Overlay queue, one-per-open soft budget, `hourlyQuizPlaying` blocks ads/nudges during the pack timer |
 | [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) | Spot-the-mistake illustrations, WebP size, option length / near-correct anti-cheat, draft review before sheet paste |
 | [Monthly encouragement boards](./monthly-encouragement-boards.md) | Four monthly tabs (champion / new / improved / learner), Hall of Fame v8, prizes, `monthlyEncouragementBoards.js` |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |

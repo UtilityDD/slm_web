@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.143";
+export const CURRENT_APP_VERSION = "1.3.144";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update — If you sent a join request in the last 3–4 days, please send it again from Contact Us. We may have missed some.",
-  bn: "নতুন ভার্সন আপডেট করুন—গত ৩–৪ দিনে যোগদানের অনুরোধ পাঠিয়ে থাকলে Contact Us থেকে আবার পাঠান। কিছু অনুরোধ মিস হতে পারে।",
+  en: "Please update — Ads and reminders wait while you play the hourly quiz.",
+  bn: "নতুন ভার্সন আপডেট করুন—ঘণ্টার কুইজ চলাকালীন বিজ্ঞাপন ও রিমাইন্ডার অপেক্ষা করবে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
@@ -20,7 +20,7 @@ export const SUPPORT_EMAIL = "support@smartlineman.in";
  * Live android-latest.json stays on the last hosted APK until a signed build is copied to
  * public/downloads/smartlineman.apk (do not raise version_code without that APK).
  */
-export const ANDROID_VERSION_CODE = 140;
+export const ANDROID_VERSION_CODE = 141;
 /** Absolute URL so the APK checks the live site, not bundled localhost assets. */
 export const ANDROID_LATEST_MANIFEST_URL = `${WEBSITE_ORIGIN_WWW}/android-latest.json`;
 export const ANDROID_DOWNLOAD_PAGE_URL = `${WEBSITE_ORIGIN_WWW}/download`;

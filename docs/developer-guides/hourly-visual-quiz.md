@@ -8,7 +8,8 @@ Image-capable hourly questions from a published Google Sheet CSV, merged with th
 
 | Path | Role |
 |------|------|
-| `src/components/Competitions.jsx` | Hourly fetch, deterministic 5-question pick, visual rendering, image retry UX |
+| `src/components/Competitions.jsx` | Hourly fetch, deterministic 5-question pick, visual rendering, image retry UX; reports timed play via `onHourlyQuizPlayChange` |
+| `src/SmartLinemanUI.jsx` | `hourlyQuizPlaying` blocks sponsor ads and soft nudges while the pack timer runs |
 | `src/utils/visualQuizService.js` | Fetches live sheet CSV via `requestManager` (60s TTL + SWR) |
 | `src/utils/visualQuizCsv.js` | CSV parse, `rowToVisualQuestion`, `rowsToVisualQuestions` |
 | `src/utils/visualQuizSanitize.js` | Answer-leak stripping + `detectAnswerLeakWarnings` (also used in maintenance scripts) |
@@ -217,6 +218,22 @@ For **illustration style, option anti-cheat, and spot-the-mistake rules**, follo
 - Larger pool: raise Supabase `limit_count` in `fetchHourlyQuiz`.
 - Stricter leak policy: call `detectAnswerLeakWarnings` in `rowToVisualQuestion` and drop flagged rows (currently warn-only in preview).
 
+## Timed play vs shell interrupts
+
+The hourly quiz modal is `z-[150]`. Sponsor ads and profile/PPE/push nudges are `z-[230]`, so they would cover the quiz and keep the pack timer running underneath.
+
+While `activeQuiz` is set, not submitted, and not in review (Play surface only), `Competitions` calls `onHourlyQuizPlayChange(true)`. The shell then sets `hourlyQuizPlaying` and **blocks**:
+
+- sponsor interstitial
+- profile field nudge
+- PPE field nudge
+- push opt-in
+- idle story reminder
+
+Results / review are not blocked (the clock has already stopped). Rank and prizes `Competitions` mounts do not pass the callback.
+
+See [Shell interrupts](./shell-interrupts.md).
+
 ## Gotchas
 
 - Duplicate `id` between Supabase and sheet: later merge wins.
@@ -226,9 +243,11 @@ For **illustration style, option anti-cheat, and spot-the-mistake rules**, follo
 - WebP files saved as `.jpg` in `public/images/quizzes/` are intentional; do not assume JPEG magic bytes.
 - Some Drive IDs in `live_sheet_image_map.csv` may be `on_disk=no` — those rows keep Drive URLs until downloaded.
 - Admin preview uses the same `visualQuizCsv` + sanitize path as production, so preview text may differ slightly from raw sheet cells (sanitized stems/options).
+- Do not show full-screen shell ads/nudges during a timed hourly attempt — use `hourlyQuizPlaying`, not a z-index race.
 
 ## Related guides
 
 - [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) — authoring illustrations + anti-cheat options
 - [Reading habit and gate](./reading-habit-and-gate.md) — quiz entry after gate passes
+- [Shell interrupts](./shell-interrupts.md) — ads/nudges wait during timed hourly play
 - [Safety Library](./safety-library.md) — in-app catalog (not the quiz sheet)

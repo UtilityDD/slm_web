@@ -360,6 +360,7 @@ export default function Competitions({
     sponsorAdOpen = false,
     monthWinnersBlocked = false,
     onMonthWinnersRevealOpenChange,
+    onHourlyQuizPlayChange,
 }) {
     /** 'play' | 'rank' | 'prizes' — UI surface only; scoring/fetch logic unchanged. */
     const surface = surfaceProp || (isFullLeaderboard ? 'rank' : 'play');
@@ -452,6 +453,17 @@ export default function Competitions({
     React.useEffect(() => {
         hourlyQuizRefreshBusyRef.current = hourlyQuizRefreshBusy;
     }, [hourlyQuizRefreshBusy]);
+
+    // Timed hourly attempt is on screen — shell ads must wait (pack timer keeps running).
+    React.useEffect(() => {
+        if (typeof onHourlyQuizPlayChange !== 'function') return;
+        onHourlyQuizPlayChange(!isFullLeaderboard && Boolean(activeQuiz) && !quizSubmitted && !reviewMode);
+    }, [isFullLeaderboard, activeQuiz, quizSubmitted, reviewMode, onHourlyQuizPlayChange]);
+
+    React.useEffect(() => {
+        if (typeof onHourlyQuizPlayChange !== 'function') return undefined;
+        return () => onHourlyQuizPlayChange(false);
+    }, [onHourlyQuizPlayChange]);
 
     // Gamified Ladder state
     const [todayAttempts, setTodayAttempts] = useState([]);
