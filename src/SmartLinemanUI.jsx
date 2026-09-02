@@ -1910,7 +1910,9 @@ export default function SmartLinemanUI() {
     hourlyQuizPlaying ||
     shellInterruptBusy;
 
-  // Soft ads: landing only for guests; never during login/PIN/typing, timed hourly quiz, or other critical flows.
+  // Soft ads: logged-in app only. Never on public landing (Advertise chip is the CTA),
+  // login/PIN, timed hourly quiz, or other critical flows. Also skips guests so
+  // landing visitors do not hit the get_active_sponsor_ad RPC.
   const sponsorAdBlocked =
     appLoading ||
     globalLoading ||
@@ -1934,9 +1936,8 @@ export default function SmartLinemanUI() {
     onAuthFlow ||
     shouldSuppressOverlay('sponsor', activeShellOverlay) ||
     currentView === 'accident-stories' ||
-    (user
-      ? ['login', 'verify', 'landing', 'update-password'].includes(currentView)
-      : currentView !== 'landing');
+    !user ||
+    ['login', 'verify', 'landing', 'update-password'].includes(currentView);
 
   // Give Training / first Supabase lesson path time before full-screen ad.
   // After profile/PPE delays (12s/14s) so data nudges can claim first when due.

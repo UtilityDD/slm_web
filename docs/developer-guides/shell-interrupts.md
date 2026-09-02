@@ -53,6 +53,7 @@ Hourly quiz play is **not** an overlay id. It is a block so those prompts never 
 - Hourly quiz portal is `z-[150]`; sponsor/push overlays are `z-[230]`. Blocking is required; raising quiz z-index is not enough (ads would still steal timer seconds if shown first).
 - Do not pass `onHourlyQuizPlayChange` on Rank/Prizes unless those surfaces actually show the timed modal.
 - `selectHourlySponsorAd` rotates paid vs invite by **clock hour**. It is unrelated to the hourly quiz.
+- Public **landing** (and guests) must keep `sponsorAdBlocked` true. The Advertise chip is the public CTA; do not reopen the interstitial there.
 
 ## Related
 

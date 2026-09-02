@@ -56,8 +56,11 @@ The hero **Explore Life Skills** button uses this (not an anchor).
 | Join button | Pulsing green dot | Attention only; no server |
 | This month’s toppers | Text link → login | No public podium or faces |
 | Prize carousel | `hallOfFamePrizes.json` + `public/prizes/` | Photos only, no winner faces |
+| Advertise chip | Contact form `openWithTopic('advertise')` | Quiet CTA; no full-screen ad |
 
 Do **not** show live leaderboard photos or `profiles` counts on this page.
+
+`SponsorAdOverlay` must stay **blocked** on `landing` (and for guests). The built-in “স্পনসর চাই” interstitial used to open after ~18s on this page; that also called `get_active_sponsor_ad`. Logged-in users still see sponsor ads inside the app.
 
 ---
 
