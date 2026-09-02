@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.146";
+export const CURRENT_APP_VERSION = "1.3.147";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Lesson reading: poster images open only when you tap — no more auto pop-up while scrolling.",
-  bn: "লেসন পড়ার সময় ছবি এখন শুধু ট্যাপ করলেই বড় হবে — স্ক্রল করতে গিয়ে আর নিজে থেকে খুলবে না।",
+  en: "Lesson 6.3 fuse field update — Horn Gap fuse, SWG wire sizing, and refreshed training posters.",
+  bn: "লেসন ৬.৩ ফিউজ আপডেট — হর্ন গ্যাপ ফিউজ, SWG তার নির্বাচন ও নতুন পোস্টার।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
