@@ -14,7 +14,15 @@ import {
 import { PPE_NUDGE_ITEM_ORDER, getPpeItem } from '../data/ppeItems';
 import PpeItemIcon from './safety/ppe/PpeItemIcon';
 import AvatarPhoto from './AvatarPhoto';
-import { AVATAR_EDGE, AVATAR_PICK_MAX_BYTES, removeStoredAvatar, uploadCompressedAvatar } from '../utils/avatarImage';
+import {
+  AVATAR_EDGE,
+  AVATAR_PICK_MAX_BYTES,
+  SPONSOR_IMAGE_MAX_EDGE,
+  SPONSOR_LOGO_MAX_EDGE,
+  compressImageFile,
+  removeStoredAvatar,
+  uploadCompressedAvatar,
+} from '../utils/avatarImage';
 import { clearCachedAvatar } from '../utils/avatarCache';
 import { AWARENESS_STORIES } from '../data/awarenessStories';
 import {
@@ -1553,11 +1561,18 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     if (!file || !user?.id) return;
     setSponsorImageUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `sponsor-${field}-${user.id}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, {
-        cacheControl: '3600',
+      const isLogo = field === 'logo_url';
+      const compressed = await compressImageFile(file, {
+        maxEdge: isLogo ? SPONSOR_LOGO_MAX_EDGE : SPONSOR_IMAGE_MAX_EDGE,
+        fillWhite: !isLogo,
+        fileName: isLogo ? 'sponsor-logo' : 'sponsor-image',
+      });
+      const ext = compressed.type === 'image/webp' ? 'webp' : 'jpg';
+      const fileName = `sponsor-${field}-${user.id}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, compressed, {
+        cacheControl: '31536000',
         upsert: true,
+        contentType: compressed.type,
       });
       if (uploadError) throw uploadError;
       const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
@@ -1565,7 +1580,14 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
       if (url) setSponsorForm((prev) => ({ ...prev, [field]: url }));
     } catch (err) {
       console.error('Sponsor image upload failed:', err);
-      alert(err.message || 'Failed to upload image');
+      const tooBig = err?.code === 'photo_too_big';
+      const unreadable = err?.code === 'photo_unreadable';
+      const message = tooBig
+        ? (language === 'en' ? 'Photo is too large (max 12 MB).' : 'ছবি খুব বড় (সর্বোচ্চ ১২ MB)।')
+        : unreadable
+          ? (language === 'en' ? 'Could not read this photo.' : 'এই ছবি পড়া যায়নি।')
+          : (err.message || (language === 'en' ? 'Failed to upload image' : 'ছবি আপলোড হয়নি'));
+      alert(message);
     } finally {
       setSponsorImageUploading(false);
     }

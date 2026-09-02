@@ -2,6 +2,9 @@
  * Convert stored camera avatars to 512px WebP and point profiles.avatar_url at the new files.
  * Uses Supabase image transform to encode WebP (no local native deps).
  *
+ * Do not run on the Free plan — Image Transformations are not included and will
+ * count toward quota / restrictions. The live app no longer requests /render/image.
+ *
  * Usage:
  *   node scripts/maintenance/optimize_avatars_to_webp.mjs --dry-run
  *   node scripts/maintenance/optimize_avatars_to_webp.mjs

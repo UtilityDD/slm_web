@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AVATAR_EDGE, avatarDisplayUrl } from '../utils/avatarImage';
 
-/** Profile photo that loads a resized WebP from storage when possible. */
+/** Profile photo from the stored public file (no Storage image transform). */
 export default function AvatarPhoto({
     url,
     edge = AVATAR_EDGE.card,

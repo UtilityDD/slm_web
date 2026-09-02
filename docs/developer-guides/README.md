@@ -26,6 +26,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Audio Script Generation](./audio-script-generation.md) | "Smart Lineman Radio" standards, Google AI Studio optimization, JSON to script workflow |
 | [Broadcast notifications](./notifications-broadcasts.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, notification RPCs, startup modal + admin controls |
 | [Android APK (Capacitor)](./android-apk.md) | Sideload APK vs PWA, version bump, slim sync, signing, update channel, dos/don’ts |
+| [Avatars, sponsor images, Free Storage](./avatars-sponsor-storage.md) | No `/render/image`, compress-on-upload, Free-plan transform quota |
 
 ## Conventions for new guides
 
