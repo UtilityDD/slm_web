@@ -1,20 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../supabaseClient';
-import { requestManager } from '../utils/requestManager';
 import { storageUtils } from '../utils/storageUtils';
-import { fetchLandingBoards } from '../utils/landingBoardsService';
 import LandingPrizeCarousel from './LandingPrizeCarousel';
-import LandingSponsorsScroll from './LandingSponsorsScroll';
 import LandingSupportContact from './LandingSupportContact';
 import LandingVisitCounter from './LandingVisitCounter';
 import LandingNonprofitLineman from './LandingNonprofitLineman';
 import LandingPromoPeek from './LandingPromoPeek';
 import { fetchVisitCount } from '../utils/landingVisitService';
-import { fetchRegisteredUserCount } from '../utils/landingStatsService';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
 import { ANDROID_DOWNLOAD_PAGE_URL } from '../config';
-import AvatarPhoto from './AvatarPhoto';
-import { AVATAR_EDGE } from '../utils/avatarImage';
 
 /** Community proof figures shown on landing (marketing display). */
 const LANDING_MEMBERS_DISPLAY = 500;
@@ -31,11 +24,8 @@ const copy = {
     nonprofitTitle: '100% non-profit · volunteer-run',
     statsMembers: 'Members',
     statsSafetyMitra: 'Safety Mitra',
-    monthToppersTitle: 'This month’s leaders',
-    viewLeaderboard: 'View full leaderboard',
-    podiumOpenSlot: 'Your spot awaits',
-    podiumOpenHint: 'Keep learning',
-    sponsorsTitle: 'Our sponsors',
+    viewLeaderboard: "See this month's toppers",
+    advertiseChip: 'Advertise with us',
     engageSupportBtn: 'How can you support us?',
     engageContactBtn: 'Contact us',
     joinCta: 'Join',
@@ -43,7 +33,6 @@ const copy = {
     downloadAndroid: 'Download Android App',
     language: 'Language',
     loading: 'Loading…',
-    pts: 'pts',
     followFacebook: 'Follow on Facebook',
     visitLabel: 'Visit:',
   },
@@ -57,11 +46,8 @@ const copy = {
     nonprofitTitle: 'অলাভজনক উদ্যোগ · স্বেচ্ছাসেবীদের তৈরি',
     statsMembers: 'সদস্য',
     statsSafetyMitra: 'সেফটি মিত্র',
-    monthToppersTitle: 'এই মাসের সেরা তিনজন',
-    viewLeaderboard: 'পুরো লিডারবোর্ড দেখুন',
-    podiumOpenSlot: 'এখানে আপনার নাম হতে পারে',
-    podiumOpenHint: 'শিখতে থাকুন, এগিয়ে যান',
-    sponsorsTitle: 'যাঁরা পাশে দাঁড়িয়েছেন',
+    viewLeaderboard: 'এই মাসের সেরাদের দেখুন',
+    advertiseChip: 'বিজ্ঞাপন দিন',
     engageSupportBtn: 'কীভাবে সাহায্য করবেন?',
     engageContactBtn: 'যোগাযোগ করুন',
     joinCta: 'যোগ দিন',
@@ -69,7 +55,6 @@ const copy = {
     downloadAndroid: 'অ্যান্ড্রয়েড অ্যাপ ডাউনলোড',
     language: 'ভাষা',
     loading: 'একটু অপেক্ষা করুন…',
-    pts: 'পয়েন্ট',
     followFacebook: 'ফেসবুকে আমাদের সঙ্গে থাকুন',
     visitLabel: 'মোট ভিজিট',
   },
@@ -189,22 +174,6 @@ const LANDING_ICON_PATHS = {
   ),
 };
 
-function getMonthToppersSubtitle(language) {
-  const now = new Date();
-  const day = now.getDate();
-  if (language === 'bn') {
-    const bnMonths = [
-      'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-      'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
-    ];
-    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    const formatBnNum = (num) => String(num).split('').map((d) => bnDigits[Number(d)] || d).join('');
-    return `${bnMonths[now.getMonth()]} মাস · ${formatBnNum(day)} তারিখ পর্যন্ত`;
-  }
-  const monthName = now.toLocaleString('en', { month: 'long' });
-  return `${monthName} · as of day ${day}`;
-}
-
 function LandingIcon({ name, className = 'w-5 h-5', strokeWidth = 1.75 }) {
   const paths = LANDING_ICON_PATHS[name];
   if (!paths) return null;
@@ -272,126 +241,30 @@ function AnimatedNumber({ value, loading }) {
   return <span>{formatCount(display)}</span>;
 }
 
-function landingGivenName(fullName) {
-  const trimmed = String(fullName || '').trim();
-  if (!trimmed || trimmed === '—') return '—';
-  if (trimmed.includes('@')) return trimmed.split('@')[0] || '—';
-  return trimmed.split(/\s+/)[0] || '—';
-}
-
-function mapLandingPlayer(row) {
-  return {
-    id: row.user_id || row.id || row.name,
-    name: landingGivenName(row.full_name || row.name),
-    points: Number(row.points ?? row.score) || 0,
-    avatarUrl: row.avatar_url || row.profile_image_url || row.photo_url || '',
-  };
-}
-
-function MonthToppers({
-  title,
-  subtitle,
-  players,
-  ptsLabel,
-  bnFont,
-  fillTo = 3,
-  emptyTitle = '',
-  emptyHint = '',
-  viewLeaderboardLabel = '',
-  onViewLeaderboard,
-}) {
-  const realPlayers = players || [];
-  if (!realPlayers.length) return null;
-
-  const slots = Array.from({ length: Math.max(realPlayers.length, fillTo) }, (_, idx) => realPlayers[idx] || null);
-  // Visual podium order on all sizes: 2nd · 1st · 3rd (champion stays center)
-  const podiumOrder = slots.length === 3 ? ['order-2', 'order-1', 'order-3'] : ['', '', ''];
-
+function LandingLangToggle({ language, onLanguageChange, ariaLabel, compact = false }) {
   return (
-    <section className="landing-month-toppers relative z-10 mb-8 sm:mb-10">
-      <div className="mb-5 text-center sm:mb-6">
-        <h2 className={`text-lg font-black tracking-tight text-slate-900 sm:text-xl ${bnFont ? 'font-bengali' : ''}`}>
-          {title}
-        </h2>
-        {subtitle && (
-          <p className={`mt-1 text-xs font-semibold text-slate-500 sm:text-sm ${bnFont ? 'font-bengali' : ''}`}>
-            {subtitle}
-          </p>
-        )}
-      </div>
-
-      <div className="landing-month-toppers__row">
-        {slots.map((player, rankIdx) => {
-          const isEmpty = !player;
-          const isFirst = rankIdx === 0 && !isEmpty;
-          return (
-            <div
-              key={isEmpty ? `empty-${rankIdx}` : `${player.id}-${rankIdx}`}
-              className={`landing-month-topper ${isFirst ? 'landing-month-topper--champ' : ''} ${isEmpty ? 'landing-month-topper--empty' : ''} ${podiumOrder[rankIdx] || ''}`}
-              aria-label={isEmpty ? emptyTitle : undefined}
-            >
-              <div className="relative mx-auto shrink-0">
-                {isEmpty ? (
-                  <div className="landing-podium-avatar landing-podium-avatar--empty landing-month-topper__avatar flex items-center justify-center text-3xl font-black text-slate-300">
-                    ?
-                  </div>
-                ) : player.avatarUrl ? (
-                  <AvatarPhoto
-                    url={player.avatarUrl}
-                    edge={AVATAR_EDGE.podium}
-                    alt={player.name}
-                    className={`landing-podium-avatar landing-month-topper__avatar object-cover ${isFirst ? 'landing-podium-avatar--champ' : ''}`}
-                  />
-                ) : (
-                  <div className={`landing-podium-avatar landing-month-topper__avatar flex items-center justify-center text-2xl font-black sm:text-3xl ${isFirst ? 'bg-amber-400 text-slate-900 landing-podium-avatar--champ' : 'bg-white text-slate-700'}`}>
-                    {(player.name || '?').charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <span
-                  className={`landing-podium-rank absolute -bottom-0.5 -right-0.5 inline-flex h-7 w-7 items-center justify-center text-xs font-black sm:h-8 sm:w-8 sm:text-sm ${
-                    isEmpty ? 'landing-podium-rank--empty' : ''
-                  }`}
-                  data-rank={rankIdx}
-                >
-                  {bnFont ? ['১', '২', '৩'][rankIdx] : rankIdx + 1}
-                </span>
-              </div>
-
-              <div className="mt-3 min-w-0 w-full space-y-0.5 text-center">
-                {isEmpty ? (
-                  <>
-                    <p className={`truncate text-sm font-bold text-slate-400 ${bnFont ? 'font-bengali' : ''}`}>{emptyTitle || '?'}</p>
-                    <p className={`truncate text-[11px] font-medium text-slate-400/90 ${bnFont ? 'font-bengali' : ''}`}>{emptyHint || ''}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className={`landing-month-topper__name font-black text-slate-900 ${bnFont ? 'font-bengali' : ''}`}>{player.name}</p>
-                    <p className="text-xs font-bold tabular-nums text-orange-700 sm:text-sm">
-                      {player.points} <span className="font-semibold text-orange-600/80">{ptsLabel}</span>
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {onViewLeaderboard && viewLeaderboardLabel && (
-        <div className="mt-5 flex justify-center sm:mt-6">
-          <button
-            type="button"
-            onClick={onViewLeaderboard}
-            className={`landing-month-toppers__board-link inline-flex min-h-[40px] items-center gap-1 touch-manipulation text-sm font-bold text-orange-600 transition-colors hover:text-orange-700 active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
-          >
-            <span>{viewLeaderboardLabel}</span>
-            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      )}
-    </section>
+    <div
+      className={`landing-lang-toggle${compact ? ' landing-lang-toggle--compact' : ''}`}
+      role="group"
+      aria-label={ariaLabel}
+    >
+      <button
+        type="button"
+        onClick={() => onLanguageChange('en')}
+        className={`landing-lang-toggle__btn${language === 'en' ? ' is-active' : ''}`}
+        aria-pressed={language === 'en'}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        onClick={() => onLanguageChange('bn')}
+        className={`landing-lang-toggle__btn landing-lang-toggle__btn--bn font-bengali${language === 'bn' ? ' is-active' : ''}`}
+        aria-pressed={language === 'bn'}
+      >
+        {compact ? 'বাং' : 'বাংলা'}
+      </button>
+    </div>
   );
 }
 
@@ -411,14 +284,6 @@ function SlimStat({ label, value, suffix = '', loading, bnFont }) {
 
 export default function Landing({ language, onLanguageChange, setCurrentView, motionReady = true }) {
   const t = copy[language] || copy.en;
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    users: 0,
-    thisMonthTop: [],
-    prizesCount: 0,
-    prizeMonths: 0,
-    hallOfFameData: [],
-  });
   const [visitCount, setVisitCount] = useState(null);
   const [visitLoading, setVisitLoading] = useState(true);
   const [headerAway, setHeaderAway] = useState(false);
@@ -500,7 +365,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
   useEffect(() => {
     let cancelled = false;
     setVisitLoading(true);
-    fetchVisitCount()
+    fetchVisitCount({ registeredUsers: LANDING_MEMBERS_DISPLAY })
       .then((count) => {
         if (!cancelled) {
           setVisitCount(count);
@@ -513,82 +378,6 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    if (visitCount != null || visitLoading || !stats.users) return;
-    let cancelled = false;
-    fetchVisitCount({ registeredUsers: stats.users })
-      .then((count) => {
-        if (!cancelled && count != null) setVisitCount(count);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [stats.users, visitCount, visitLoading]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadStats() {
-      setLoading(true);
-      try {
-        const [profilesResult, boards] = await Promise.all([
-          requestManager.fetch(
-            'landing_registered_count_v1',
-            async () => {
-              const users = await fetchRegisteredUserCount(supabase);
-              return { users };
-            },
-            { ttl: 2, swr: false }
-          ),
-          fetchLandingBoards(supabase).catch(() => ({ thisMonthTop: [], hallOfFameData: [] })),
-        ]);
-
-        const hallOfFame = Array.isArray(boards?.hallOfFameData) ? boards.hallOfFameData : [];
-        const thisMonthTopThree = (boards?.thisMonthTop || []).slice(0, 3).map(mapLandingPlayer);
-        const prizesCount = hallOfFame.reduce((acc, month) => {
-          const champions = month.boards?.main_champion || [];
-          return acc + champions.filter((w) => w.prize_rank != null).length;
-        }, 0);
-
-        if (!cancelled) {
-          setStats({
-            users: profilesResult?.users ?? 0,
-            thisMonthTop: thisMonthTopThree,
-            prizesCount,
-            prizeMonths: hallOfFame.length,
-            hallOfFameData: hallOfFame,
-          });
-        }
-      } catch (err) {
-        console.warn('Landing stats fetch failed:', err);
-        if (!cancelled) {
-          setStats((prev) => ({ ...prev, thisMonthTop: [] }));
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadStats();
-    return () => {
-      cancelled = true;
-    };
-  }, [language]);
-
-  // Refresh registered count when user returns to the tab (avoids stale landing stats).
-  useEffect(() => {
-    const refreshCount = () => {
-      if (document.visibilityState !== 'visible') return;
-      fetchRegisteredUserCount(supabase)
-        .then((users) => {
-          setStats((prev) => (prev.users === users ? prev : { ...prev, users }));
-        })
-        .catch(() => {});
-    };
-    document.addEventListener('visibilitychange', refreshCount);
-    return () => document.removeEventListener('visibilitychange', refreshCount);
   }, []);
 
   const bnFont = language === 'bn';
@@ -637,6 +426,12 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+              <LandingLangToggle
+                language={language}
+                onLanguageChange={onLanguageChange}
+                ariaLabel={t.language}
+                compact
+              />
               <button
                 type="button"
                 onClick={() => setCurrentView('login')}
@@ -670,10 +465,10 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
           >
             <span className="landing-hero-lockup__stack">
               <span className="landing-hero-lockup__line">
-                {language === 'bn' ? 'খেলতে' : 'Play'}
+                {language === 'bn' ? 'খেলতে' : 'While'}
               </span>
               <span className="landing-hero-lockup__line">
-                {language === 'bn' ? 'খেলতে' : 'Play'}
+                {language === 'bn' ? 'খেলতে' : 'playing'}
               </span>
             </span>
             <span className="landing-hero-lockup__rule" aria-hidden="true" />
@@ -698,6 +493,7 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
               onClick={() => contactFormRef.current?.openWithTopic('join')}
               className="landing-join-cta touch-manipulation"
             >
+              <span className="landing-join-cta__dot" aria-hidden="true" />
               <span className={bnFont ? 'font-bengali' : ''}>{t.joinCta}</span>
             </button>
           </div>
@@ -748,26 +544,31 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
           />
         </section>
 
-        <MonthToppers
-          title={t.monthToppersTitle}
-          subtitle={getMonthToppersSubtitle(language)}
-          players={stats.thisMonthTop}
-          ptsLabel={t.pts}
-          bnFont={bnFont}
-          fillTo={3}
-          emptyTitle={t.podiumOpenSlot}
-          emptyHint={t.podiumOpenHint}
-          viewLeaderboardLabel={t.viewLeaderboard}
-          onViewLeaderboard={() => setCurrentView('login')}
-        />
+        <div className="relative z-10 mb-8 flex justify-center sm:mb-10">
+          <button
+            type="button"
+            onClick={() => setCurrentView('login')}
+            className={`landing-month-toppers__board-link inline-flex min-h-[40px] items-center gap-1 touch-manipulation text-sm font-bold text-orange-600 transition-colors hover:text-orange-700 active:scale-[0.98] ${bnFont ? 'font-bengali' : ''}`}
+          >
+            <span>{t.viewLeaderboard}</span>
+            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
 
-        <LandingPrizeCarousel
-          language={language}
-          hallOfFameData={stats.hallOfFameData}
-          loading={loading}
-        />
+        <LandingPrizeCarousel language={language} />
 
-        <LandingSponsorsScroll language={language} title={t.sponsorsTitle} />
+        <div className="relative z-10 mb-3 flex justify-center sm:mb-4">
+          <button
+            type="button"
+            onClick={() => contactFormRef.current?.openWithTopic('advertise')}
+            className={`landing-advertise-chip touch-manipulation ${bnFont ? 'font-bengali' : ''}`}
+            aria-label={t.advertiseChip}
+          >
+            {t.advertiseChip}
+          </button>
+        </div>
 
         <div className="landing-engage-ctas relative z-10 mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:gap-4">
           <button
@@ -800,33 +601,11 @@ export default function Landing({ language, onLanguageChange, setCurrentView, mo
         )}
 
         <footer className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border-t border-slate-200/70 py-6 sm:mt-10 sm:py-8">
-          <div
-            className="inline-flex items-center gap-1 text-sm font-semibold text-slate-500"
-            role="group"
-            aria-label={t.language}
-          >
-            <button
-              type="button"
-              onClick={() => onLanguageChange('en')}
-              className={`min-h-[40px] touch-manipulation px-1.5 transition-colors active:scale-95 ${
-                language === 'en' ? 'font-black text-slate-900' : 'hover:text-slate-700'
-              }`}
-            >
-              EN
-            </button>
-            <span className="text-slate-300" aria-hidden>
-              ·
-            </span>
-            <button
-              type="button"
-              onClick={() => onLanguageChange('bn')}
-              className={`min-h-[40px] touch-manipulation px-1.5 transition-colors active:scale-95 ${
-                language === 'bn' ? 'font-black text-slate-900 font-bengali' : 'hover:text-slate-700'
-              }`}
-            >
-              বাং
-            </button>
-          </div>
+          <LandingLangToggle
+            language={language}
+            onLanguageChange={onLanguageChange}
+            ariaLabel={t.language}
+          />
 
           <a
             href="https://www.facebook.com/smartlineman"

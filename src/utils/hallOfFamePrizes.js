@@ -389,7 +389,7 @@ function buildLandingGallerySlides(language = 'bn') {
     });
 }
 
-/** Public landing carousel — catalog prizes enriched with winner names when available. */
+/** Public landing carousel — catalog + gallery only (no live winner names). */
 export function buildLandingPrizeSlides(language = 'bn', hallOfFameData = []) {
     const monthlyTabs = getEncouragementCopy(language).monthlyTabs;
     const winnerByKey = new Map();

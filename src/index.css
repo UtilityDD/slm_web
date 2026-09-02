@@ -790,6 +790,77 @@ body,
     }
   }
 
+  .landing-lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1.5px solid rgba(15, 23, 42, 0.12);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  }
+
+  .landing-lang-toggle__btn {
+    min-height: 1.85rem;
+    padding: 0 0.7rem;
+    border: none;
+    border-radius: 9999px;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+  }
+
+  .landing-lang-toggle__btn--bn {
+    letter-spacing: 0;
+    font-size: 0.72rem;
+  }
+
+  .landing-lang-toggle--compact {
+    padding: 2px;
+  }
+
+  .landing-lang-toggle--compact .landing-lang-toggle__btn {
+    min-height: 1.5rem;
+    padding: 0 0.42rem;
+    font-size: 0.6rem;
+  }
+
+  .landing-lang-toggle--compact .landing-lang-toggle__btn--bn {
+    font-size: 0.66rem;
+  }
+
+  .landing-lang-toggle__btn:hover:not(.is-active) {
+    color: #0f172a;
+  }
+
+  .landing-lang-toggle__btn.is-active {
+    background: #ea580c;
+    color: #fff;
+    box-shadow: 0 4px 10px -4px rgba(234, 88, 12, 0.7);
+  }
+
+  .landing-lang-toggle__btn:active {
+    transform: scale(0.97);
+  }
+
+  @media (min-width: 640px) {
+    .landing-lang-toggle:not(.landing-lang-toggle--compact) .landing-lang-toggle__btn {
+      min-height: 2rem;
+      padding: 0 0.9rem;
+      font-size: 0.72rem;
+    }
+
+    .landing-lang-toggle:not(.landing-lang-toggle--compact) .landing-lang-toggle__btn--bn {
+      font-size: 0.8rem;
+    }
+  }
+
   .landing-header-bar {
     background: transparent;
     backdrop-filter: none;
@@ -1061,8 +1132,19 @@ body,
   }
 
   .landing-page-light.landing-hold-ambient .landing-join-cta--hotstick,
-  .landing-page-light.landing-hold-ambient .landing-hero-badge-dot {
+  .landing-page-light.landing-hold-ambient .landing-hero-badge-dot,
+  .landing-page-light.landing-hold-ambient .landing-join-cta__dot {
     animation: none !important;
+  }
+
+  .landing-join-cta__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: #86efac;
+    box-shadow: 0 0 0 2px rgba(134, 239, 172, 0.35);
+    animation: landing-live-pulse 2s ease-in-out infinite;
   }
 
   .landing-hero-badge {
@@ -1963,6 +2045,34 @@ body,
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+  }
+
+  .landing-advertise-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    padding: 0.28rem 0.85rem;
+    border: 1.5px solid #0891b2;
+    border-radius: 9999px;
+    background: #67e8f9;
+    color: #164e63;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    box-shadow: none;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .landing-advertise-chip:hover {
+    background: #22d3ee;
+    color: #083344;
+  }
+
+  .landing-advertise-chip:active {
+    transform: scale(0.98);
   }
 
   .landing-engage-cta {

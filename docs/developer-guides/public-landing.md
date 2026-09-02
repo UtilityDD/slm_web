@@ -1,6 +1,8 @@
 # Public landing page — developer guide
 
-**Purpose:** Document the unauthenticated **marketing landing** (`Landing.jsx`): routing, live stats, Life Skills preview, and scroll behavior inside the app shell.
+**Purpose:** Document the unauthenticated **marketing landing** (`Landing.jsx`): routing, static community proof, Redis visit counter, and scroll behavior inside the app shell.
+
+Landing **must not** call Supabase (PostgREST, Storage, Realtime, or RPCs). Public visitors must not consume the Free-plan database or egress quota.
 
 ---
 
@@ -8,9 +10,13 @@
 
 | Path | Role |
 |------|------|
-| `src/components/Landing.jsx` | Hero, vision/mission, live counters, Life Skills preview grid, public LS01–LS03 modal |
+| `src/components/Landing.jsx` | Hero, vision/mission, static 500+ / 20+, toppers login link, prize carousel |
+| `src/components/LandingPrizeCarousel.jsx` | Prize photos from bundled catalog + `/prizes/` (no winner names) |
+| `src/utils/landingVisitService.js` | Visit count via `/api/landing-visits` (**Redis**, not Supabase) |
 | `src/SmartLinemanUI.jsx` | Default view `landing` for guests; `publicViews` list; authenticated users redirected to `training` |
-| `src/index.css` | `.landing-life-skills-scroll`, landing-specific layout |
+| `src/index.css` | `.landing-life-skills-scroll`, `.landing-join-cta__dot`, landing layout |
+
+`/api/landing-stats` and `/api/landing-boards` still exist but **must not** be called from the public landing.
 
 ---
 
@@ -33,25 +39,25 @@
 const scroller = document.getElementById('main-scroll-container');
 const section = document.getElementById('life-skills');
 // offset via getBoundingClientRect + scroller.scrollTop - headerOffset (80px)
-scroller.scrollTo({ top, behavior: 'smooth' });
+scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 ```
 
 The hero **Explore Life Skills** button uses this (not an anchor).
 
 ---
 
-## Live stats (read-only)
+## What is live vs static
 
-Loaded on mount via `requestManager` / `leaderboardService` — **no writes**:
+| Surface | Source | Notes |
+|--------|--------|--------|
+| Members **500+** | `LANDING_MEMBERS_DISPLAY` in `Landing.jsx` | Marketing floor; bump by hand when you ship |
+| Safety Mitra **20+** | `LANDING_SAFETY_MITRA_DISPLAY` | Same |
+| Visit counter | Redis `/api/landing-visits` | Only live number; not Postgres |
+| Join button | Pulsing green dot | Attention only; no server |
+| This month’s toppers | Text link → login | No public podium or faces |
+| Prize carousel | `hallOfFamePrizes.json` + `public/prizes/` | Photos only, no winner faces |
 
-| Stat | Source |
-|------|--------|
-| Registered users | `profiles` count |
-| New player top 3 | Monthly encouragement / leaderboard paths |
-| All-time top 3 | Leaderboard service |
-| Prizes | Hall of Fame / encouragement board prize metadata |
-
-Failures degrade gracefully (zeros / empty lists); page still renders.
+Do **not** show live leaderboard photos or `profiles` counts on this page.
 
 ---
 
@@ -94,14 +100,16 @@ Props: `language`, `onLanguageChange` — toggles EN/BN in header; copy objects 
 
 | Safe | Caution |
 |------|---------|
-| Hero copy, stat labels, card layout | Changing stats queries (keep read-only) |
-| Additional preview modules (slice count) | Writing to Supabase from landing |
+| Hero copy, stat labels, language toggle | Calling Supabase or `/api/landing-boards` from landing |
+| Additional preview modules (slice count) | Live winner names/faces on the public podium |
 | New scroll targets (use `main-scroll-container` pattern) | Hash-based anchor links |
+| Bumping `LANDING_MEMBERS_DISPLAY` | Fetching `get_registered_linemen_count` |
 
 ---
 
 ## See also
 
+- [Avatars, sponsor images, Free Storage](./avatars-sponsor-storage.md)
 - [Life Skill / supplementary modules](./life-skills-supplementary.md)
 - [Reading habit & 48-hour gate](./reading-habit-and-gate.md)
 - [Broadcast notifications](./notifications-broadcasts.md) — alerts only shown for logged-in users, not on landing

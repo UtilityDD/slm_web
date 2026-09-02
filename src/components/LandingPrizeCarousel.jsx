@@ -4,16 +4,19 @@ import { buildLandingPrizeSlides } from '../utils/hallOfFamePrizes';
 
 const AUTO_MS = 5500;
 
-export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData = [], loading = false }) {
+export default function LandingPrizeCarousel({ language = 'bn', loading = false }) {
     const slides = useMemo(
-        () => buildLandingPrizeSlides(language, hallOfFameData),
-        [language, hallOfFameData]
+        () => buildLandingPrizeSlides(language, []),
+        [language]
     );
     const [index, setIndex] = useState(0);
     const [paused, setPaused] = useState(false);
     const touchStartX = useRef(null);
 
-    const title = language === 'en' ? 'Prizes distributed' : 'পুরস্কার বিতরণ';
+    const title = language === 'en' ? 'Prizes' : 'পুরস্কার';
+    const subtitle = language === 'en'
+        ? 'What winners took home.'
+        : 'বিজয়ীরা যা পেয়েছেন।';
     const isBn = language === 'bn';
 
     const goTo = useCallback((next) => {
@@ -55,9 +58,12 @@ export default function LandingPrizeCarousel({ language = 'bn', hallOfFameData =
 
     return (
         <section className="relative z-10 mb-8 sm:mb-10" aria-label={title}>
-            <h2 className={`mb-3 text-base font-black tracking-tight text-slate-900 sm:mb-4 sm:text-lg ${isBn ? 'font-bengali' : ''}`}>
+            <h2 className={`mb-1 text-base font-black tracking-tight text-slate-900 sm:mb-1.5 sm:text-lg ${isBn ? 'font-bengali' : ''}`}>
                 {title}
             </h2>
+            <p className={`mb-3 text-xs font-semibold text-slate-500 sm:mb-4 sm:text-sm ${isBn ? 'font-bengali' : ''}`}>
+                {subtitle}
+            </p>
 
             <div
                 className="landing-prize-clean group relative overflow-hidden rounded-2xl"

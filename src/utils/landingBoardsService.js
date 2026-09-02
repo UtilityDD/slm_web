@@ -21,8 +21,8 @@ async function fetchBoardsFromApi() {
 }
 
 /**
- * Public landing boards. Prefers the Vercel-cached API (one Supabase hit per
- * cache window for all visitors). Local Vite falls back to the slim client query.
+ * Public landing boards API (cached). The marketing landing no longer calls this.
+ * Keep for other tools; do not wire it back into `Landing.jsx`.
  */
 export function fetchLandingBoards(supabase) {
     return requestManager.fetch(

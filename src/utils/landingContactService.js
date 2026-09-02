@@ -12,6 +12,7 @@ const TOPIC_LABELS = {
   correction: { en: 'Content correction', bn: 'পাঠের ভুল সংশোধন' },
   training: { en: 'Expert online training', bn: 'অনলাইন প্রশিক্ষণ দেওয়া' },
   prize_sponsor: { en: 'Direct prize sponsorship', bn: 'সরাসরি পুরস্কার দেওয়া' },
+  advertise: { en: 'Advertise with us', bn: 'বিজ্ঞাপন দিতে চাই' },
   other: { en: 'Other', bn: 'অন্যান্য' },
 };
 

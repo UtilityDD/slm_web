@@ -55,6 +55,7 @@ const TOPICS = [
   { id: 'correction', en: 'Content correction', bn: 'পাঠের ভুল সংশোধন' },
   { id: 'training', en: 'Expert online training', bn: 'অনলাইন প্রশিক্ষণ দেওয়া' },
   { id: 'prize_sponsor', en: 'Direct prize sponsorship', bn: 'সরাসরি পুরস্কার দেওয়া' },
+  { id: 'advertise', en: 'Advertise with us', bn: 'বিজ্ঞাপন দিতে চাই' },
   { id: 'other', en: 'Other', bn: 'অন্যান্য' },
 ];
 
@@ -65,6 +66,7 @@ const TOPIC_MESSAGES = {
       'আমার (আপনার দক্ষতার ক্ষেত্র উল্লেখ করুন) বিষয়ে দক্ষতা আছে। আমি কমিউনিটিকে অনলাইন প্রশিক্ষণ দিতে চাই।',
     correction: 'আমি নিম্নলিখিত ভুলগুলো লক্ষ্য করেছি… যেমন…',
     prize_sponsor: 'আমি আগামী মাসের পুরস্কার স্পনসর করতে চাই।',
+    advertise: 'আমি স্মার্ট লাইনম্যানে বিজ্ঞাপন দিতে চাই। অনুগ্রহ করে সুযোগগুলো জানান।',
   },
   en: {
     join: 'I am interested to join the lineman community. I have provided my mobile number. Kindly contact me.',
@@ -72,6 +74,7 @@ const TOPIC_MESSAGES = {
       'I have expertise in the field of (mention your expertise). I want to impart online training to the community.',
     correction: 'I noticed the following mistakes… like…',
     prize_sponsor: 'I want to sponsor the prizes for next month.',
+    advertise: 'I would like to advertise with SmartLineman. Please tell me the options.',
   },
 };
 

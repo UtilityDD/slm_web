@@ -78,5 +78,5 @@ Usage **Storage Image Transformations** resets at the next billing cycle. This m
 
 ## Related
 
-- [Public landing](./public-landing.md) — unauthenticated pages also render avatars via `AvatarPhoto`.
+- [Public landing](./public-landing.md) — public page must not load Storage avatars or leaderboard photos.
 - [Production deployment](./deployment.md) — this change is PWA-only; do not touch `android-latest.json` / the APK unless you are shipping a native build.
