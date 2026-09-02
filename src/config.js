@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.144";
+export const CURRENT_APP_VERSION = "1.3.145";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update — Ads and reminders wait while you play the hourly quiz.",
-  bn: "নতুন ভার্সন আপডেট করুন—ঘণ্টার কুইজ চলাকালীন বিজ্ঞাপন ও রিমাইন্ডার অপেক্ষা করবে।",
+  en: "Distribution Transformer (DTR) lesson 6.1 refined with natural field Bengali and concentric diagrams.",
+  bn: "ডিস্ট্রিবিউশন ট্রান্সফরমার (DTR) লেসন ৬.১-এর কন্টেন্ট সহজ ও মাঠের খাঁটি বাংলায় নতুন ডায়াগ্রামসহ সাজানো হয়েছে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
