@@ -20,7 +20,7 @@ export const SUPPORT_EMAIL = "support@smartlineman.in";
  * Live android-latest.json stays on the last hosted APK until a signed build is copied to
  * public/downloads/smartlineman.apk (do not raise version_code without that APK).
  */
-export const ANDROID_VERSION_CODE = 141;
+export const ANDROID_VERSION_CODE = 142;
 /** Absolute URL so the APK checks the live site, not bundled localhost assets. */
 export const ANDROID_LATEST_MANIFEST_URL = `${WEBSITE_ORIGIN_WWW}/android-latest.json`;
 export const ANDROID_DOWNLOAD_PAGE_URL = `${WEBSITE_ORIGIN_WWW}/download`;
