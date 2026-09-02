@@ -28,6 +28,16 @@ Body fields that pass through **`renderTextWithImages`** (`mission_briefing`, se
 
 ---
 
+## Lesson figure posters (`TrainingLessonFigure`)
+
+Section-point posters (`image_name` on each `point`) and myth-buster art use **`TrainingLessonFigure`**:
+
+- **Tap only** opens the full-screen zoom modal — no auto-open while scrolling.
+- Hint under the figure: **"বড় করে দেখতে ট্যাপ করুন"** / **"Tap to enlarge"**.
+- Do not re-add scroll-dwell or IntersectionObserver auto-open; it interrupts guided reading on mobile.
+
+---
+
 ## Slide model
 
 - **`getSlides(trainingContent)`** builds an ordered array: `hero` → one slide per **`content.sections[]`** (`type: 'section'`) → optional `pro_tip`, `myth_buster`, `advanced` → `completion`.

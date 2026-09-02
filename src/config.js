@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.145";
+export const CURRENT_APP_VERSION = "1.3.146";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Distribution Transformer (DTR) lesson 6.1 refined with natural field Bengali and concentric diagrams.",
-  bn: "ডিস্ট্রিবিউশন ট্রান্সফরমার (DTR) লেসন ৬.১-এর কন্টেন্ট সহজ ও মাঠের খাঁটি বাংলায় নতুন ডায়াগ্রামসহ সাজানো হয়েছে।",
+  en: "Lesson reading: poster images open only when you tap — no more auto pop-up while scrolling.",
+  bn: "লেসন পড়ার সময় ছবি এখন শুধু ট্যাপ করলেই বড় হবে — স্ক্রল করতে গিয়ে আর নিজে থেকে খুলবে না।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
