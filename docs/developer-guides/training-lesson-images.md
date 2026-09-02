@@ -125,6 +125,7 @@ Used for lessons **2.5–2.10**, **3.1–3.10**, **4.1–4.5**, and all new chap
    - **Short Bangla labels** inside the art for parts/steps (verify script in preview; regenerate if garbled).
    - Save PNG locally (e.g. `scratch/art_<lesson>/slug.png`).
 3. **Post-process with Sharp** (`scratch/build_chapter_*_posters.mjs` pattern):
+   - **Trim AI cream padding first** — generated 4:3 art often has ~40% empty canvas below the subject; scan/crop to content bounds before resize (see `scratch/build_chapter_6_1_posters.mjs`). Without this, mobile lesson slides show a long blank band under the figure.
    - Prefer **content-aware crop** that keeps ~60–80 px cream **above** first non-cream pixels (do **not** `%` chop the top of 1.10-style cards — that removes the intended margin and makes art look cut under the header)
    - For realistic equipment posters only: optional light top crop (~8–11%) if AI baked a title into the art
    - `resize(768, null, { fit: 'inside' })`
@@ -314,7 +315,8 @@ See pattern in local `scratch/regen_lessons_2_8_9_10_sql.mjs`: fix JSON typos fi
 | 4.6–4.10 | Earthing, DP dressing, tree trim, street light, LT balance (1.10-style) | `earth46_*` … `bal410_*` | `20260628260000_lesson_gap_4_5_6_images.sql` |
 | 5.1–5.3 | Line trip response, patrolling, common faults | `trip_*`, `patrol_*`, `fault_*` | `20260628150000_lesson_5_1_to_5_3_images.sql` |
 | 5.4–5.10 | Fuse faults, LV, short/open, night, DTR, UG, PM (1.10-style) | `fuse54_*` … `pm510_*` | `20260628260000_lesson_gap_4_5_6_images.sql` |
-| 6.1 | Distribution transformer (DTR) | `dtr61_*` | `20260628160000_lesson_6_1_dtr_images.sql` |
+| 6.1 | Distribution transformer (DTR) — original posters | `dtr61_*` (basics, parts, health, myth) | `20260628160000_lesson_6_1_dtr_images.sql` |
+| 6.1 | DTR field + forensic refresh (colloquial BN, 5 new posters, click hints) | `dtr61_cutaway`, `dtr61_field_walk`, `dtr61_symptom_map`, `dtr61_fail_thermal`, `dtr61_fail_arc` | `20260902120000_lesson_6_1_field_dtr.sql` |
 | 6.2–6.3 | Circuit breaker, fuse types | `cb62_*`, `fuse63_*` | `20260628170000_lesson_6_2_to_6_3_images.sql` |
 | 6.4–6.6 | AB switch, UG cable, AB cable | `abs64_*`, `ug65_*`, `abc66_*` | `20260628180000_lesson_6_4_to_6_6_images.sql` |
 | 6.7–6.10 | Capacitor bank, recloser, LT pillar, energy meter (1.10-style cards) | `cap67_*`, `reclr68_*`, `pillar69_*`, `meter610_*` | `20260628250000_lesson_6_7_to_6_10_images.sql` |
@@ -382,6 +384,7 @@ No long sentences. Not cluttered.
 8. **SQL escaping** — single quotes in JSON must become `''` inside the migration string.
 9. **Lesson 2.1 portrait** — only chapter using forced **768×1024** contain layout; other chapters use natural ~768×500 aspect.
 10. **Build before commit** — run `npm run build` to ensure assets are present and paths valid.
+11. **AI canvas padding** — after GenerateImage, trim cream/white margins before header composite; target ~768×550–680 poster height, not full 4:3 (~1140px) with empty bottom.
 
 ---
 
