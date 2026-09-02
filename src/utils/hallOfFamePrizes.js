@@ -243,6 +243,7 @@ const SPONSOR_PHOTO_STEMS = {
     nilkanth: ['nilkanta', 'nilkanth'],
     ujjwal: ['ujjwal'],
     hemanta: ['hemanta'],
+    partha: ['partha'],
 };
 
 /** Gender for missing-photo smile avatar — default man. */
@@ -255,6 +256,7 @@ const SPONSOR_GENDER = {
     nilkanth: 'man',
     ujjwal: 'man',
     hemanta: 'man',
+    partha: 'man',
 };
 
 function sponsorFirstToken(englishName = '') {
