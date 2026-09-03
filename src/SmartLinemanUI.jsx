@@ -854,12 +854,12 @@ export default function SmartLinemanUI() {
 
     try {
       await fetchProfile(user);
-      // Also refresh notifications using the optimized fetcher
       await fetchNotifications(true);
 
+      // Drop Rank disk cache so the next Rank/Prizes open is fresh.
+      // Do not prefetch all-time / monthly here — that was a large egress hit
+      // for users who never open those screens.
       invalidateLeaderboardCaches(user.id);
-      leaderboardService.fetchAllTime(true).catch(() => {});
-      leaderboardService.fetchMonthly(true).catch(() => {});
 
       showNotification(language === 'en' ? 'Updated' : 'আপডেট করা হয়েছে', 'success');
     } catch (err) {

@@ -1764,6 +1764,11 @@ export default function Competitions({
     };
 
     const openUserProgress = (userId, preview = null, rank = null) => {
+        const isSelf = Boolean(user?.id && userId === user.id);
+        if (isSelf && typeof onOpenUserProgress === 'function') {
+            onOpenUserProgress(userId);
+            return;
+        }
         if (isFullLeaderboard) {
             setLeaderboardUserSheet({ userId, preview, rank });
             return;
@@ -2891,7 +2896,9 @@ export default function Competitions({
                     monthlyBoardTab,
                     boardTitle: monthlyBoardMeta?.title,
                 }}
-                encouragementBoards={encouragementBoards}
+                viewerUserId={user?.id || null}
+                viewerIsAdmin={userProfile?.role === 'admin'}
+                hallOfFameData={hallOfFameData}
                 onClose={() => setLeaderboardUserSheet(null)}
             />
 

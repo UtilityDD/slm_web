@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
 import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
-import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
+import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
 import { openExternalUrl } from '../utils/nativeAndroidUx';
@@ -115,7 +115,6 @@ export default function Home({
   const [hourlyChecked, setHourlyChecked] = useState(false);
   const [hourlyMaxPoints, setHourlyMaxPoints] = useState(HOURLY_POINTS_PER_PACK);
   const [hourlyClockTick, setHourlyClockTick] = useState(0);
-  const [lessonBonusAttempts, setLessonBonusAttempts] = useState([]);
   const [userRank, setUserRank] = useState(null);
   const [learningTopic, setLearningTopic] = useState(null);
   const [contactPending, setContactPending] = useState(0);
@@ -186,39 +185,6 @@ export default function Home({
     img.decoding = 'async';
     img.src = '/images/home-tip-lineman-blank-board.webp';
   }, []);
-
-  // Same source as My Progress: profiles.completed_lessons ∪ lesson_bonus_* awards.
-  useEffect(() => {
-    if (!user?.id) {
-      setLessonBonusAttempts([]);
-      return undefined;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const attempts = await requestManager.fetch(
-          `my_progress_attempts_${user.id}`,
-          async () => {
-            const { data, error } = await supabase
-              .from('quiz_attempts')
-              .select('quiz_id, score, penalty, created_at')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: true });
-            if (error) throw error;
-            return data || [];
-          },
-          { ttl: 5, swr: true }
-        );
-        if (!cancelled) setLessonBonusAttempts(Array.isArray(attempts) ? attempts : []);
-      } catch (err) {
-        console.warn('Home lesson progress fetch failed:', err);
-        if (!cancelled) setLessonBonusAttempts([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
 
   // One fixed tip per Home visit — no auto-rotate while staying on the page.
   useEffect(() => {
@@ -388,8 +354,8 @@ export default function Home({
       ? userProfile.completed_lessons
       : [];
     const profileOrProp = fromProp.length >= fromProfile.length ? fromProp : fromProfile;
-    return mergeCoreLessonProgressIds(profileOrProp, lessonBonusAttempts);
-  }, [completedLessonsProp, userProfile?.completed_lessons, lessonBonusAttempts]);
+    return filterCoreCompletedLessonIds(profileOrProp);
+  }, [completedLessonsProp, userProfile?.completed_lessons]);
 
   useEffect(() => {
     let cancelled = false;

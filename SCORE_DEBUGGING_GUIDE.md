@@ -107,7 +107,7 @@ Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_
 |----------|-----------|
 | **`Competitions.jsx`** — hourly quiz success & retry | `fetchLeaderboard(true)` plus **`fetchFullLeaderboard(true)`** and **`fetchMonthlyLeaderboard(true)`** so top-10, full list, monthly tab, and **encouragement sub-boards** all update (`fetchMonthly` + `fetchEncouragementBoards` in parallel). |
 | **`Training.jsx`** / **`SafetyHub.jsx`** — lesson bonus | Call **`invalidateLeaderboardCaches(user.id)`** after a successful points RPC. Training’s rank preview cache key is **`user_rank_all_time_<id>`** (same family as Competitions). |
-| **`SmartLinemanUI.jsx`** — pull-to-refresh | **`invalidateLeaderboardCaches(user.id)`** then **`leaderboardService.fetchAllTime(true)`** / **`fetchMonthly(true)`** (fire-and-forget) so leaderboard data is not left stale while profile/notifications refresh. |
+| **`SmartLinemanUI.jsx`** — pull-to-refresh | Profile + notifications only. **`invalidateLeaderboardCaches(user.id)`** so Rank/Prizes refetch when those screens open. Do **not** call `fetchAllTime` / `fetchMonthly` from pull-to-refresh. |
 
 If you add a new leaderboard cache key in **`leaderboardService.js`** or **`Competitions.jsx`**, add it to **`invalidateLeaderboardCaches`** in the same PR.
 
