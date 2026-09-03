@@ -169,3 +169,4 @@ cd android
 - Workflow: `.agent/workflows/android-deploy.md`
 - Update checker: `src/utils/androidAppUpdate.js`
 - Remote media: `src/utils/nativeRemoteAssets.js`
+- Quota / landing / Rank prefetch: [Free-plan / egress optimization](./free-plan-optimization.md) — those ships must not change `android-latest.json`

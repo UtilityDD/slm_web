@@ -12,12 +12,13 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | Guide | Scope |
 |--------|--------|
 | [Production deployment](./deployment.md) | **Read first before any ship.** PWA vs APK channels, Vercel CLI, `android-latest.json` gate, verify live |
+| [Free-plan / egress optimization](./free-plan-optimization.md) | Stay inside Supabase Free: landing off DB, no image transforms, no Rank prefetch, remaining `quiz_attempts` cuts |
+| [Public landing](./public-landing.md) | Unauthenticated `Landing.jsx`: static 500+ / 20+, Redis visits, no Supabase, Advertise chip |
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
-| [Admin Broadcast Notifications](./admin-broadcast-notifications.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, Supabase RPCs for create/list/toggle/delete, startup modal behavior |
 | [Hourly Visual Quiz](./hourly-visual-quiz.md) | Live sheet CSV, image migration, answer-leak sanitization, admin `VisualQuizPreview`, catalog scripts (`vq-120+`); timed play blocks shell ads/nudges |
 | [Shell interrupts](./shell-interrupts.md) | Overlay queue, one-per-open soft budget, `hourlyQuizPlaying` blocks ads/nudges during the pack timer |
 | [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) | Spot-the-mistake illustrations, WebP size, option length / near-correct anti-cheat, draft review before sheet paste |
-| [Monthly encouragement boards](./monthly-encouragement-boards.md) | Four monthly tabs (champion / new / improved / learner), Hall of Fame v8, prizes, `monthlyEncouragementBoards.js` |
+| [Monthly encouragement boards](./monthly-encouragement-boards.md) | Four monthly tabs (champion / new / improved / learner), Hall of Fame v11, prizes, `monthlyEncouragementBoards.js` |
 | [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
 | [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
 | [Training lesson images](./training-lesson-images.md) | Poster generation (WebP, Bengali headers), JSON `image_name`, loader/faq paths, Supabase migrations |
@@ -27,6 +28,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Broadcast notifications](./notifications-broadcasts.md) | `Admin.jsx`, `SmartLinemanUI.jsx`, notification RPCs, startup modal + admin controls |
 | [Android APK (Capacitor)](./android-apk.md) | Sideload APK vs PWA, version bump, slim sync, signing, update channel, dos/don’ts |
 | [Avatars, sponsor images, Free Storage](./avatars-sponsor-storage.md) | No `/render/image`, compress-on-upload, Free-plan transform quota |
+| [Reading habit & 48-hour gate](./reading-habit-and-gate.md) | Habit ledger separate from scoring; hourly quiz gate |
 
 ## Conventions for new guides
 

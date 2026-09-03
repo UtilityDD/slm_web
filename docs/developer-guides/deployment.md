@@ -143,3 +143,4 @@ Fix:
 - Capacitor / signing / USB update test: [Android APK](./android-apk.md)
 - Agent workflow: `.agent/workflows/android-deploy.md`
 - Update checker: `src/utils/androidAppUpdate.js`
+- Free-plan quota cuts (landing, avatars, Rank prefetch): [Free-plan / egress optimization](./free-plan-optimization.md) — **PWA-only**; do not raise `android-latest.json` for those ships

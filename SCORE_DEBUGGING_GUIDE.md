@@ -94,10 +94,10 @@ Leaderboard fetches go through **`requestManager`** + **`cacheHelper`**: TTL val
 
 - `leaderboard_top_10_all_time` / `leaderboard_top_10_all_time_rdg`
 - `leaderboard_full_all_time` / `leaderboard_full_all_time_rdg`
-- `hall_of_fame_gallery_v3` … `hall_of_fame_gallery_v8` (current Hall of Fame payload uses **v8** + `boardsVersion: 8`)
+- `hall_of_fame_gallery_v3` … `hall_of_fame_gallery_v10` (service **writes** `hall_of_fame_gallery_v11` + `boardsVersion: 11` — invalidate must include v11 when that key is bumped; Competitions skip-reload must match)
 - `user_rank_all_time_<userId>` / `user_rank_all_time_rdg_<userId>`
-- `leaderboard_monthly_<year>_<month>` for the **current** local month
-- `leaderboard_encouragement_<year>_<month>_bn` and `_en` (monthly sub-tab boards; data is the same, keys differ by language slot)
+- `leaderboard_monthly_<year>_<month>` plus `leaderboard_monthly_ist_*` / `leaderboard_monthly_ist_badge_*` for the **current** local month
+- `leaderboard_encouragement_*` / `leaderboard_encouragement_ist_*` / `leaderboard_encouragement_ist_badge_*` (`_bn` and `_en`; data is the same, keys differ by language slot)
 
 Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_v3` / `user_rank_<id>` — they are unused and were a source of “refresh did nothing” bugs.
 
@@ -110,6 +110,8 @@ Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_
 | **`SmartLinemanUI.jsx`** — pull-to-refresh | Profile + notifications only. **`invalidateLeaderboardCaches(user.id)`** so Rank/Prizes refetch when those screens open. Do **not** call `fetchAllTime` / `fetchMonthly` from pull-to-refresh. |
 
 If you add a new leaderboard cache key in **`leaderboardService.js`** or **`Competitions.jsx`**, add it to **`invalidateLeaderboardCaches`** in the same PR.
+
+**Egress:** do not call `fetchAllTime` / `fetchMonthly` from login, Home, or pull-to-refresh. Rank loads when Rank/Prizes opens. All-time still runs **`overlayCumulativeReading`** (paginated `quiz_attempts` for the top 50) — that is a known leftover, not a scoring bug. See **[`docs/developer-guides/free-plan-optimization.md`](docs/developer-guides/free-plan-optimization.md)**.
 
 ---
 
@@ -182,18 +184,22 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 
 ## Appendix C — Frontend expectations
 
-- **All-time:** `leaderboard_view` → `points` / `reading_points` (see `leaderboardService.fetchAllTime`).
+- **All-time:** `leaderboard_view` → `points` / `reading_points` (see `leaderboardService.fetchAllTime`). Display overlay **`overlayCumulativeReading`** still pages `quiz_attempts` for the top 50 — scoring is correct; that overlay is an egress leftover.
 - **Monthly:** `monthly_leaderboard_view` — **`points` is authoritative net for the month**; do not subtract `total_penalties` again in JS (`leaderboardService.fetchMonthly`).
+- **Home lesson count:** `Home.jsx` uses profile **`completed_lessons`** only (`filterCoreCompletedLessonIds`). It does **not** load the attempt ledger. My Progress still merges `lesson_bonus_*` attempts via `mergeCoreLessonProgressIds`.
+- **Rank tap:** own row → My Progress. Anyone else (non-admin) → public pride card from the list row + HoF prizes — **no** per-user `quiz_attempts` fetch. Admin tapping someone else may load identity + PPE + tools.
 - **Certificate verify:** `VerificationView` should select `total_penalties` if penalties are shown.
 - **Cache:** use **`invalidateLeaderboardCaches`** whenever the user earns points outside the Competitions hourly flow (e.g. training lesson bonus) so the next leaderboard read is not served from stale `slm_cache_*` entries.
 - **Monthly display (new users this calendar month):** the view buckets attempts by DB time on `created_at`; `lesson_bonus` rows can sit in an adjacent month vs the client’s local month filter, so **`fetchMonthly`** adds **`max(0, profiles.reading_points − view.reading_points)`** to the row’s **`points`** only when **`profiles.created_at` ≥ start of local month** — so totals match expectation (e.g. Kabir-style 170 vs 110) without double-counting when the view already includes monthly reading.
 - **Encouragement boards (four monthly sub-tabs):** logic, eligibility, Hall of Fame archive, and UI are documented in **[`docs/developer-guides/monthly-encouragement-boards.md`](docs/developer-guides/monthly-encouragement-boards.md)**. Board assembly lives in **`src/utils/monthlyEncouragementBoards.js`**; **`fetchEncouragementBoards`** / **`fetchHallOfFame`** in **`leaderboardService.js`**.
+- **Free-plan / egress:** landing, avatars, Rank tap card, pull-to-refresh, and Home ledger rules live in **[`docs/developer-guides/free-plan-optimization.md`](docs/developer-guides/free-plan-optimization.md)**. Do **not** snapshot the **live** monthly list (Online badge).
 
 ---
 
 ## Change log
 
-- **2026-06:** Encouragement boards: four monthly sub-tabs, top-3 prizes per board with **one prize per person** (`resolvePrizeWinners`), Hall of Fame `v8` shows superseded leaders + replacement winners (`buildBoardDisplayList`); cache keys `leaderboard_encouragement_*` and `hall_of_fame_gallery_v8`; see **`monthly-encouragement-boards.md`**.
+- **2026-09:** Pull-to-refresh no longer prefetches Rank. Documented current cache family (`ist_badge`, HoF **v11**) and remaining all-time `overlayCumulativeReading` egress; see **`free-plan-optimization.md`**.
+- **2026-06:** Encouragement boards: four monthly sub-tabs, top-3 prizes per board with **one prize per person** (`resolvePrizeWinners`), Hall of Fame display rows (`buildBoardDisplayList`); cache keys `leaderboard_encouragement_*` and `hall_of_fame_gallery_v*`; see **`monthly-encouragement-boards.md`**.
 - **2026-05:** `fetchMonthly`: for users who **joined this local calendar month**, monthly **`points`** shown in the app now include **`max(0, profile.reading_points − view.reading_points)`** so reading is not dropped when DB month buckets disagree with the client (see “Time zones” above).
 - **2026-04 (late):** Documented frontend leaderboard cache keys, `invalidateLeaderboardCaches`, post-score refetch paths, timezone vs “This month”, hourly id client behaviour; Training vs Competitions clock note.
 - **2026-04:** Added trigger-safe repair, net monthly view, consolidated operator checklist into this document, removed duplicate `operator_score_repair_checklist.sql`.

@@ -58,4 +58,6 @@ Hourly quiz play is **not** an overlay id. It is a block so those prompts never 
 ## Related
 
 - [Hourly Visual Quiz](./hourly-visual-quiz.md) — timed play UI
+- [Public landing](./public-landing.md) — guests never hit `get_active_sponsor_ad`
+- [Free-plan / egress optimization](./free-plan-optimization.md)
 - [Production deployment](./deployment.md) — shipping PWA vs APK

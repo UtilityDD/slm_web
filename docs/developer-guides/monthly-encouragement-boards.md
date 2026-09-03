@@ -27,7 +27,7 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 | Path | Role |
 |------|------|
 | `src/utils/monthlyEncouragementBoards.js` | Rules constants, `buildEncouragementBoards`, `archiveBoardsFromEncouragement`, `resolvePrizeWinners`, `getEncouragementCopy`, tab helpers (`getMonthlyLeaderboardList`, `getHallOfFameWinners`, …). |
-| `src/utils/leaderboardService.js` | `fetchMonthly`, `fetchEncouragementBoards`, `fetchHallOfFame` (v6 cache). |
+| `src/utils/leaderboardService.js` | `fetchMonthly`, `fetchEncouragementBoards`, `fetchHallOfFame` (`hall_of_fame_gallery_v11`, `boardsVersion: 11`). |
 | `src/utils/leaderboardCacheKeys.js` | `invalidateLeaderboardCaches` — must list all leaderboard-related cache keys. |
 | `src/components/Competitions.jsx` | Global Rankings UI: All-Time / This Month tabs, monthly sub-tabs, Hall of Fame gallery + sub-tabs, podium/list rendering. |
 | `src/components/MonthlyEncouragementBoards.jsx` | `MonthlyBoardHeader` (one-line logic + ⓘ). |
@@ -79,7 +79,7 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 ```js
 {
   year, month,
-  boardsVersion: 8,
+  boardsVersion: 11,
   boards: {
     main_champion: [/* display rows: standing_rank, prize_rank, prize_status */],
     new_player: [/* superseded leaders + replacement winners */],
@@ -92,7 +92,7 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 ```
 
 - **Display:** `getHallOfFameWinners(entry, hallOfFameBoardTab)` reads `boards[boardKey]` from `buildBoardDisplayList` / `archiveBoardsFromEncouragement`. Subtitle: `hallOfFamePrizeNote`.
-- **Refetch:** `fetchHallOfFameGallery` skips reload only when `hallOfFameData[0].boardsVersion === 8`.
+- **Refetch:** `fetchHallOfFameGallery` in `Competitions.jsx` skips reload only when in-memory data already has the **current** `boardsVersion`. Service writes **11**. The skip check must match that number (a stale `=== 9` always refetches — extra egress). Align with `invalidateLeaderboardCaches` (`hall_of_fame_gallery_v11`) in the same PR.
 
 **Assembly:** `buildEncouragementBoards` → `resolvePrizeWinners` → `archiveBoardsFromEncouragement` (stores display rows with `prize_status`: `winner` | `superseded` | `replacement`).
 
@@ -102,9 +102,9 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 
 | Key | TTL (min) | Set in |
 |-----|-----------|--------|
-| `leaderboard_monthly_<y>_<m>` | 5 | `fetchMonthly` |
-| `leaderboard_encouragement_<y>_<m>_<bn\|en>` | 5 | `fetchEncouragementBoards` (data is language-agnostic; key includes language for cache slot only) |
-| `hall_of_fame_gallery_v8` | 30 | `fetchHallOfFame` |
+| `leaderboard_monthly_<y>_<m>` / `leaderboard_monthly_ist_badge_<y>_<m>` | 5 | `fetchMonthly` (current write key is the `ist_badge` form) |
+| `leaderboard_encouragement_<y>_<m>_<bn\|en>` / `leaderboard_encouragement_ist_badge_<y>_<m>_<bn\|en>` | 5 | `fetchEncouragementBoards` (data is language-agnostic; key includes language for cache slot only) |
+| `hall_of_fame_gallery_v11` | 30 | `fetchHallOfFame` |
 
 On profile/points changes outside Competitions, call **`invalidateLeaderboardCaches(userId)`** (see `leaderboardCacheKeys.js`). When adding keys, update that helper in the same PR.
 
@@ -135,16 +135,19 @@ Info modal section titles in `MonthlyBoardInfoModal.jsx` are a mix of local BN s
 3. **Activity month bucket** uses `new Date(attempt.created_at)` local fields — can disagree with DB month on `monthly_leaderboard_view` near boundaries (same caveat as `SCORE_DEBUGGING_GUIDE.md` timezone section).
 4. **`joined_at`** comes from `profiles.created_at` via view join + `fetchHallOfFame` profile enrichment; missing `created_at` excludes users from New Player boards.
 5. **Most Improved** is often empty early in the month until players pass 500 pts and beat last month’s pace.
+6. **Do not snapshot the live monthly list** to save egress. Online / “Xm ago” is live `leaderboard_view` data. Snapshot **closed** months only. See [Free-plan / egress optimization](./free-plan-optimization.md).
 
 ---
 
 ## Related
 
 - [Score & leaderboard debugging](../../SCORE_DEBUGGING_GUIDE.md) — monthly view net points, cache invalidation, timezone notes.
+- [Free-plan / egress optimization](./free-plan-optimization.md) — Rank tap card, no Rank prefetch, remaining `quiz_attempts` paging / HoF cache align.
 - [Hourly Visual Quiz](./hourly-visual-quiz.md) — hourly penalties and difficulty (separate from encouragement boards).
 
 ---
 
 ## Change log
 
-- **2026-06:** Four tabbed boards; Hall of Fame v8 stores **display rows** (`buildBoardDisplayList`: superseded leaders grayed + replacement winners); `resolvePrizeWinners` enforces one award per person; `MonthlyBoardHeader` + info modal.
+- **2026-09:** Hall of Fame payload is **v11** (`hall_of_fame_gallery_v11`). Live monthly still pages attempt activity for Online badges — do not freeze the current month. Rank tap card no longer loads other users’ attempt ledgers.
+- **2026-06:** Four tabbed boards; Hall of Fame stores **display rows** (`buildBoardDisplayList`: superseded leaders grayed + replacement winners); `resolvePrizeWinners` enforces one award per person; `MonthlyBoardHeader` + info modal.

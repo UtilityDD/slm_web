@@ -112,6 +112,7 @@ Props: `language`, `onLanguageChange` — toggles EN/BN in header; copy objects 
 
 ## See also
 
+- [Free-plan / egress optimization](./free-plan-optimization.md) — landing is the first Free-plan cut; do not wire `/api/landing-boards` back
 - [Avatars, sponsor images, Free Storage](./avatars-sponsor-storage.md)
 - [Life Skill / supplementary modules](./life-skills-supplementary.md)
 - [Reading habit & 48-hour gate](./reading-habit-and-gate.md)

@@ -78,5 +78,6 @@ Usage **Storage Image Transformations** resets at the next billing cycle. This m
 
 ## Related
 
+- [Free-plan / egress optimization](./free-plan-optimization.md) — landing, Rank prefetch, Home ledger; Storage is only one slice
 - [Public landing](./public-landing.md) — public page must not load Storage avatars or leaderboard photos.
 - [Production deployment](./deployment.md) — this change is PWA-only; do not touch `android-latest.json` / the APK unless you are shipping a native build.
