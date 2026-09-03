@@ -6,10 +6,9 @@ import { supabase } from '../supabaseClient';
 import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { WEBSITE_URL } from '../config';
-import { mergeCoreLessonProgressIds } from '../utils/trainingLessonIds';
+import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import UserProfilePrizeList from './UserProfilePrizeList';
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 /** Approximate core lesson count from training chapter defaults (display only). */
 const APPROX_CORE_LESSON_TOTAL = 91;
 
@@ -34,16 +33,6 @@ const formatDateTime = (value, language = 'bn') => {
 };
 
 const formatNumber = (value) => Number(value || 0).toLocaleString();
-
-const dateKey = (value) => new Date(value).toDateString();
-
-const getDaysBetween = (startValue, endValue) => {
-    if (!startValue || !endValue) return 0;
-    const start = new Date(startValue);
-    const end = new Date(endValue);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
-    return Math.max(1, Math.ceil((end - start) / MS_PER_DAY) + 1);
-};
 
 const safePhone = (profile) => profile?.phone_number || profile?.phone || '';
 
@@ -91,7 +80,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [attempts, setAttempts] = useState([]);
     const [reportGeneratedAt] = useState(() => new Date());
     const [isDownloading, setIsDownloading] = useState(false);
     const certRef = useRef(null);
@@ -181,7 +169,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     async () => {
                         const { data, error: profileError } = await supabase
                             .from('profiles')
-                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, quiz_points, completed_lessons')
+                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, quiz_points, total_penalties, completed_lessons')
                             .eq('id', resolvedUserId)
                             .single();
 
@@ -191,26 +179,10 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     { ttl: 5, swr: true, forceRefresh: true }
                 );
 
-                const attemptsPromise = requestManager.fetch(
-                    `my_progress_attempts_${resolvedUserId}`,
-                    async () => {
-                        const { data, error: attemptsError } = await supabase
-                            .from('quiz_attempts')
-                            .select('quiz_id, score, penalty, created_at')
-                            .eq('user_id', resolvedUserId)
-                            .order('created_at', { ascending: true });
-
-                        if (attemptsError) throw attemptsError;
-                        return data || [];
-                    },
-                    { ttl: 5, swr: true, forceRefresh: true }
-                );
-
-                const [profileData, attemptsData] = await Promise.all([profilePromise, attemptsPromise]);
+                const profileData = await profilePromise;
 
                 if (!active) return;
                 setProfile(profileData || null);
-                setAttempts(attemptsData || []);
             } catch (fetchError) {
                 console.error('MyProgress fetch error:', fetchError);
                 if (active) setError(fetchError);
@@ -227,17 +199,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     }, [resolvedUserId]);
 
     const stats = useMemo(() => {
-        const lessonIds = mergeCoreLessonProgressIds(profile?.completed_lessons, attempts);
-        const lessonAttempts = attempts.filter(item => item.quiz_id?.startsWith('lesson_bonus_') && Number(item.score || 0) > 0);
-        const hourlyAttempts = attempts.filter(item => item.quiz_id?.startsWith('hourly-challenge'));
-
-        const hasRewardTimestamps = lessonAttempts.length > 0;
-        const now = new Date();
-        const accountAgeDays = getDaysBetween(profile?.created_at, now);
-        const studyWindowDays = hasRewardTimestamps
-            ? getDaysBetween(lessonAttempts[0]?.created_at, lessonAttempts[lessonAttempts.length - 1]?.created_at)
-            : Math.max(1, accountAgeDays || 1);
-
+        const lessonIds = filterCoreCompletedLessonIds(profile?.completed_lessons);
         const chapterMap = new Map();
         lessonIds.forEach((lessonId) => {
             const chapterNumber = String(lessonId).split('.')[0];
@@ -245,46 +207,20 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
             chapterMap.set(chapterNumber, (chapterMap.get(chapterNumber) || 0) + 1);
         });
 
-        const lessonsRead = lessonIds.length;
-        const chaptersRead = chapterMap.size;
-        const readingDays = hasRewardTimestamps
-            ? Math.max(1, [...new Set(lessonAttempts.map(item => dateKey(item.created_at)))].length)
-            : Math.max(1, accountAgeDays || 1);
-
-        const lessonsPerActiveDay = lessonsRead > 0 ? (lessonsRead / readingDays) : 0;
-        const daysPerLesson = lessonsRead > 0 ? (studyWindowDays / lessonsRead) : 0;
-        const daysPerChapter = chaptersRead > 0 ? (studyWindowDays / chaptersRead) : 0;
-        const avgScorePerAttempt = attempts.length > 0 ? attempts.reduce((sum, item) => sum + (Number(item.score) || 0), 0) / attempts.length : 0;
-
-        const totalAttempts = attempts.length;
-        const totalPenaltySum = attempts.reduce((sum, item) => sum + (Number(item.penalty) || 0), 0);
-
-        const paceSource = hasRewardTimestamps
-            ? (bn ? 'পাঠের পুরস্কারের সময় ধরে হিসাব করা হয়েছে' : 'Derived from lesson reward timestamps')
-            : (bn ? 'আনুমানিক হিসাব' : 'Estimated fallback');
-
         return {
             completedLessons: lessonIds.length,
-            chaptersRead,
-            lessonAttempts: lessonAttempts.length,
-            hourlyAttempts: hourlyAttempts.length,
-            readingDays,
-            lessonsPerActiveDay,
-            daysPerLesson,
-            daysPerChapter,
-            avgScorePerAttempt,
-            totalPenaltySum,
-            paceSource,
+            chaptersRead: chapterMap.size,
+            totalPenaltySum: Number(profile?.total_penalties) || 0,
             chapterBreakdown: Array.from(chapterMap.entries())
                 .map(([chapter, count]) => ({ chapter, count }))
                 .sort((a, b) => Number(a.chapter) - Number(b.chapter)),
             lessonIds
         };
-    }, [attempts, profile, bn]);
+    }, [profile]);
 
     const badge = getBadgeByLevel(
         profile?.training_level || 0,
-        firstTimeReadingPointsFromLessons(mergeCoreLessonProgressIds(profile?.completed_lessons, attempts))
+        firstTimeReadingPointsFromLessons(stats.lessonIds)
     );
     const phone = safePhone(profile);
     const joinedDate = formatDate(profile?.created_at, language);
@@ -302,7 +238,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
         block: bn ? 'ব্লক' : 'Block',
         bloodGroup: bn ? 'রক্তের গ্রুপ' : 'Blood group',
         badge: bn ? 'বর্তমান পড়ার ধাপ' : 'Present reading stage',
-        learningPace: bn ? 'শেখার গতি' : 'Learning pace',
         chapterBreakdown: bn ? 'অধ্যায়ভিত্তিক ছক' : 'Chapter breakdown',
         noData: bn ? 'এখনও কোনো তথ্য পাওয়া যায়নি।' : 'No data available yet.'
     };
@@ -420,21 +355,21 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     />
                     <MetricCard
                         compact
-                        label={bn ? 'ঘণ্টার কুইজ' : 'Hourlies'}
-                        value={formatNumber(stats.hourlyAttempts)}
-                        accent="rose"
+                        label={bn ? 'পড়ার পয়েন্ট' : 'Reading'}
+                        value={formatNumber(profile.reading_points)}
+                        accent="emerald"
                     />
                     <MetricCard
                         compact
-                        label={bn ? 'সক্রিয় দিন' : 'Active days'}
-                        value={formatNumber(stats.readingDays)}
-                        accent="emerald"
+                        label={bn ? 'কুইজ পয়েন্ট' : 'Quiz'}
+                        value={formatNumber(profile.quiz_points)}
+                        accent="blue"
                     />
                     <MetricCard
                         compact
                         label={bn ? 'পয়েন্ট' : 'Points'}
                         value={formatNumber(profile.points)}
-                        accent="blue"
+                        accent="rose"
                     />
                 </section>
 
@@ -617,42 +552,6 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
 
                 <section className="grid gap-4 sm:gap-5 lg:grid-cols-[1.15fr_0.85fr]">
                     <div className="space-y-4 sm:space-y-5">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{labels.learningPace}</p>
-                                    <h2 className={`mt-1 text-lg font-black text-slate-900 sm:text-xl ${bn ? 'font-bengali' : ''}`}>
-                                        {bn ? 'অগ্রগতি কেমন চলছে' : 'How the learner is progressing'}
-                                    </h2>
-                                </div>
-                                <div className={`rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-bold text-orange-700 ${bn ? 'font-bengali' : ''}`}>
-                                    {stats.hourlyAttempts} {bn ? 'বার' : 'hourly'}
-                                </div>
-                            </div>
-
-                            <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4 sm:gap-3">
-                                <MetricCard compact label={bn ? 'সক্রিয় দিনে গড় পাঠ' : 'Lessons / active day'} value={stats.lessonsPerActiveDay ? stats.lessonsPerActiveDay.toFixed(1) : '—'} hint={stats.paceSource} accent="emerald" />
-                                <MetricCard compact label={bn ? 'পাঠে গড় দিন' : 'Days / lesson'} value={stats.daysPerLesson ? stats.daysPerLesson.toFixed(1) : '—'} hint={stats.paceSource} accent="blue" />
-                                <MetricCard compact label={bn ? 'অধ্যায়ে গড় দিন' : 'Days / chapter'} value={stats.daysPerChapter ? stats.daysPerChapter.toFixed(1) : '—'} hint={stats.paceSource} accent="orange" />
-                                <MetricCard compact label={bn ? 'ঘণ্টার কুইজ' : 'Hourly challenges'} value={formatNumber(stats.hourlyAttempts)} accent="rose" />
-                            </div>
-
-                            <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
-                                <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-3">
-                                    <p className="mb-1 text-[10px] font-bold text-slate-500">{bn ? 'পাঠে অংশ' : 'Lesson attempts'}</p>
-                                    <p className="text-xl font-black tabular-nums text-slate-900">{formatNumber(stats.lessonAttempts)}</p>
-                                </div>
-                                <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-3">
-                                    <p className="mb-1 text-[10px] font-bold text-slate-500">{bn ? 'সক্রিয় দিন' : 'Active days'}</p>
-                                    <p className="text-xl font-black tabular-nums text-slate-900">{formatNumber(stats.readingDays)}</p>
-                                </div>
-                                <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-3">
-                                    <p className="mb-1 text-[10px] font-bold text-slate-500">{bn ? 'গড় স্কোর' : 'Avg. score'}</p>
-                                    <p className="text-xl font-black tabular-nums text-slate-900">{stats.avgScorePerAttempt.toFixed(1)}</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                             <div className="mb-4 flex items-center justify-between gap-3">
                                 <div>

@@ -124,7 +124,7 @@ export function filterCoreCompletedLessonIds(ids) {
 
 /**
  * Core lesson ids inferred from quiz_attempts lesson_bonus_* rows (score > 0).
- * Used so My Progress stays in sync when profiles.completed_lessons is stale.
+ * Used when a screen still has attempt rows (not My Progress — that screen is profile-only).
  */
 export function coreLessonIdsFromBonusAttempts(attempts) {
     if (!Array.isArray(attempts) || attempts.length === 0) return [];

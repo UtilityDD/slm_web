@@ -186,7 +186,7 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 
 - **All-time:** `leaderboard_view` → `points` / `reading_points` (see `leaderboardService.fetchAllTime`). Display overlay **`overlayCumulativeReading`** still pages `quiz_attempts` for the top 50 — scoring is correct; that overlay is an egress leftover.
 - **Monthly:** `monthly_leaderboard_view` — **`points` is authoritative net for the month**; do not subtract `total_penalties` again in JS (`leaderboardService.fetchMonthly`).
-- **Home lesson count:** `Home.jsx` uses profile **`completed_lessons`** only (`filterCoreCompletedLessonIds`). It does **not** load the attempt ledger. My Progress still merges `lesson_bonus_*` attempts via `mergeCoreLessonProgressIds`.
+- **Home / My Progress lesson count:** both use profile **`completed_lessons`** only (`filterCoreCompletedLessonIds`). Neither loads the attempt ledger. My Progress penalties use **`profiles.total_penalties`**.
 - **Rank tap:** own row → My Progress. Anyone else (non-admin) → public pride card from the list row + HoF prizes — **no** per-user `quiz_attempts` fetch. Admin tapping someone else may load identity + PPE + tools.
 - **Certificate verify:** `VerificationView` should select `total_penalties` if penalties are shown.
 - **Cache:** use **`invalidateLeaderboardCaches`** whenever the user earns points outside the Competitions hourly flow (e.g. training lesson bonus) so the next leaderboard read is not served from stale `slm_cache_*` entries.

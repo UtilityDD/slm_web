@@ -44,7 +44,7 @@ Custom phone/PIN auth uses RPCs, not `supabase.auth` MAU. Auth MAU is not the bi
 | `src/components/Competitions.jsx` | Own Rank row → My Progress; HoF skip-reload `boardsVersion` |
 | `src/utils/leaderboardService.js` | All-time overlay, monthly views, HoF v11, encouragement boards |
 | `src/utils/leaderboardCacheKeys.js` | `invalidateLeaderboardCaches` — keep keys in the same PR as new cache names |
-| `src/utils/trainingLessonIds.js` | `filterCoreCompletedLessonIds` (Home); `mergeCoreLessonProgressIds` (My Progress) |
+| `src/utils/trainingLessonIds.js` | `filterCoreCompletedLessonIds` (Home + My Progress) |
 | `src/components/safety/usePtwWatch.js` | PTW poll every 3s + Realtime while a permit is open |
 | `src/utils/landingBoardsQuery.js` | Unused by landing; do not wire it back |
 
@@ -60,7 +60,8 @@ Custom phone/PIN auth uses RPCs, not `supabase.auth` MAU. Auth MAU is not the bi
 | Public landing | No count RPC, no podium, no HoF faces, no sponsor interstitial | Members 500+ / Mitra 20+ are hardcoded; Advertise chip is the public CTA |
 | Rank tap card | Non-admin: name, photo, district, score, prize photos. No phone / blood / PPE / tools / attempt ledger | Own row opens My Progress. Admin tapping someone else still loads identity + PPE + tools |
 | Pull-to-refresh | `fetchProfile` + `fetchNotifications(true)` + `invalidateLeaderboardCaches` | Rank is stale until Rank/Prizes opens |
-| Home lesson ledger | No unbounded `quiz_attempts` fetch. Badge / Start / Continue use profile `completed_lessons` | Home can lag if `completed_lessons` is stale. My Progress still merges attempts |
+| Home lesson ledger | No unbounded `quiz_attempts` fetch. Badge / Start / Continue use profile `completed_lessons` | Home can lag if `completed_lessons` is stale |
+| My Progress ledger | Profile row only. Lessons / badge / chapters from `completed_lessons`; penalties from `total_penalties` | No hourly count, active days, or pace stats |
 
 `leaderboardService` stays imported in `SmartLinemanUI.jsx` for the **month-winners preview**, not for pull-to-refresh Rank.
 
@@ -74,13 +75,12 @@ Do **not** start Hall of Fame snapshots next. That is month-end work and easy to
 
 | Order | Work | Why it still costs |
 |-------|------|--------------------|
-| 1 | **My Progress** thinner history | `MyProgress.jsx` still `select`s **all** `quiz_attempts` for that user (`my_progress_attempts_*`). Cap to recent rows or split “history” vs lesson-id merge. |
-| 2 | **All-time Rank** drop `overlayCumulativeReading` | `fetchAllTime` paginates **every** `lesson_bonus%` / `life_skill_bonus%` attempt for the top 50. Display `leaderboard_view` / `profiles.reading_points` instead; extras stay a My Progress detail. |
-| 3 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
-| 4 | **HoF cache skip + invalidate** | Service writes `hall_of_fame_gallery_v11` / `boardsVersion: 11`. `fetchHallOfFameGallery` skips only when `boardsVersion === 9` (always refetches). `invalidateLeaderboardCaches` clears v3–v10, **not v11**. Align all three in one PR. |
-| 5 | **HoF snapshots for closed months only** | Persist prize rows after month-end. Live **current** month stays a view so Online stays live. |
-| 6 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
-| 7 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
+| 1 | **All-time Rank** drop `overlayCumulativeReading` | `fetchAllTime` paginates **every** `lesson_bonus%` / `life_skill_bonus%` attempt for the top 50. Display `leaderboard_view` / `profiles.reading_points` instead. |
+| 2 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
+| 3 | **HoF cache skip + invalidate** | Service writes `hall_of_fame_gallery_v11` / `boardsVersion: 11`. `fetchHallOfFameGallery` skips only when `boardsVersion === 9` (always refetches). `invalidateLeaderboardCaches` clears v3–v10, **not v11**. Align all three in one PR. |
+| 4 | **HoF snapshots for closed months only** | Persist prize rows after month-end. Live **current** month stays a view so Online stays live. |
+| 5 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
+| 6 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
 
 Play (compact ladder, not Rank/Prizes) can still open **another user’s My Progress**. That is a leftover privacy + egress path, not part of the Rank pride card.
 
@@ -94,7 +94,8 @@ Play (compact ladder, not Rank/Prizes) can still open **another user’s My Prog
 | `Landing.jsx` importing `supabase` or `fetchLandingBoards` | Static copy + Redis visits |
 | `SponsorAdOverlay` on `landing` / guests | `sponsorAdBlocked` includes `!user` and `currentView === 'landing'` |
 | Rank sheet fetching `quiz_attempts` for the tapped user | Pride card from `preview` + `hallOfFameData` |
-| Home calling `mergeCoreLessonProgressIds` against a full attempt list | `filterCoreCompletedLessonIds(completed_lessons)` |
+| Home or My Progress calling `mergeCoreLessonProgressIds` against a full attempt list | `filterCoreCompletedLessonIds(completed_lessons)` |
+| `my_progress_attempts_*` / unbounded `quiz_attempts` from My Progress | Profile row only (`completed_lessons`, `total_penalties`) |
 | Running `scripts/maintenance/optimize_avatars_to_webp.mjs` on Free | That script uses Image Transformations |
 
 ---
@@ -117,7 +118,7 @@ Current **write** keys in `leaderboardService.js`:
 ## Gotchas
 
 - **Online badge vs snapshots.** Monthly Rank shows Online / “Xm ago” from `leaderboard_view.last_login_at` / `last_active`. A frozen monthly snapshot would show last-month presence as if it were now.
-- **Home vs My Progress.** Home trusts `completed_lessons`. My Progress unions that with `lesson_bonus_*` attempts via `mergeCoreLessonProgressIds`. Do not “fix” Home by bringing the ledger back.
+- **Home vs My Progress.** Both trust `completed_lessons` for lesson count / badge. Do not bring the attempt ledger back on either screen.
 - **Admin Rank card** still hits profiles + PPE + tools. That is intentional and rare.
 - **`FAT_PROFILE_SELECT` includes `completed_lessons`.** Encouragement boards still pull it. Slimming that select is part of remaining monthly work, not a drive-by in unrelated PRs.
 
@@ -136,4 +137,4 @@ Current **write** keys in `leaderboardService.js`:
 
 ## Change log
 
-- **2026-09:** Documented Free-plan sequence after landing-off-Supabase, pride card, pull-to-refresh, and Home ledger cuts. Remaining: My Progress, all-time overlay, monthly attempt paging, HoF v11 cache align, closed-month snapshots, PTW poll, archive last.
+- **2026-09:** Documented Free-plan sequence after landing-off-Supabase, pride card, pull-to-refresh, Home ledger, and My Progress profile-only cuts. Remaining: all-time overlay, monthly attempt paging, HoF v11 cache align, closed-month snapshots, PTW poll, archive last.
