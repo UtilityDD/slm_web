@@ -42,6 +42,7 @@ Custom phone/PIN auth uses RPCs, not `supabase.auth` MAU. Auth MAU is not the bi
 | `src/components/Home.jsx` | Core lessons from `completed_lessons` only; hourly CTA still two small `quiz_attempts` lookups |
 | `src/components/LeaderboardUserSheet.jsx` | Public pride card vs admin identity card |
 | `src/components/Competitions.jsx` | Own Rank row → My Progress; HoF skip-reload `boardsVersion` |
+| `src/utils/hallOfFameSnapshots.js` | Closed-month localStorage snapshots + `HOF_GALLERY_BOARDS_VERSION` / cache key |
 | `src/utils/leaderboardService.js` | All-time overlay, monthly views, HoF v11, encouragement boards |
 | `src/utils/leaderboardCacheKeys.js` | `invalidateLeaderboardCaches` — keep keys in the same PR as new cache names |
 | `src/utils/trainingLessonIds.js` | `filterCoreCompletedLessonIds` (Home + My Progress) |
@@ -62,6 +63,7 @@ Custom phone/PIN auth uses RPCs, not `supabase.auth` MAU. Auth MAU is not the bi
 | Pull-to-refresh | `fetchProfile` + `fetchNotifications(true)` + `invalidateLeaderboardCaches` | Rank is stale until Rank/Prizes opens |
 | Home lesson ledger | No unbounded `quiz_attempts` fetch. Badge / Start / Continue use profile `completed_lessons` | Home can lag if `completed_lessons` is stale |
 | My Progress ledger | Profile row only. Lessons / badge / chapters from `completed_lessons`; penalties from `total_penalties` | No hourly count, active days, or pace stats |
+| HoF cache + snapshots | Gallery skip uses `HOF_GALLERY_BOARDS_VERSION`; invalidate clears v11; closed months persist in localStorage | Live monthly never snapshotted — Online badge stays live |
 
 `leaderboardService` stays imported in `SmartLinemanUI.jsx` for the **month-winners preview**, not for pull-to-refresh Rank.
 
@@ -77,10 +79,8 @@ Do **not** start Hall of Fame snapshots next. That is month-end work and easy to
 |-------|------|--------------------|
 | 1 | **All-time Rank** drop `overlayCumulativeReading` | `fetchAllTime` paginates **every** `lesson_bonus%` / `life_skill_bonus%` attempt for the top 50. Display `leaderboard_view` / `profiles.reading_points` instead. |
 | 2 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
-| 3 | **HoF cache skip + invalidate** | Service writes `hall_of_fame_gallery_v11` / `boardsVersion: 11`. `fetchHallOfFameGallery` skips only when `boardsVersion === 9` (always refetches). `invalidateLeaderboardCaches` clears v3–v10, **not v11**. Align all three in one PR. |
-| 4 | **HoF snapshots for closed months only** | Persist prize rows after month-end. Live **current** month stays a view so Online stays live. |
-| 5 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
-| 6 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
+| 3 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
+| 4 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
 
 Play (compact ladder, not Rank/Prizes) can still open **another user’s My Progress**. That is a leftover privacy + egress path, not part of the Rank pride card.
 
@@ -109,7 +109,7 @@ Current **write** keys in `leaderboardService.js`:
 | All-time | `leaderboard_full_all_time_rdg` |
 | Monthly | `leaderboard_monthly_ist_badge_<y>_<m>` |
 | Encouragement | `leaderboard_encouragement_ist_badge_<y>_<m>_<bn\|en>` |
-| Hall of Fame | `hall_of_fame_gallery_v11` (`boardsVersion: 11`) |
+| Hall of Fame | `hall_of_fame_gallery_v11` (`boardsVersion: 11`) + per-month `slm_hof_month_v11_*` snapshots |
 
 `invalidateLeaderboardCaches` must list every key that `requestManager` still writes. When you bump `hall_of_fame_gallery_v*`, bump **service, Competitions skip check, and invalidate** together.
 
@@ -137,4 +137,4 @@ Current **write** keys in `leaderboardService.js`:
 
 ## Change log
 
-- **2026-09:** Documented Free-plan sequence after landing-off-Supabase, pride card, pull-to-refresh, Home ledger, and My Progress profile-only cuts. Remaining: all-time overlay, monthly attempt paging, HoF v11 cache align, closed-month snapshots, PTW poll, archive last.
+- **2026-09:** HoF v11 cache aligned; closed months snapshot to localStorage (`hallOfFameSnapshots.js`). Remaining: all-time overlay, monthly attempt paging, PTW poll, archive last.

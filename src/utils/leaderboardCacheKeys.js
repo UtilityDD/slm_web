@@ -1,4 +1,5 @@
 import { cacheHelper } from './cacheHelper';
+import { HOF_GALLERY_CACHE_KEY } from './hallOfFameSnapshots';
 
 /**
  * Persistent leaderboard caches use slm_cache_* via requestManager/cacheHelper.
@@ -17,6 +18,7 @@ export function invalidateLeaderboardCaches(userId) {
     cacheHelper.clear('hall_of_fame_gallery_v8');
     cacheHelper.clear('hall_of_fame_gallery_v9');
     cacheHelper.clear('hall_of_fame_gallery_v10');
+    cacheHelper.clear(HOF_GALLERY_CACHE_KEY);
     if (userId) {
         cacheHelper.clear(`user_rank_all_time_${userId}`);
         cacheHelper.clear(`user_rank_all_time_rdg_${userId}`);

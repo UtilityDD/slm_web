@@ -12,6 +12,14 @@ import {
     mapMonthlyRow,
     monthBounds,
 } from "./monthlyEncouragementBoards";
+import {
+    allClosedMonthsSnapshotted,
+    clearAllMonthSnapshots,
+    HOF_GALLERY_BOARDS_VERSION,
+    HOF_GALLERY_CACHE_KEY,
+    readClosedMonthSnapshots,
+    writeMonthSnapshot,
+} from "./hallOfFameSnapshots";
 
 const HOF_START = { year: 2026, month: 3 };
 const HOF_MONTHLY_SELECT =
@@ -547,12 +555,23 @@ export const leaderboardService = {
      * dump of every monthly row + every attempt since March.
      */
     fetchHallOfFame: async (forceRefresh = false) => {
-        const cacheKey = 'hall_of_fame_gallery_v11';
         return requestManager.fetch(
-            cacheKey,
+            HOF_GALLERY_CACHE_KEY,
             async () => {
                 const pastMonths = hallOfFamePastMonths();
                 if (pastMonths.length === 0) return [];
+
+                if (forceRefresh) {
+                    clearAllMonthSnapshots();
+                }
+
+                const snapshotByKey = readClosedMonthSnapshots(pastMonths);
+                if (allClosedMonthsSnapshotted(pastMonths, snapshotByKey)) {
+                    return pastMonths
+                        .slice()
+                        .reverse()
+                        .map(({ year, month }) => snapshotByKey.get(`${year}-${month}`));
+                }
 
                 const monthKeysToFetch = new Set();
                 for (const { year, month } of pastMonths) {
@@ -609,7 +628,7 @@ export const leaderboardService = {
                 );
                 const activityByMonth = Object.fromEntries(pastActivity);
 
-                return pastMonths
+                const entries = pastMonths
                     .slice()
                     .reverse()
                     .map(({ year, month }) => {
@@ -642,11 +661,17 @@ export const leaderboardService = {
                             month,
                             year,
                             boards,
-                            boardsVersion: 11,
+                            boardsVersion: HOF_GALLERY_BOARDS_VERSION,
                             prizeWinners: encouragement.prizeWinners,
                             winners: championWinners,
                         };
                     });
+
+                for (const entry of entries) {
+                    writeMonthSnapshot(entry);
+                }
+
+                return entries;
             },
             { ttl: 30, swr: true, forceRefresh }
         );

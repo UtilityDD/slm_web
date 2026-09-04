@@ -94,7 +94,7 @@ Leaderboard fetches go through **`requestManager`** + **`cacheHelper`**: TTL val
 
 - `leaderboard_top_10_all_time` / `leaderboard_top_10_all_time_rdg`
 - `leaderboard_full_all_time` / `leaderboard_full_all_time_rdg`
-- `hall_of_fame_gallery_v3` … `hall_of_fame_gallery_v10` (service **writes** `hall_of_fame_gallery_v11` + `boardsVersion: 11` — invalidate must include v11 when that key is bumped; Competitions skip-reload must match)
+- `hall_of_fame_gallery_v3` … `hall_of_fame_gallery_v10` and **`hall_of_fame_gallery_v11`** (`HOF_GALLERY_CACHE_KEY` in `hallOfFameSnapshots.js`) — Competitions skip-reload uses the same `HOF_GALLERY_BOARDS_VERSION`
 - `user_rank_all_time_<userId>` / `user_rank_all_time_rdg_<userId>`
 - `leaderboard_monthly_<year>_<month>` plus `leaderboard_monthly_ist_*` / `leaderboard_monthly_ist_badge_*` for the **current** local month
 - `leaderboard_encouragement_*` / `leaderboard_encouragement_ist_*` / `leaderboard_encouragement_ist_badge_*` (`_bn` and `_en`; data is the same, keys differ by language slot)

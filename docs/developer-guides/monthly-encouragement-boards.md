@@ -27,7 +27,8 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 | Path | Role |
 |------|------|
 | `src/utils/monthlyEncouragementBoards.js` | Rules constants, `buildEncouragementBoards`, `archiveBoardsFromEncouragement`, `resolvePrizeWinners`, `getEncouragementCopy`, tab helpers (`getMonthlyLeaderboardList`, `getHallOfFameWinners`, …). |
-| `src/utils/leaderboardService.js` | `fetchMonthly`, `fetchEncouragementBoards`, `fetchHallOfFame` (`hall_of_fame_gallery_v11`, `boardsVersion: 11`). |
+| `src/utils/hallOfFameSnapshots.js` | Closed-month localStorage snapshots; `HOF_GALLERY_BOARDS_VERSION` / `HOF_GALLERY_CACHE_KEY` |
+| `src/utils/leaderboardService.js` | `fetchMonthly`, `fetchEncouragementBoards`, `fetchHallOfFame` (gallery cache + month snapshots). |
 | `src/utils/leaderboardCacheKeys.js` | `invalidateLeaderboardCaches` — must list all leaderboard-related cache keys. |
 | `src/components/Competitions.jsx` | Global Rankings UI: All-Time / This Month tabs, monthly sub-tabs, Hall of Fame gallery + sub-tabs, podium/list rendering. |
 | `src/components/MonthlyEncouragementBoards.jsx` | `MonthlyBoardHeader` (one-line logic + ⓘ). |
@@ -92,7 +93,7 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 ```
 
 - **Display:** `getHallOfFameWinners(entry, hallOfFameBoardTab)` reads `boards[boardKey]` from `buildBoardDisplayList` / `archiveBoardsFromEncouragement`. Subtitle: `hallOfFamePrizeNote`.
-- **Refetch:** `fetchHallOfFameGallery` in `Competitions.jsx` skips reload only when in-memory data already has the **current** `boardsVersion`. Service writes **11**. The skip check must match that number (a stale `=== 9` always refetches — extra egress). Align with `invalidateLeaderboardCaches` (`hall_of_fame_gallery_v11`) in the same PR.
+- **Refetch:** `fetchHallOfFameGallery` in `Competitions.jsx` skips reload when in-memory data already has `boardsVersion === HOF_GALLERY_BOARDS_VERSION` (from `hallOfFameSnapshots.js`). `invalidateLeaderboardCaches` clears `hall_of_fame_gallery_v11`. Closed months also persist as `slm_hof_month_v11_<y>_<m>` in localStorage — `fetchHallOfFame` skips Supabase when every closed month is snapshotted. **Do not** snapshot the live current month.
 
 **Assembly:** `buildEncouragementBoards` → `resolvePrizeWinners` → `archiveBoardsFromEncouragement` (stores display rows with `prize_status`: `winner` | `superseded` | `replacement`).
 
@@ -104,7 +105,7 @@ Copy and rules live in `getEncouragementCopy()` — EN/BN strings for tabs, logi
 |-----|-----------|--------|
 | `leaderboard_monthly_<y>_<m>` / `leaderboard_monthly_ist_badge_<y>_<m>` | 5 | `fetchMonthly` (current write key is the `ist_badge` form) |
 | `leaderboard_encouragement_<y>_<m>_<bn\|en>` / `leaderboard_encouragement_ist_badge_<y>_<m>_<bn\|en>` | 5 | `fetchEncouragementBoards` (data is language-agnostic; key includes language for cache slot only) |
-| `hall_of_fame_gallery_v11` | 30 | `fetchHallOfFame` |
+| `hall_of_fame_gallery_v11` | 30 | `fetchHallOfFame` (assembled gallery; month bodies may come from `slm_hof_month_v11_*` snapshots) |
 
 On profile/points changes outside Competitions, call **`invalidateLeaderboardCaches(userId)`** (see `leaderboardCacheKeys.js`). When adding keys, update that helper in the same PR.
 
@@ -149,5 +150,5 @@ Info modal section titles in `MonthlyBoardInfoModal.jsx` are a mix of local BN s
 
 ## Change log
 
-- **2026-09:** Hall of Fame payload is **v11** (`hall_of_fame_gallery_v11`). Live monthly still pages attempt activity for Online badges — do not freeze the current month. Rank tap card no longer loads other users’ attempt ledgers.
+- **2026-09:** HoF v11 cache aligned; closed months snapshot to localStorage. Live monthly still pages attempt activity for Online badges.
 - **2026-06:** Four tabbed boards; Hall of Fame stores **display rows** (`buildBoardDisplayList`: superseded leaders grayed + replacement winners); `resolvePrizeWinners` enforces one award per person; `MonthlyBoardHeader` + info modal.

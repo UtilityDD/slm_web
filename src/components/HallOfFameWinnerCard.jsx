@@ -60,52 +60,46 @@ function PrizeFocusCard({
 
     return (
         <article
-            className={`flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-transform hover:-translate-y-0.5 ${style.ring} ring-2 ring-offset-2 ring-offset-[#fffdf7]`}
+            className={`flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm transition-transform hover:-translate-y-0.5 ${style.ring} ring-1 ring-offset-1 ring-offset-[#fffdf7]`}
         >
-            <div className={`flex items-center justify-between gap-2 border-b border-slate-200/80 px-3.5 py-2.5 ${style.header}`}>
-                <div className="flex items-center gap-2">
-                    <span className="text-xl leading-none" aria-hidden>{getRankMedal(medalRank)}</span>
-                    <p className={`text-sm font-black tracking-wide sm:text-[15px] ${style.accent} ${language === 'bn' ? 'font-bengali' : 'uppercase'}`}>
-                        {rankLabel}
-                    </p>
+            <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
+                {hasPrizeImage ? (
+                    <button
+                        type="button"
+                        onClick={(e) => onMaximizeImage(resolvedImageUrl || imageCandidates[0], e, {
+                            kind: 'prize',
+                            title: prize.title || '',
+                            subtitle: rankLabel,
+                        })}
+                        className="group/img absolute inset-0 flex items-center justify-center p-2 sm:p-2.5"
+                    >
+                        <HallOfFamePrizeImage
+                            candidates={imageCandidates}
+                            alt={prize.imageAlt || prize.title || ''}
+                            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"
+                            onResolved={setResolvedImageUrl}
+                        />
+                    </button>
+                ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-amber-50 text-3xl" aria-hidden>
+                        🎁
+                    </div>
+                )}
+                <div className={`pointer-events-none absolute left-2 top-2 z-10 flex h-10 min-w-10 items-center justify-center rounded-full px-1.5 shadow-md ${style.header}`}>
+                    <span className="text-2xl leading-none" aria-hidden>{getRankMedal(medalRank)}</span>
                 </div>
             </div>
 
-            <div className="flex flex-1 flex-col p-3.5 sm:p-4">
-                <div className="mb-3 overflow-hidden rounded-2xl border border-slate-200/80 shadow-sm">
-                    <button
-                        type="button"
-                        onClick={() => (onViewUserPrizes ? onViewUserPrizes(winner.user_id) : onOpenUserProgress(winner.user_id))}
-                        className={`flex w-full items-center gap-2.5 border-b border-slate-200/80 bg-slate-900 px-3.5 py-2.5 text-left transition-colors hover:bg-orange-600 ${language === 'bn' ? 'font-bengali' : ''}`}
-                    >
-                        <span className="shrink-0 text-base leading-none" aria-hidden>{getRankMedal(medalRank)}</span>
-                        <p className="min-w-0 flex-1 truncate text-sm font-black text-white sm:text-base">
-                            {winner.full_name || 'Anonymous'}
-                        </p>
-                    </button>
-
-                    {hasPrizeImage ? (
-                        <button
-                            type="button"
-                            onClick={(e) => onMaximizeImage(resolvedImageUrl || imageCandidates[0], e)}
-                            className="group/img relative flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-b from-slate-50 to-white p-3 transition-transform active:scale-[0.99]"
-                        >
-                            <HallOfFamePrizeImage
-                                candidates={imageCandidates}
-                                alt={prize.imageAlt || prize.title || ''}
-                                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"
-                                onResolved={setResolvedImageUrl}
-                            />
-                        </button>
-                    ) : (
-                        <div className="flex aspect-[4/3] w-full items-center justify-center bg-amber-50 text-4xl" aria-hidden>
-                            🎁
-                        </div>
-                    )}
-                </div>
-
+            <div className="flex flex-1 flex-col px-2.5 pb-2.5 pt-2">
+                <button
+                    type="button"
+                    onClick={() => (onViewUserPrizes ? onViewUserPrizes(winner.user_id) : onOpenUserProgress(winner.user_id))}
+                    className={`truncate text-left text-[13px] font-black leading-tight text-slate-900 hover:text-orange-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}
+                >
+                    {winner.full_name || 'Anonymous'}
+                </button>
                 {prize.title && (
-                    <h4 className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    <h4 className={`mt-0.5 line-clamp-2 text-xs font-bold leading-snug text-slate-700 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : ''}`}>
                         {prize.title}
                         {prize.caution ? (
                             <>
@@ -115,18 +109,12 @@ function PrizeFocusCard({
                         ) : null}
                     </h4>
                 )}
-
                 {prize.sponsor && (
-                    <div className="mt-auto pt-1">
-                        <div className="border-t border-dashed border-amber-200 pt-3">
-                            <p className={`text-[11px] font-bold uppercase tracking-wider text-amber-700 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
-                                {language === 'en' ? 'Sponsor' : 'স্পনসর'}
-                            </p>
-                            <p className={`mt-0.5 text-sm font-black text-slate-800 sm:text-[15px] ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {prize.sponsor}
-                            </p>
-                        </div>
-                    </div>
+                    <p className={`mt-auto pt-1.5 text-[10px] font-semibold leading-tight text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        <span className="font-bold text-amber-600">{language === 'en' ? 'Sponsor' : 'স্পনসর'}</span>
+                        {' · '}
+                        {prize.sponsor}
+                    </p>
                 )}
             </div>
         </article>

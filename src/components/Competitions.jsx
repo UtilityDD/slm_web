@@ -67,6 +67,7 @@ import {
     getHallOfFamePrizeViewCopy,
     normalizeHallOfFameViewMode,
 } from '../utils/hallOfFamePrizes';
+import { HOF_GALLERY_BOARDS_VERSION } from '../utils/hallOfFameSnapshots';
 import HallOfFameWinnerCard from './HallOfFameWinnerCard';
 import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
 import LeaderboardRankChip from './LeaderboardRankChip';
@@ -426,11 +427,14 @@ export default function Competitions({
     const [hallOfFameData, setHallOfFameData] = useState([]);
     const [loadingGallery, setLoadingGallery] = useState(false);
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
-    const openMaximizedImage = (url, event) => {
+    const openMaximizedImage = (url, event, extra = {}) => {
         if (!url) return;
         setMaximizedAvatar({
             url,
             previewSrc: imagePreviewFromEvent(event),
+            title: extra.title || '',
+            subtitle: extra.subtitle || '',
+            kind: extra.kind || 'avatar',
         });
     };
     const [showHallCelebration, setShowHallCelebration] = useState(false);
@@ -1715,7 +1719,7 @@ export default function Competitions({
 
     const fetchHallOfFameGallery = async (forceRefresh = false) => {
         const hasCurrentBoards = hallOfFameData.length > 0
-            && hallOfFameData[0]?.boardsVersion === 9;
+            && hallOfFameData[0]?.boardsVersion === HOF_GALLERY_BOARDS_VERSION;
         if (!forceRefresh && hasCurrentBoards) return;
         
         setLoadingGallery(true);
@@ -2229,12 +2233,10 @@ export default function Competitions({
                 </div>
 
             {showHallOfFame ? (
-                    <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-                        {/* Overlay removed for professional cleaner look */}
-
+                    <div className="mx-auto max-w-6xl px-3 py-3 sm:px-6 sm:py-5 lg:px-8">
                         {loadingGallery ? (
                             <div
-                                className="flex min-h-[min(50vh,420px)] flex-col items-center justify-center py-16"
+                                className="flex min-h-[min(40vh,320px)] flex-col items-center justify-center py-12"
                                 role="status"
                                 aria-live="polite"
                                 aria-busy="true"
@@ -2242,7 +2244,7 @@ export default function Competitions({
                                 <BrutalLoaderContent compact message={t.galleryLoading} />
                             </div>
                         ) : (
-                            <div className="space-y-5 sm:space-y-8 max-w-7xl mx-auto px-0 md:px-8">
+                            <div className="mx-auto max-w-5xl space-y-3 sm:space-y-4">
                                 {/* Congrats banner: slides in from top and pushes content, then collapses out */}
                                 <div
                                     className={`hof-congrats-banner grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
@@ -2274,9 +2276,9 @@ export default function Competitions({
                                     </div>
                                 </div>
 
-                                <div className="mx-auto max-w-lg space-y-3 px-1">
+                                <div className="mx-auto max-w-lg space-y-2 px-0.5">
                                     <div
-                                        className="grid grid-cols-2 gap-1 rounded-full border border-slate-200/80 bg-white p-1 shadow-sm"
+                                        className="grid grid-cols-2 gap-1 rounded-full border border-slate-200/80 bg-white p-0.5 shadow-sm"
                                         role="group"
                                         aria-label={language === 'en' ? 'Hall of Fame view' : 'হল অফ ফেম দেখার ধরন'}
                                     >
@@ -2289,7 +2291,7 @@ export default function Competitions({
                                                 setHallOfFameUserPrizeFilter(null);
                                                 setHallOfFameBoardTab(MONTHLY_SUB_TAB.CHAMPION);
                                             }}
-                                            className={`min-h-[40px] rounded-full px-3 py-2 text-xs font-black transition-all active:scale-[0.98] sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
+                                            className={`min-h-[36px] rounded-full px-3 py-1.5 text-xs font-black transition-all active:scale-[0.98] sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
                                                 hallOfFamePrizeView !== 'by_user'
                                                     ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                                                     : 'text-slate-600 hover:bg-orange-50'
@@ -2304,7 +2306,7 @@ export default function Competitions({
                                                 setHallOfFamePrizeView('by_user');
                                                 storageUtils.setItem(HOF_PRIZE_VIEW_STORAGE_KEY, 'by_user');
                                             }}
-                                            className={`min-h-[40px] rounded-full px-3 py-2 text-xs font-black transition-all active:scale-[0.98] sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
+                                            className={`min-h-[36px] rounded-full px-3 py-1.5 text-xs font-black transition-all active:scale-[0.98] sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${
                                                 hallOfFamePrizeView === 'by_user'
                                                     ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                                                     : 'text-slate-600 hover:bg-orange-50'
@@ -2316,13 +2318,13 @@ export default function Competitions({
 
                                     {hallOfFamePrizeView !== 'by_user' && (
                                         <div className="w-full overflow-x-auto no-scrollbar">
-                                            <div className="flex min-w-max gap-1.5 pb-0.5">
+                                            <div className="flex min-w-max gap-1 pb-0.5">
                                                 {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
                                                     <button
                                                         key={tabId}
                                                         type="button"
                                                         onClick={() => setHallOfFameBoardTab(tabId)}
-                                                        className={`whitespace-nowrap rounded-full px-3.5 py-2.5 text-[13px] font-black shadow-sm transition-all active:scale-95 sm:px-4 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''} ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
+                                                        className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-black shadow-sm transition-all active:scale-95 sm:px-3.5 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : ''} ${hallOfFameBoardTab === tabId ? 'bg-orange-500 text-white shadow-orange-500/25' : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'}`}
                                                     >
                                                         {encouragementCopy.monthlyTabs[tabId]}
                                                     </button>
@@ -2343,31 +2345,29 @@ export default function Competitions({
                                     onMaximizeImage={openMaximizedImage}
                                 />
                             ) : (
-                            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                            <div className="grid grid-cols-1 gap-3 sm:gap-4">
                                 {hallOfFameData.map((entry, idx) => {
                                     const monthWinners = getHallOfFameWinners(entry, hallOfFameBoardTab);
                                     return (
                                     <div 
                                         key={`${entry.year}-${entry.month}-${hallOfFameBoardTab}`} 
                                         className="animate-slide-up"
-                                        style={{ animationDelay: `${idx * 100}ms` }}
+                                        style={{ animationDelay: `${idx * 60}ms` }}
                                     >
-                                        <div className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm transition-all duration-300 sm:p-6 md:p-8">
-                                            
-                                            {/* Header Section */}
-                                            <div className="mb-3 border-b border-slate-200/80 pb-2 sm:mb-5 sm:pb-4">
-                                                <h3 className={`text-base sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <div className="rounded-2xl border border-amber-100/80 bg-gradient-to-b from-white to-amber-50/30 p-2.5 shadow-sm sm:p-3.5">
+                                            <div className="mb-2 flex items-center gap-2 border-b border-amber-100/80 pb-1.5 sm:mb-2.5">
+                                                <span className="h-5 w-1 shrink-0 rounded-full bg-gradient-to-b from-amber-400 to-orange-500" aria-hidden />
+                                                <h3 className={`text-sm font-black tracking-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                     {language === 'bn'
                                                         ? `${LEADERBOARD_BN_MONTHS[entry.month - 1]} ${entry.year}`
                                                         : new Date(entry.year, entry.month - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                                                 </h3>
                                             </div>
 
-                                            {/* Winners / prize cards — month view always uses detailed cards */}
                                             <div className={
                                                 monthWinners.length === 0
                                                     ? ''
-                                                    : 'grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4'
+                                                    : 'grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3'
                                             }>
                                                 {monthWinners.length === 0 ? (
                                                     <p className="rounded-2xl border border-dashed border-amber-200 bg-amber-50 px-4 py-8 text-center text-xs font-semibold text-slate-600">
@@ -2399,7 +2399,7 @@ export default function Competitions({
                             </div>
                         )}
 
-                        <div className="h-20"></div>
+                        <div className="h-10"></div>
                     </div>
                 ) : (
                     <>
@@ -2843,8 +2843,8 @@ export default function Competitions({
             {/* Avatar Viewer Modal */}
             {maximizedAvatar && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-10 animate-fade-in">
-                    <div className="absolute inset-0 bg-slate-900/55" onClick={() => setMaximizedAvatar(null)} aria-hidden="true" />
-                    <div className="relative aspect-square w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl animate-scale-in">
+                    <div className="absolute inset-0 bg-slate-900/60" onClick={() => setMaximizedAvatar(null)} aria-hidden="true" />
+                    <div className={`relative flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl animate-scale-in ${maximizedAvatar.kind === 'prize' ? 'max-h-[90vh]' : 'aspect-square'}`}>
                         <button
                             type="button"
                             onClick={() => setMaximizedAvatar(null)}
@@ -2852,28 +2852,37 @@ export default function Competitions({
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
-                        <AvatarPhoto
-                            url={typeof maximizedAvatar === 'string' ? maximizedAvatar : maximizedAvatar.url}
-                            placeholderSrc={typeof maximizedAvatar === 'string' ? '' : maximizedAvatar.previewSrc}
-                            edge={AVATAR_EDGE.full}
-                            placeholderEdge={AVATAR_EDGE.card}
-                            className="h-full w-full object-cover"
-                            alt="Maximized Avatar"
-                            fetchPriority="high"
-                        />
-                        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/75 via-slate-950/35 to-transparent px-4 pb-5 pt-16 sm:px-6 sm:pb-6">
-                            <div className="avatar-slm-badge mx-auto flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-md sm:gap-2.5 sm:px-4 sm:py-2">
-                                <img
-                                    src="/icons/logo.png"
-                                    alt=""
-                                    className="avatar-slm-badge__logo h-6 w-6 object-contain sm:h-7 sm:w-7"
-                                />
-                                <div className="flex items-baseline gap-0.5 select-none">
-                                    <span className="logo-text logo-text-default text-base italic sm:text-lg">SmartLineMan</span>
-                                    <span className="rounded-md border border-orange-500/25 bg-orange-500/10 px-1 py-0.5 text-[9px] font-black text-orange-500 sm:text-[10px]">.in</span>
-                                </div>
+                        {maximizedAvatar.kind === 'prize' ? (
+                            <img
+                                src={typeof maximizedAvatar === 'string' ? maximizedAvatar : maximizedAvatar.url}
+                                alt={maximizedAvatar.title || ''}
+                                className="max-h-[72vh] w-full object-contain bg-slate-50 p-4"
+                            />
+                        ) : (
+                            <AvatarPhoto
+                                url={typeof maximizedAvatar === 'string' ? maximizedAvatar : maximizedAvatar.url}
+                                placeholderSrc={typeof maximizedAvatar === 'string' ? '' : maximizedAvatar.previewSrc}
+                                edge={AVATAR_EDGE.full}
+                                placeholderEdge={AVATAR_EDGE.card}
+                                className="h-full w-full object-cover"
+                                alt={maximizedAvatar.title || ''}
+                                fetchPriority="high"
+                            />
+                        )}
+                        {(maximizedAvatar.title || maximizedAvatar.subtitle) && (
+                            <div className="border-t border-slate-100 bg-white px-4 py-3 text-center">
+                                {maximizedAvatar.title ? (
+                                    <p className={`truncate text-base font-semibold text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {maximizedAvatar.title}
+                                    </p>
+                                ) : null}
+                                {maximizedAvatar.subtitle ? (
+                                    <p className={`mt-0.5 truncate text-sm text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {maximizedAvatar.subtitle}
+                                    </p>
+                                ) : null}
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}
