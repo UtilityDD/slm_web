@@ -77,11 +77,11 @@ Client cuts first (HoF closed-month snapshots already shipped):
 
 | Order | Work | Why it still costs |
 |-------|------|--------------------|
-| 1 | **All-time Rank keep `overlayCumulativeReading` until ledger backfill** | After `reading_points_ledger` is applied + backfilled, view RDG is authoritative and overlay can drop. See [reading-ledger-and-cleanup.md](./reading-ledger-and-cleanup.md). |
+| 1 | ~~All-time overlay~~ **Done (v1.3.152+)** | Rank uses `reading_points_ledger` via `leaderboard_view`. Keep dual-write RPCs + backfill script for new environments. |
 | 2 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
 | 3 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
 | 4 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
-| — | **Safe backup-table cleanup** | Export then drop `backup_quiz_attempts` / `backup_profiles_progress` — see [reading-ledger-and-cleanup.md](./reading-ledger-and-cleanup.md). |
+| — | **Admin backup tables** | After dropping fat backups, run `20260904130000_restore_admin_backup_tables.sql` (empty tables + ledger-aware reset). |
 
 Play (compact ladder, not Rank/Prizes) can still open **another user’s My Progress**. That is a leftover privacy + egress path, not part of the Rank pride card.
 
@@ -97,7 +97,8 @@ Play (compact ladder, not Rank/Prizes) can still open **another user’s My Prog
 | Rank sheet fetching `quiz_attempts` for the tapped user | Pride card from `preview` + `hallOfFameData` |
 | Home or My Progress calling `mergeCoreLessonProgressIds` against a full attempt list | `filterCoreCompletedLessonIds(completed_lessons)` |
 | `my_progress_attempts_*` / unbounded `quiz_attempts` from My Progress | Profile row only (`completed_lessons`, `total_penalties`) |
-| Dropping `overlayCumulativeReading` before profiles are synced | Keep overlay; Rank RDG under-counts to first-time-only (~1820) |
+| Dropping `overlayCumulativeReading` before `reading_points_ledger` is backfilled | Keep overlay until ledger is filled; after v1.3.152 trust the view |
+| Reintroducing All-time reading attempt paging | Use `leaderboard_view` / `reading_points_ledger` |
 | Running `scripts/maintenance/optimize_avatars_to_webp.mjs` on Free | That script uses Image Transformations |
 
 ---
@@ -139,4 +140,4 @@ Current **write** keys in `leaderboardService.js`:
 
 ## Change log
 
-- **2026-09:** HoF v11 + closed-month snapshots. Overlay drop rolled back. Added `reading_points_ledger` migration + backfill script and safe backup-table cleanup SQL. Remaining: apply SQL → backfill → drop overlay; monthly attempt paging; PTW poll; archive last.
+- **2026-09:** HoF v11 + closed-month snapshots. Overlay drop rolled back then replaced by `reading_points_ledger` + backfill; **v1.3.152** drops client overlay. Fat backup tables cleaned; restore empty admin backups via `20260904130000`. Remaining: monthly attempt paging, PTW poll, archive last.

@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import { completedLessonsForBadge, firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { cacheHelper } from '../utils/cacheHelper';
 import { storageUtils } from '../utils/storageUtils';
-import { leaderboardService, overlayCumulativeReading } from '../utils/leaderboardService';
+import { leaderboardService } from '../utils/leaderboardService';
 import { requestManager } from '../utils/requestManager';
 import { visualQuizService } from '../utils/visualQuizService';
 import {
@@ -1583,7 +1583,7 @@ export default function Competitions({
                 async () => {
                     const query = supabase
                         .from('leaderboard_view')
-                        .select('score, reading_points, completed_lessons')
+                        .select('score, reading_points')
                         .eq('user_id', user.id);
 
                     const { data: myData, error: myError } = await query.maybeSingle();
@@ -1601,16 +1601,10 @@ export default function Competitions({
 
                     if (countError) throw countError;
 
-                    const [overlaid] = await overlayCumulativeReading([{
-                        user_id: user.id,
-                        completed_lessons: myData.completed_lessons,
-                        reading_points: myData.reading_points || 0,
-                    }]);
-
                     return {
                         rank: count + 1,
                         score: myScoreValue,
-                        reading_points: overlaid?.reading_points || myData.reading_points || 0,
+                        reading_points: myData.reading_points || 0,
                     };
                 },
                 { ttl: 5, swr: true, forceRefresh }
@@ -1649,11 +1643,11 @@ export default function Competitions({
 
                     if (error) throw error;
 
-                    return overlayCumulativeReading((data || []).map(item => ({
+                    return (data || []).map(item => ({
                         ...item,
                         points: item.score ?? 0,
                         reading_points: item.reading_points ?? 0
-                    })));
+                    }));
                 },
                 { ttl: 5, swr: true, forceRefresh }
             );

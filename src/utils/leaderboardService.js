@@ -1,5 +1,4 @@
 import { supabase } from "../supabaseClient";
-import { applyCumulativeReadingToRows } from "./cumulativeReadingPoints";
 import { requestManager } from "./requestManager";
 import {
     aggregateActivityAttempts,
@@ -186,53 +185,6 @@ function applyIstDeltasToRows(rows, deltas, profileById = {}) {
     return adjusted
         .filter((row) => (Number(row.points) || 0) !== 0 || (Number(row.total_penalties) || 0) !== 0)
         .sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0));
-}
-
-async function fetchReadingAttemptsByUserIds(userIds) {
-    const unique = [...new Set((userIds || []).filter(Boolean))];
-    const byUser = new Map();
-    const chunkSize = 80;
-
-    for (let i = 0; i < unique.length; i += chunkSize) {
-        const chunk = unique.slice(i, i + chunkSize);
-        let offset = 0;
-        while (true) {
-            const { data, error } = await supabase
-                .from('quiz_attempts')
-                .select('user_id, quiz_id, score')
-                .in('user_id', chunk)
-                .or('quiz_id.like.lesson_bonus%,quiz_id.like.life_skill_bonus%')
-                .range(offset, offset + 999);
-
-            if (error) throw error;
-            for (const row of data || []) {
-                if (!byUser.has(row.user_id)) byUser.set(row.user_id, []);
-                byUser.get(row.user_id).push(row);
-            }
-            if (!data || data.length < 1000) break;
-            offset += 1000;
-        }
-    }
-
-    return byUser;
-}
-
-/**
- * All-time RDG from the attempt ledger (first-time + day-stamped re-reads + life skills).
- * profiles.reading_points / leaderboard_view often lag at first-time-only after legacy backfill —
- * do not drop this until a DB sync makes the profile column authoritative.
- */
-export async function overlayCumulativeReading(rows) {
-    if (!rows?.length) return rows || [];
-    try {
-        const attemptsByUser = await fetchReadingAttemptsByUserIds(
-            rows.map((row) => row.user_id || row.id)
-        );
-        return applyCumulativeReadingToRows(rows, attemptsByUser);
-    } catch (err) {
-        console.warn('[leaderboard] cumulative reading overlay failed:', err?.message || err);
-        return rows;
-    }
 }
 
 function missingDeltaUserIds(rows, deltas) {
@@ -478,12 +430,12 @@ export const leaderboardService = {
                     .limit(50);
 
                 if (error) throw error;
-                const mapped = (data || []).map(item => ({
+                // reading_points comes from COALESCE(reading_points_ledger, reading_points) on the view.
+                return (data || []).map(item => ({
                     ...item,
                     points: item.score ?? 0,
                     reading_points: item.reading_points ?? 0
                 }));
-                return overlayCumulativeReading(mapped);
             },
             { ttl: 5, swr: true, forceRefresh }
         );

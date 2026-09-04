@@ -169,12 +169,15 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                     async () => {
                         const { data, error: profileError } = await supabase
                             .from('profiles')
-                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, quiz_points, total_penalties, completed_lessons')
+                            .select('id, slm_id, full_name, email, role, district, block, blood_group, avatar_url, phone, phone_number, created_at, last_login_at, training_level, points, reading_points, reading_points_ledger, quiz_points, total_penalties, completed_lessons')
                             .eq('id', resolvedUserId)
                             .single();
 
                         if (profileError) throw profileError;
-                        return data;
+                        return {
+                            ...data,
+                            reading_points: data.reading_points_ledger ?? data.reading_points ?? 0,
+                        };
                     },
                     { ttl: 5, swr: true, forceRefresh: true }
                 );

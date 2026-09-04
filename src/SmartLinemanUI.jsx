@@ -745,7 +745,7 @@ export default function SmartLinemanUI() {
         async () => {
           const { data, error } = await supabase
             .from('profiles')
-            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state, ppe_nudge_state, can_handle_contact_responses')
+            .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, reading_points_ledger, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage, profile_nudge_state, ppe_nudge_state, can_handle_contact_responses')
             .eq('id', targetUser.id)
             .single();
 
@@ -757,16 +757,22 @@ export default function SmartLinemanUI() {
             if (missingNudgeCol) {
               const retry = await supabase
                 .from('profiles')
-                .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage')
+                .select('role, avatar_url, current_session_id, training_level, full_name, points, reading_points, reading_points_ledger, quiz_points, completed_lessons, total_penalties, slm_id, updated_at, district, block, job, dob, age, education, blood_group, is_donor, accident_voltage')
                 .eq('id', targetUser.id)
                 .single();
               if (retry.error) throw retry.error;
-              return { ...retry.data, profile_nudge_state: {}, ppe_nudge_state: {} };
+              return {
+                ...retry.data,
+                reading_points: retry.data.reading_points_ledger ?? retry.data.reading_points ?? 0,
+                profile_nudge_state: {},
+                ppe_nudge_state: {},
+              };
             }
             throw error;
           }
           return {
             ...data,
+            reading_points: data.reading_points_ledger ?? data.reading_points ?? 0,
             profile_nudge_state: data.profile_nudge_state ?? {},
             ppe_nudge_state: data.ppe_nudge_state ?? {},
           };

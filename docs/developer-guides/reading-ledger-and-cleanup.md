@@ -11,8 +11,10 @@ Operator steps (Supabase SQL editor → scripts). Non-destructive for live score
 node scripts/maintenance/backfill_reading_points_ledger.mjs
 ```
 
-3. Spot-check Rank RDG vs a few heavy readers (should already match overlay).
-4. After confidence: ship a PWA build that drops `overlayCumulativeReading` (view already returns `COALESCE(ledger, reading_points)`).
+3. Spot-check Rank RDG vs a few heavy readers.
+4. **Done in app (v1.3.152+):** All-time Rank trusts `leaderboard_view` (`COALESCE(reading_points_ledger, reading_points)`); client overlay removed.
+
+5. After cleanup of fat backups, run [`20260904130000_restore_admin_backup_tables.sql`](../../supabase/migrations/20260904130000_restore_admin_backup_tables.sql) so Admin score reset has empty backup tables again (self-healing CREATE IF NOT EXISTS).
 
 ## 2) Safe table cleanup (after CSV/JSON export)
 
