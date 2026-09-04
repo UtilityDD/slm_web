@@ -111,7 +111,7 @@ Do **not** clear obsolete keys like `leaderboard_top_10_v3` / `leaderboard_full_
 
 If you add a new leaderboard cache key in **`leaderboardService.js`** or **`Competitions.jsx`**, add it to **`invalidateLeaderboardCaches`** in the same PR.
 
-**Egress:** do not call `fetchAllTime` / `fetchMonthly` from login, Home, or pull-to-refresh. Rank loads when Rank/Prizes opens. All-time still runs **`overlayCumulativeReading`** (paginated `quiz_attempts` for the top 50) — that is a known leftover, not a scoring bug. See **[`docs/developer-guides/free-plan-optimization.md`](docs/developer-guides/free-plan-optimization.md)**.
+**Egress:** do not call `fetchAllTime` / `fetchMonthly` from login, Home, or pull-to-refresh. Rank loads when Rank/Prizes opens. All-time RDG comes from **`leaderboard_view.reading_points`** (no attempt-ledger overlay). See **[`docs/developer-guides/free-plan-optimization.md`](docs/developer-guides/free-plan-optimization.md)**.
 
 ---
 
@@ -184,7 +184,7 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 
 ## Appendix C — Frontend expectations
 
-- **All-time:** `leaderboard_view` → `points` / `reading_points` (see `leaderboardService.fetchAllTime`). Display overlay **`overlayCumulativeReading`** still pages `quiz_attempts` for the top 50 — scoring is correct; that overlay is an egress leftover.
+- **All-time:** `leaderboard_view` → `points` / `reading_points` (see `leaderboardService.fetchAllTime`). Trust the view; do **not** re-page `quiz_attempts` to recompute RDG.
 - **Monthly:** `monthly_leaderboard_view` — **`points` is authoritative net for the month**; do not subtract `total_penalties` again in JS (`leaderboardService.fetchMonthly`).
 - **Home / My Progress lesson count:** both use profile **`completed_lessons`** only (`filterCoreCompletedLessonIds`). Neither loads the attempt ledger. My Progress penalties use **`profiles.total_penalties`**.
 - **Rank tap:** own row → My Progress. Anyone else (non-admin) → public pride card from the list row + HoF prizes — **no** per-user `quiz_attempts` fetch. Admin tapping someone else may load identity + PPE + tools.
@@ -198,7 +198,7 @@ Same pattern as Appendix A; compare counts to pre-check. Optional sample: top 20
 
 ## Change log
 
-- **2026-09:** Pull-to-refresh no longer prefetches Rank. Documented current cache family (`ist_badge`, HoF **v11**) and remaining all-time `overlayCumulativeReading` egress; see **`free-plan-optimization.md`**.
+- **2026-09:** Pull-to-refresh no longer prefetches Rank. HoF **v11** + closed-month snapshots. All-time Rank trusts `leaderboard_view.reading_points` (no `overlayCumulativeReading`). See **`free-plan-optimization.md`**.
 - **2026-06:** Encouragement boards: four monthly sub-tabs, top-3 prizes per board with **one prize per person** (`resolvePrizeWinners`), Hall of Fame display rows (`buildBoardDisplayList`); cache keys `leaderboard_encouragement_*` and `hall_of_fame_gallery_v*`; see **`monthly-encouragement-boards.md`**.
 - **2026-05:** `fetchMonthly`: for users who **joined this local calendar month**, monthly **`points`** shown in the app now include **`max(0, profile.reading_points − view.reading_points)`** so reading is not dropped when DB month buckets disagree with the client (see “Time zones” above).
 - **2026-04 (late):** Documented frontend leaderboard cache keys, `invalidateLeaderboardCaches`, post-score refetch paths, timezone vs “This month”, hourly id client behaviour; Training vs Competitions clock note.

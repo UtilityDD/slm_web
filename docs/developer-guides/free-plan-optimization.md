@@ -73,11 +73,11 @@ Hourly “this hour / today” queries on Home are **kept** (two bounded lookups
 
 ## Remaining work (cheap first)
 
-Do **not** start Hall of Fame snapshots next. That is month-end work and easy to freeze the Online badge. Client cuts first:
+Client cuts first (HoF closed-month snapshots already shipped):
 
 | Order | Work | Why it still costs |
 |-------|------|--------------------|
-| 1 | **All-time Rank** drop `overlayCumulativeReading` | `fetchAllTime` paginates **every** `lesson_bonus%` / `life_skill_bonus%` attempt for the top 50. Display `leaderboard_view` / `profiles.reading_points` instead. |
+| 1 | ~~**All-time Rank** drop `overlayCumulativeReading`~~ **Done** | All-time / top-10 / sticky rank use `leaderboard_view.reading_points` only. |
 | 2 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
 | 3 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
 | 4 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
@@ -96,6 +96,7 @@ Play (compact ladder, not Rank/Prizes) can still open **another user’s My Prog
 | Rank sheet fetching `quiz_attempts` for the tapped user | Pride card from `preview` + `hallOfFameData` |
 | Home or My Progress calling `mergeCoreLessonProgressIds` against a full attempt list | `filterCoreCompletedLessonIds(completed_lessons)` |
 | `my_progress_attempts_*` / unbounded `quiz_attempts` from My Progress | Profile row only (`completed_lessons`, `total_penalties`) |
+| `overlayCumulativeReading` / paging all-time reading attempts for Rank | `leaderboard_view.reading_points` |
 | Running `scripts/maintenance/optimize_avatars_to_webp.mjs` on Free | That script uses Image Transformations |
 
 ---
@@ -137,4 +138,4 @@ Current **write** keys in `leaderboardService.js`:
 
 ## Change log
 
-- **2026-09:** HoF v11 cache aligned; closed months snapshot to localStorage (`hallOfFameSnapshots.js`). Remaining: all-time overlay, monthly attempt paging, PTW poll, archive last.
+- **2026-09:** HoF v11 cache aligned; closed months snapshot to localStorage (`hallOfFameSnapshots.js`). Dropped All-time `overlayCumulativeReading`. Remaining: monthly attempt paging, PTW poll, archive last.
