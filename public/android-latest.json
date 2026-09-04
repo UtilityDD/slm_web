@@ -1,12 +1,12 @@
 {
-  "version_name": "1.3.150",
-  "version_code": 144,
+  "version_name": "1.3.151",
+  "version_code": 145,
   "apk_url": "https://www.smartlineman.in/downloads/smartlineman.apk",
   "download_page": "https://www.smartlineman.in/download",
   "force_update": false,
   "min_supported_version_code": 68,
   "release_notes": {
-    "en": "Faster All-time Rank: reading scores use your saved profile (less data load).",
-    "bn": "অল-টাইম র‍্যাঙ্ক দ্রুত: পড়ার স্কোর এখন সেভ করা প্রোফাইল থেকে (কম ডেটা লোড)।"
+    "en": "Restored full All-time reading scores (includes lesson re-reads).",
+    "bn": "অল-টাইম পড়ার স্কোর পুনরুদ্ধার (পাঠ পুনঃপড়ার পয়েন্টসহ)।"
   }
 }
