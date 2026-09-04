@@ -13,6 +13,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 |--------|--------|
 | [Production deployment](./deployment.md) | **Read first before any ship.** PWA vs APK channels, Vercel CLI, `android-latest.json` gate, verify live |
 | [Free-plan / egress optimization](./free-plan-optimization.md) | Stay inside Supabase Free: landing off DB, no image transforms, no Rank prefetch, remaining `quiz_attempts` cuts |
+| [Reading ledger & DB cleanup](./reading-ledger-and-cleanup.md) | `reading_points_ledger` column + backfill; safe drop of backup/legacy tables |
 | [Public landing](./public-landing.md) | Unauthenticated `Landing.jsx`: static 500+ / 20+, Redis visits, no Supabase, Advertise chip |
 | [Chapter Quiz Modal](./chapter-quiz-modal.md) | `ChapterQuizModal.jsx`, read-aloud script, quiz UX (mobile, TTS, animations) |
 | [Hourly Visual Quiz](./hourly-visual-quiz.md) | Live sheet CSV, image migration, answer-leak sanitization, admin `VisualQuizPreview`, catalog scripts (`vq-120+`); timed play blocks shell ads/nudges |

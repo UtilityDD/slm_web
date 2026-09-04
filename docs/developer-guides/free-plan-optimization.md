@@ -77,10 +77,11 @@ Client cuts first (HoF closed-month snapshots already shipped):
 
 | Order | Work | Why it still costs |
 |-------|------|--------------------|
-| 1 | **All-time Rank keep `overlayCumulativeReading`** (do **not** drop yet) | `profiles.reading_points` / `leaderboard_view` often stop at **first-time** lesson credits. Day-stamped re-reads + life skills still live in `quiz_attempts`; Rank RDG must overlay the ledger until a DB sync makes the profile column authoritative. |
+| 1 | **All-time Rank keep `overlayCumulativeReading` until ledger backfill** | After `reading_points_ledger` is applied + backfilled, view RDG is authoritative and overlay can drop. See [reading-ledger-and-cleanup.md](./reading-ledger-and-cleanup.md). |
 | 2 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
 | 3 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
 | 4 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
+| — | **Safe backup-table cleanup** | Export then drop `backup_quiz_attempts` / `backup_profiles_progress` — see [reading-ledger-and-cleanup.md](./reading-ledger-and-cleanup.md). |
 
 Play (compact ladder, not Rank/Prizes) can still open **another user’s My Progress**. That is a leftover privacy + egress path, not part of the Rank pride card.
 
@@ -138,4 +139,4 @@ Current **write** keys in `leaderboardService.js`:
 
 ## Change log
 
-- **2026-09:** HoF v11 cache aligned; closed months snapshot to localStorage (`hallOfFameSnapshots.js`). Tried dropping All-time `overlayCumulativeReading` — **rolled back** (profile/view RDG is first-time-only; re-reads need the ledger overlay). Remaining: monthly attempt paging, PTW poll, archive last; then sync `profiles.reading_points` before removing overlay.
+- **2026-09:** HoF v11 + closed-month snapshots. Overlay drop rolled back. Added `reading_points_ledger` migration + backfill script and safe backup-table cleanup SQL. Remaining: apply SQL → backfill → drop overlay; monthly attempt paging; PTW poll; archive last.
