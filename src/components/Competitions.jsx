@@ -2781,14 +2781,14 @@ export default function Competitions({
                     </div>
                 </div>
 
-                {/* My Position Sticky Bar */}
+                {/* My Position Sticky Bar — portal so it stacks above SLM Radio FAB (outside scroll root) */}
                 {!showHallOfFame && user && userRank && !loadingFull && leaderboardTab === 'all-time' && (() => {
                     const userBadge = getBadgeByLevel(
                         userProfile?.training_level || 0,
                         firstTimeReadingPointsFromLessons(userProfile?.completed_lessons)
                     );
-                    return (
-                        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-8 left-0 right-0 z-50 px-4 md:px-8 pointer-events-none">
+                    return createPortal(
+                        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] md:bottom-8 left-0 right-0 z-[120] px-4 md:px-8 pointer-events-none">
                             <div className="max-w-3xl mx-auto">
                                 <div className="pointer-events-auto overflow-hidden rounded-2xl border border-orange-300/60 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 p-[1px] shadow-xl shadow-orange-500/30">
                                     <div className="rounded-[0.9rem] bg-gradient-to-br from-white via-orange-50 to-amber-50 p-2.5 sm:p-4">
@@ -2828,7 +2828,8 @@ export default function Competitions({
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div>,
+                        document.body
                     );
                 })()}
                 </>

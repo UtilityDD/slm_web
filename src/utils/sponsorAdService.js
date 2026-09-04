@@ -1,5 +1,5 @@
 /**
- * Sponsor full-screen ad.
+ * Sponsor bottom strip (Standing-card style).
  *
  * Content rotation: every clock hour alternates between
  *   - the live paid/sponsor ad from Supabase (when available), and
@@ -22,7 +22,7 @@ export const INVITE_SPONSOR_AD = {
     headline: 'স্পনসর চাই',
     headlines: ['স্পনসর চাই', 'আমরা নন-প্রফিট', 'বিজ্ঞাপনে স্পনসর হোন'],
     subtext:
-        'স্মার্ট লাইনম্যান একটি নন-প্রফিট উদ্যোগ। পুরস্কারের জন্য স্পনসরদের ধন্যবাদ। বিজ্ঞাপনের মাধ্যমে আমাদের স্পনসর হতে পারেন—দোকান, ব্যবসা, ফার্ম, ঠিকাদার।',
+        'নন-প্রফিট উদ্যোগ। পুরস্কারে স্পনসরদের ধন্যবাদ। দোকান, ব্যবসা বা ফার্ম থেকে বিজ্ঞাপন দিন।',
     sponsor_name: 'স্মার্ট লাইনম্যান',
     image_url: '/images/sponsor/sponsor_ad_slot.webp',
     logo_url: null,

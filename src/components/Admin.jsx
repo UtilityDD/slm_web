@@ -92,7 +92,7 @@ const SPONSOR_ASK_PRESET = {
   headline: 'স্পনসর চাই',
   headlines_text: 'স্পনসর চাই\nআমরা নন-প্রফিট\nবিজ্ঞাপনে স্পনসর হোন',
   subtext:
-    'স্মার্ট লাইনম্যান একটি নন-প্রফিট উদ্যোগ। পুরস্কারের জন্য স্পনসরদের ধন্যবাদ। বিজ্ঞাপনের মাধ্যমে আমাদের স্পনসর হতে পারেন—দোকান, ব্যবসা, ফার্ম, ঠিকাদার।',
+    'নন-প্রফিট উদ্যোগ। পুরস্কারে স্পনসরদের ধন্যবাদ। দোকান, ব্যবসা বা ফার্ম থেকে বিজ্ঞাপন দিন।',
   sponsor_name: 'স্মার্ট লাইনম্যান',
   image_url: '/images/sponsor/sponsor_ad_slot.webp',
   contact_email: 'support@smartlineman.in',
@@ -1692,6 +1692,31 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
     });
   };
 
+  /** Preview a saved list row as the live bottom strip (nothing saved). */
+  const handlePreviewSponsorRow = (row) => {
+    if (typeof onPreviewSponsorAd !== 'function' || !row) return;
+    const headlines = Array.isArray(row.headlines)
+      ? row.headlines.map((h) => String(h || '').trim()).filter(Boolean)
+      : [];
+    onPreviewSponsorAd({
+      id: row.id || 'preview-row',
+      headline: row.headline || headlines[0] || '',
+      headlines: headlines.length ? headlines : undefined,
+      subtext: row.subtext || '',
+      sponsor_name: row.sponsor_name || '',
+      image_url: row.image_url || null,
+      logo_url: row.logo_url || null,
+      contact_phone: row.contact_phone || null,
+      contact_email: row.contact_email || null,
+      contact_url: row.contact_url || null,
+      cta_label: row.cta_label || null,
+      theme: row.theme || 'dark',
+      display_seconds: Number(row.display_seconds) || 5,
+      allow_skip: row.allow_skip !== false,
+      contact_safety_mitra: row.contact_safety_mitra === true,
+    });
+  };
+
   /** Fill form with demo content and open overlay — admin view only, nothing saved. */
   const handleDemoSponsorPreview = () => {
     setSponsorEditingId(null);
@@ -3080,7 +3105,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
         </div>
       )}
 
-      {/* Admin: sponsor full-screen ad */}
+      {/* Admin: sponsor bottom strip */}
       {isAdmin && !showAnalytics && showManageMenu && (
         <div className={`mb-2 ${ADMIN_THEME.card}`}>
           <button
@@ -3089,7 +3114,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
           >
             <span className="font-bold text-slate-800 text-xs">
-              🎬 {isEn ? 'Sponsor ad (full screen)' : 'স্পনসর অ্যাড (ফুল স্ক্রিন)'}
+              🎬 {isEn ? 'Sponsor ad (bottom strip)' : 'স্পনসর অ্যাড (নিচের স্ট্রিপ)'}
               {!sponsorAdsLoading && sponsorAds.length > 0 && (
                 <span className="ml-2 text-xs font-normal text-slate-400">({sponsorAds.length})</span>
               )}
@@ -3100,8 +3125,8 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
             <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-4">
               <p className="text-xs text-slate-500">
                 {isEn
-                  ? 'Shown once per user session, full screen, only while enabled and inside the date range.'
-                  : 'প্রতি সেশনে একবার, ফুল স্ক্রিন, শুধু চালু ও তারিখ সীমার মধ্যে দেখানো হয়।'}
+                  ? 'Minimal bottom card (like Your Standing). Every other app open while enabled and inside the date range.'
+                  : 'ছোট নিচের কার্ড (Your Standing-এর মতো)। চালু ও তারিখ সীমার মধ্যে প্রতি অন্য অ্যাপ ওপেনে দেখায়।'}
               </p>
               <p className="text-[11px] text-slate-500 rounded-lg border border-slate-200 bg-white px-3 py-2">
                 {isEn
@@ -3438,6 +3463,15 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                               {row.subtext && <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{row.subtext}</p>}
                             </div>
                             <div className="flex flex-col gap-1 shrink-0">
+                              {typeof onPreviewSponsorAd === 'function' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handlePreviewSponsorRow(row)}
+                                  className="px-2 py-1 rounded text-[10px] font-bold bg-orange-500 text-white border border-orange-600"
+                                >
+                                  {isEn ? 'Preview' : 'প্রিভিউ'}
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => startEditSponsorAd(row)}

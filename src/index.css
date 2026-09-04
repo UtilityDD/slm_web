@@ -9510,3 +9510,43 @@ html.native-android .lesson-reader-root {
     transform: translate(-50%, -50%) scale(1);
   }
 }
+
+/* -- Sponsor bottom strip (Standing-card family) -- */
+.sponsor-strip-root {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sponsor-strip-root.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sponsor-strip-wait {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.sponsor-strip-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.35s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sponsor-strip-headline {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.sponsor-strip-headline.is-headline-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sponsor-strip-headline.is-headline-out {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.sponsor-strip-reduce .sponsor-strip-wait,
+.sponsor-strip-reduce .sponsor-strip-in {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.sponsor-strip-reduce .sponsor-strip-headline {
+  transition: none;
+}

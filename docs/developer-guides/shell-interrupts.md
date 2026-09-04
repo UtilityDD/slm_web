@@ -10,7 +10,7 @@
 | `src/SmartLinemanUI.jsx` | `hourlyQuizPlaying`; `*Blocked` flags for ad / nudges / idle story |
 | `src/utils/overlayQueue.js` | Who wins if two overlay flags are true |
 | `src/utils/sessionInterruptBudget.js` | At most one **soft** prompt per app open |
-| `src/components/SponsorAdOverlay.jsx` | Full-screen sponsor interstitial (`z-[230]`) |
+| `src/components/SponsorAdOverlay.jsx` | Minimal bottom sponsor strip (`z-[115]`, Standing-card style) |
 | `src/components/ProfileFieldNudge.jsx` | Profile completion nudge |
 | `src/components/PpeFieldNudge.jsx` | PPE field nudge |
 | `src/components/PushOptInPrompt.jsx` | Push permission prompt |
@@ -50,10 +50,10 @@ Hourly quiz play is **not** an overlay id. It is a block so those prompts never 
 
 ## Gotchas
 
-- Hourly quiz portal is `z-[150]`; sponsor/push overlays are `z-[230]`. Blocking is required; raising quiz z-index is not enough (ads would still steal timer seconds if shown first).
+- Hourly quiz portal is `z-[150]`; soft prompts use various z layers. Sponsor is a **non-modal strip** (`z-[115]`); blocking during hourly play is still required so it does not steal attention mid-timer.
 - Do not pass `onHourlyQuizPlayChange` on Rank/Prizes unless those surfaces actually show the timed modal.
 - `selectHourlySponsorAd` rotates paid vs invite by **clock hour**. It is unrelated to the hourly quiz.
-- Public **landing** (and guests) must keep `sponsorAdBlocked` true. The Advertise chip is the public CTA; do not reopen the interstitial there.
+- Public **landing** (and guests) must keep `sponsorAdBlocked` true. The Advertise chip is the public CTA; do not reopen the strip there.
 
 ## Related
 

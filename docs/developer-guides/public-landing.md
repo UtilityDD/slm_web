@@ -60,7 +60,7 @@ The hero **Explore Life Skills** button uses this (not an anchor).
 
 Do **not** show live leaderboard photos or `profiles` counts on this page.
 
-`SponsorAdOverlay` must stay **blocked** on `landing` (and for guests). The built-in “স্পনসর চাই” interstitial used to open after ~18s on this page; that also called `get_active_sponsor_ad`. Logged-in users still see sponsor ads inside the app.
+`SponsorAdOverlay` must stay **blocked** on `landing` (and for guests). Logged-in users see a **minimal bottom sponsor strip** (not a full-screen interstitial). The Advertise chip is the public CTA.
 
 ---
 
