@@ -1,15 +1,14 @@
 /**
- * Backfill profiles.reading_points_ledger using the same formula as
- * src/utils/cumulativeReadingPoints.js (All-time Rank overlay).
- *
- * Prerequisites: run supabase/migrations/20260904120000_reading_points_ledger.sql
- * in the Supabase SQL editor first.
+ * Backfill profiles.reading_points_ledger (same rules as cumulativeReadingPoints.js).
+ * Prerequisite: 20260904120000_reading_points_ledger.sql applied.
  *
  * Usage: node scripts/maintenance/backfill_reading_points_ledger.mjs
  */
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
-import { cumulativeReadingPointsFromLedger } from '../../src/utils/cumulativeReadingPoints.js';
+
+const CORE_LESSON_MONTHLY_BONUS_POINTS = 20;
+const CORE_LESSON_ID_RE = /^\d+\.\d+$/;
 
 function loadEnv() {
   return Object.fromEntries(
@@ -23,8 +22,68 @@ function loadEnv() {
   );
 }
 
+function filterCoreCompletedLessonIds(completedLessons) {
+  const list = Array.isArray(completedLessons) ? completedLessons : [];
+  return [...new Set(list.map((x) => String(x || '').trim()).filter((id) => CORE_LESSON_ID_RE.test(id)))];
+}
+
+function isCoreLessonLegacyBonusQuizId(quizId) {
+  return /^lesson_bonus_\d+\.\d+$/.test(String(quizId || ''));
+}
+
+function isCoreLessonDayStampedBonusQuizId(quizId) {
+  return /^lesson_bonus_\d+\.\d+_\d{4}_\d{2}_\d{2}$/.test(String(quizId || ''));
+}
+
+function lessonIdFromCoreLessonBonusQuizId(quizId) {
+  const s = String(quizId || '');
+  if (!s.startsWith('lesson_bonus_')) return null;
+  const rest = s.slice('lesson_bonus_'.length);
+  const stamped = rest.match(/^(\d+\.\d+)_\d{4}_\d{2}_\d{2}$/);
+  if (stamped) return stamped[1];
+  if (CORE_LESSON_ID_RE.test(rest)) return rest;
+  return null;
+}
+
+function cumulativeReadingPointsFromLedger({ completedLessons, profileReadingPoints = 0, attempts = [] } = {}) {
+  const profileLessons = new Set(filterCoreCompletedLessonIds(completedLessons));
+  const byLesson = new Map();
+  let lifeScore = 0;
+
+  for (const row of attempts || []) {
+    const quizId = String(row.quiz_id || '');
+    const score = Number(row.score) || 0;
+    if (quizId.startsWith('life_skill_bonus')) {
+      lifeScore += score;
+      continue;
+    }
+    const lid = lessonIdFromCoreLessonBonusQuizId(quizId);
+    if (!lid) continue;
+    if (!byLesson.has(lid)) byLesson.set(lid, { legacy: 0, stamped: 0 });
+    const g = byLesson.get(lid);
+    if (isCoreLessonLegacyBonusQuizId(quizId)) g.legacy += 1;
+    else if (isCoreLessonDayStampedBonusQuizId(quizId)) g.stamped += 1;
+  }
+
+  const uniqueLessons = new Set(profileLessons);
+  for (const lid of byLesson.keys()) uniqueLessons.add(lid);
+
+  let extraStamped = 0;
+  for (const [lid, g] of byLesson) {
+    const hasFirstCredit = profileLessons.has(lid) || g.legacy > 0;
+    if (hasFirstCredit) extraStamped += g.stamped;
+  }
+
+  const firstTime = uniqueLessons.size * CORE_LESSON_MONTHLY_BONUS_POINTS;
+  const computed = firstTime + extraStamped * CORE_LESSON_MONTHLY_BONUS_POINTS + lifeScore;
+  return Math.max(Number(profileReadingPoints) || 0, computed);
+}
+
 const env = loadEnv();
-const sb = createClient(env.VITE_SUPABASE_URL || env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY || env.VITE_SUPABASE_ANON_KEY);
+const sb = createClient(
+  env.VITE_SUPABASE_URL || env.SUPABASE_URL,
+  env.SUPABASE_SERVICE_ROLE_KEY || env.VITE_SUPABASE_ANON_KEY
+);
 
 async function fetchReadingAttempts(userId) {
   const rows = [];
@@ -50,7 +109,7 @@ const { data: profiles, error: pErr } = await sb
   .gt('points', 0);
 
 if (pErr) {
-  console.error('Failed to load profiles (is reading_points_ledger column applied?):', pErr.message);
+  console.error('Failed to load profiles:', pErr.message);
   process.exit(1);
 }
 
@@ -73,11 +132,11 @@ for (const p of profiles || []) {
 
   const { error } = await sb.from('profiles').update({ reading_points_ledger: ledger }).eq('id', p.id);
   if (error) {
-    console.error('Update failed', p.id, error.message);
+    console.error('Update failed', p.full_name || p.id, error.message);
     process.exit(1);
   }
   updated += 1;
-  if (samples.length < 8) {
+  if (samples.length < 10) {
     samples.push({
       name: p.full_name,
       old_reading: p.reading_points,
@@ -87,4 +146,4 @@ for (const p of profiles || []) {
   }
 }
 
-console.log(JSON.stringify({ profiles: profiles.length, updated, unchanged, samples }, null, 2));
+console.log(JSON.stringify({ profiles: (profiles || []).length, updated, unchanged, samples }, null, 2));
