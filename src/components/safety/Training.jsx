@@ -4290,7 +4290,7 @@ export default function Training({
                                                             width={900}
                                                             height={1350}
                                                             decoding="async"
-                                                            fetchPriority="high"
+                                                            fetchpriority="high"
                                                             className="absolute inset-0 h-full w-full object-cover"
                                                             style={{ objectPosition: 'center 26%' }}
                                                         />

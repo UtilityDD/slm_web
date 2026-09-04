@@ -122,7 +122,7 @@ function SponsorAvatar({ gender = 'man', logoCandidates = [], size = 'sm' }) {
             src={src}
             alt=""
             loading={isPortrait ? 'eager' : 'lazy'}
-            {...(isPortrait ? { fetchPriority: 'high' } : {})}
+            {...(isPortrait ? { fetchpriority: 'high' } : {})}
             decoding="async"
             className={sizeClass}
             onLoad={() => {

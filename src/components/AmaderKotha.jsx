@@ -184,7 +184,7 @@ export default function AmaderKotha({ language = 'bn', setCurrentView }) {
               width={560}
               height={840}
               decoding="async"
-              fetchPriority="high"
+              fetchpriority="high"
               className="amader-kotha__poster-img mx-auto block h-auto w-full max-w-md object-cover object-top"
             />
             <div className="border-t border-orange-100 bg-gradient-to-b from-orange-50/80 to-[#fffdf7] px-5 py-5 text-center sm:px-8 sm:py-6">

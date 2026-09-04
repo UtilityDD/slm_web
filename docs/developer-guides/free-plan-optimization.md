@@ -46,7 +46,7 @@ Custom phone/PIN auth uses RPCs, not `supabase.auth` MAU. Auth MAU is not the bi
 | `src/utils/leaderboardService.js` | All-time overlay, monthly views, HoF v11, encouragement boards |
 | `src/utils/leaderboardCacheKeys.js` | `invalidateLeaderboardCaches` — keep keys in the same PR as new cache names |
 | `src/utils/trainingLessonIds.js` | `filterCoreCompletedLessonIds` (Home + My Progress) |
-| `src/components/safety/usePtwWatch.js` | PTW poll every 3s + Realtime while a permit is open |
+| `src/utils/readingHabitGate.js` | Short-circuit local gate state before DB RPC |
 | `src/utils/landingBoardsQuery.js` | Unused by landing; do not wire it back |
 
 `/api/landing-stats` and `/api/landing-boards` still exist. **Do not call them from the public landing.**
@@ -63,7 +63,8 @@ Custom phone/PIN auth uses RPCs, not `supabase.auth` MAU. Auth MAU is not the bi
 | Pull-to-refresh | `fetchProfile` + `fetchNotifications(true)` + `invalidateLeaderboardCaches` | Rank is stale until Rank/Prizes opens |
 | Home lesson ledger | No unbounded `quiz_attempts` fetch. Badge / Start / Continue use profile `completed_lessons` | Home can lag if `completed_lessons` is stale |
 | My Progress ledger | Profile row only. Lessons / badge / chapters from `completed_lessons`; penalties from `total_penalties` | No hourly count, active days, or pace stats |
-| HoF cache + snapshots | Gallery skip uses `HOF_GALLERY_BOARDS_VERSION`; invalidate clears v11; closed months persist in localStorage | Live monthly never snapshotted — Online badge stays live |
+| HoF cache + snapshots | Gallery skip uses `HOF_GALLERY_BOARDS_VERSION`; invalidate clears v11; closed months persist in localStorage incrementally with `peekCachedHallOfFame()` synchronous hydration (0ms paint, 0 egress on repeat visits). Pull-to-refresh never purges closed months; rollover queries only missing closed months. | Live monthly never snapshotted — Online badge stays live |
+
 
 `leaderboardService` stays imported in `SmartLinemanUI.jsx` for the **month-winners preview**, not for pull-to-refresh Rank.
 
@@ -73,17 +74,15 @@ Hourly “this hour / today” queries on Home are **kept** (two bounded lookups
 
 ## Remaining work (cheap first)
 
-Client cuts first (HoF closed-month snapshots already shipped):
-
 | Order | Work | Why it still costs |
 |-------|------|--------------------|
 | 1 | ~~All-time overlay~~ **Done (v1.3.152+)** | Rank uses `reading_points_ledger` via `leaderboard_view`. Keep dual-write RPCs + backfill script for new environments. |
-| 2 | **Live monthly from views** | `fetchMonthly` + `fetchEncouragementBoards` still page a month of attempts (`fetchMonthlyActivityAttempts`) for Online badges and learner/improved boards. Keep the badge; shrink the columns / reuse `leaderboard_view` activity already fetched. |
-| 3 | **PTW poll** | `usePtwWatch.js` polls every **3s** plus Realtime while a permit is open. Widen the interval or rely on Realtime when the table is live. Only hurts operators/linemen with a permit open. |
+| 2 | ~~Live monthly from views~~ **Done (v1.3.154+)** | `fetchMonthlyActivitySummary` uses `get_monthly_encouragement_activity` RPC with dual-mode fallback, eliminating raw attempt paging across PostgREST. Activity lookup uses slim `user_id, last_active, last_login_at` select. |
+| 3 | ~~PTW poll~~ **Removed** | PTW online system and `usePtwWatch.js` completely removed from web app (reserved for future native app). Eliminates 3s polling and `ptw_permits` Realtime channel. |
 | 4 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
 | — | **Admin backup tables** | After dropping fat backups, run `20260904130000_restore_admin_backup_tables.sql` (empty tables + ledger-aware reset). |
 
-Play (compact ladder, not Rank/Prizes) can still open **another user’s My Progress**. That is a leftover privacy + egress path, not part of the Rank pride card.
+~~Play (compact ladder, not Rank/Prizes) can still open another user’s My Progress.~~ **Done:** Other player taps route to `LeaderboardUserSheet` (PublicPrideCard for regular users; full identity/tools/PPE for admin), and eliminated dead `fetchLeaderboard` queries on Play.
 
 ---
 
@@ -140,4 +139,4 @@ Current **write** keys in `leaderboardService.js`:
 
 ## Change log
 
-- **2026-09:** HoF v11 + closed-month snapshots. Overlay drop rolled back then replaced by `reading_points_ledger` + backfill; **v1.3.152** drops client overlay. Fat backup tables cleaned; restore empty admin backups via `20260904130000`. Remaining: monthly attempt paging, PTW poll, archive last.
+- **2026-09:** `daily_user_activity` table deployed with auto-sync trigger & historical backfill (2,008 daily records created). Safely preserves 365-day attendance, consistency, points, and penalties for annual March 7th prizes. HoF v11 + incremental closed-month snapshots (Option 1: 0ms paint, 0 egress on repeat visits, safe pull-to-refresh preservation). Compact ladder player tap routes to LeaderboardUserSheet (privacy & query fix). Overlay drop replaced by `reading_points_ledger` + backfill (v1.3.152+). Database RPC `get_monthly_encouragement_activity` deployed for monthly activity counting.

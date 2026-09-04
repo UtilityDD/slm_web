@@ -155,7 +155,7 @@ export default function CelebrationSplash({
         width={config.imageWidth}
         height={config.imageHeight}
         decoding="async"
-        fetchPriority="high"
+        fetchpriority="high"
         className="celebration-splash__img absolute inset-0 h-full w-full"
         draggable={false}
       />

@@ -253,39 +253,50 @@ export default function Home({
         const quizId = `hourly-challenge-${year}-${month}-${day}-${hour}`;
         const dayPrefix = `hourly-challenge-${year}-${month}-${day}-`;
 
-        const [{ data: liveRows, error: liveError }, { data: dayRows, error: dayError }] = await Promise.all([
-          supabase
-            .from('quiz_attempts')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('quiz_id', quizId)
-            .limit(1),
-          supabase
-            .from('quiz_attempts')
-            .select('quiz_id')
-            .eq('user_id', user.id)
-            .like('quiz_id', `${dayPrefix}%`),
-        ]);
+        const result = await requestManager.fetch(
+          `hourly_eligibility_${user.id}_${quizId}`,
+          async () => {
+            const [{ data: liveRows, error: liveError }, { data: dayRows, error: dayError }] = await Promise.all([
+              supabase
+                .from('quiz_attempts')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('quiz_id', quizId)
+                .limit(1),
+              supabase
+                .from('quiz_attempts')
+                .select('quiz_id')
+                .eq('user_id', user.id)
+                .like('quiz_id', `${dayPrefix}%`),
+            ]);
 
-        if (cancelled || liveError) return;
+            if (liveError) throw liveError;
 
-        const pending = (liveRows || []).length === 0;
-        setIsHourlyPending(pending);
+            const pending = (liveRows || []).length === 0;
+            const playedHours = [];
+            if (!dayError && Array.isArray(dayRows)) {
+              dayRows.forEach((row) => {
+                const h = parseInt(String(row.quiz_id).split('-').pop(), 10);
+                if (!Number.isNaN(h)) playedHours.push(h);
+              });
+            }
+            return { pending, playedHours };
+          },
+          { ttl: 3, swr: true, forceRefresh: false }
+        );
+
+        if (cancelled || !result) return;
+
+        setIsHourlyPending(result.pending);
         setHourlyChecked(true);
 
-        if (!pending) {
+        if (!result.pending) {
           setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
           return;
         }
 
-        const playedHours = new Set();
-        if (!dayError && Array.isArray(dayRows)) {
-          dayRows.forEach((row) => {
-            const h = parseInt(String(row.quiz_id).split('-').pop(), 10);
-            if (!Number.isNaN(h)) playedHours.add(h);
-          });
-        }
-        const makeup = buildMakeupSession(countRecentMissedHours(currentHour, playedHours));
+        const playedHoursSet = new Set(result.playedHours || []);
+        const makeup = buildMakeupSession(countRecentMissedHours(currentHour, playedHoursSet));
         setHourlyMaxPoints(makeup.pointsReward);
       } catch (err) {
         console.error('Error checking hourly challenge:', err);
@@ -520,7 +531,7 @@ export default function Home({
     {
       id: 'progress',
       label: bn ? 'অগ্রগতি' : 'Progress',
-      value: `${progressPct}%`,
+      value: null,
       onClick: () => go('my-progress'),
       accent: 'border-teal-200 bg-teal-50/80 text-teal-900',
       iconWrap: 'bg-white/80 text-teal-600 border-teal-200/70',

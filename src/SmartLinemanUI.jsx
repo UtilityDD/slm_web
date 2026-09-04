@@ -279,7 +279,6 @@ export default function SmartLinemanUI() {
   const [monthWinnersRevealOpen, setMonthWinnersRevealOpen] = useState(false);
   /** True while a text field is focused — never interrupt with ads/nudges. */
   const [userTyping, setUserTyping] = useState(false);
-  const forumActivityTimerRef = useRef(null);
   const viewHistoryRef = useRef([]);
   const prevViewForHistoryRef = useRef(null);
   const skippingViewHistoryRef = useRef(false);
@@ -1080,7 +1079,7 @@ export default function SmartLinemanUI() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, userProfile, userProfile?.role, currentView]);
+  }, [user?.id, userProfile?.id, userProfile?.role]);
 
   // Load completed lessons from localStorage
   useEffect(() => {
@@ -1234,43 +1233,6 @@ export default function SmartLinemanUI() {
     };
   }, [user]);
 
-  // Subtle forum reply alert when user is elsewhere in the app
-  useEffect(() => {
-    if (!user?.id || currentView === 'community') return undefined;
-
-    const channel = supabase
-      .channel('forum_activity_app')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, (payload) => {
-        const row = payload.new;
-        if (!row?.parent_id || row.author_id === user.id) return;
-
-        if (forumActivityTimerRef.current) {
-          clearTimeout(forumActivityTimerRef.current);
-        }
-        setForumActivityToast({ questionId: row.parent_id });
-        forumActivityTimerRef.current = window.setTimeout(() => {
-          setForumActivityToast(null);
-          forumActivityTimerRef.current = null;
-        }, 4500);
-      })
-      .subscribe();
-
-    return () => {
-      if (forumActivityTimerRef.current) {
-        clearTimeout(forumActivityTimerRef.current);
-        forumActivityTimerRef.current = null;
-      }
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, currentView]);
-
-  useEffect(() => {
-    return () => {
-      if (forumActivityTimerRef.current) {
-        clearTimeout(forumActivityTimerRef.current);
-      }
-    };
-  }, []);
 
   // Scroll to top when view changes and sync with URL hash
   useEffect(() => {
@@ -1640,7 +1602,7 @@ export default function SmartLinemanUI() {
 
       switch (currentView) {
         case 'competitions':
-          return <Competitions language={language} user={user} setCurrentView={setCurrentView} surface="play" userProfile={userProfile} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} onHourlyQuizPlayChange={setHourlyQuizPlaying} />;
+          return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="play" onOpenUserProgress={(userId) => openMyProgress(userId, 'competitions')} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} onHourlyQuizPlayChange={setHourlyQuizPlaying} />;
         case 'leaderboard':
           return <Competitions language={language} user={user} userProfile={userProfile} setCurrentView={setCurrentView} surface="rank" isFullLeaderboard={true} onOpenUserProgress={(userId) => openMyProgress(userId, 'leaderboard')} refreshProfile={fetchProfile} showNotification={showNotification} sponsorAdOpen={sponsorAdOpen} monthWinnersBlocked={monthWinnersBlocked} onMonthWinnersRevealOpenChange={setMonthWinnersRevealOpen} />;
         case 'prizes':

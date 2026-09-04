@@ -68,7 +68,7 @@ export default function HomeTipBoard({ text, language = 'bn', onClose }) {
             width={1024}
             height={1536}
             decoding="async"
-            fetchPriority="high"
+            fetchpriority="high"
             className="home-tip-stage__art pointer-events-none select-none"
             draggable={false}
           />

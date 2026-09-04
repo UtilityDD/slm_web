@@ -35,53 +35,53 @@ export function getEncouragementCopy(language = 'bn') {
         prizeTitle: en ? 'Current top 3' : 'এখনকার সেরা ৩',
         prizeRule: en
             ? 'Top 3 win on each list. One prize per person.'
-            : 'প্রতি তালিকায় সেরা ৩। একজন একবারই পুরস্কার পাবেন।',
+            : 'প্রতি বিভাগে সেরা ৩ জন পুরস্কৃত হবেন। এক মাসে একজন কেবল একটি পুরস্কার পাবেন।',
         prizeNote: en
             ? 'Final at month-end · live now'
-            : 'মাস শেষে চূড়ান্ত · এখন লাইভ',
+            : 'মাস শেষে চূড়ান্ত তালিকা · এখন লাইভ',
         hourlyAvgNote: en
             ? 'Hourly avg = this month’s quizzes ÷ days so far.'
-            : 'ঘণ্টার গড় = এই মাসের কুইজ ÷ চলতি দিন।',
+            : 'ঘণ্টার গড় = এই মাসের কুইজ ÷ চলতি দিন।',
         hallOfFamePrizeNote: en
             ? 'Gray names won on another list; highlighted names got this prize.'
-            : 'ধূসর নাম অন্য তালিকায় জিতেছেন; রঙিন নাম এই তালিকার বিজয়ী।',
-        prizeSuperseded: en ? 'Won on another list' : 'অন্য তালিকায় বিজয়ী',
-        prizeReplacement: en ? 'Prize winner' : 'পুরস্কার বিজয়ী',
-        prizeTop3: en ? 'Top 3 win prizes' : 'সেরা ৩ জন বিজয়ী',
-        emptyBoard: en ? 'No qualifiers yet — keep playing!' : 'এখনও কেউ যোগ্য নন—খেলতে থাকুন!',
+            : 'ধূসর নাম অন্য তালিকায় জয়ী; রঙিন নাম এই তালিকায় বিজয়ী।',
+        prizeSuperseded: en ? 'Won on another list' : 'অন্য তালিকায় বিজয়ী',
+        prizeReplacement: en ? 'Prize winner' : 'পুরস্কার বিজয়ী',
+        prizeTop3: en ? 'Top 3 win prizes' : 'সেরা ৩ জন বিজয়ী',
+        emptyBoard: en ? 'No qualifiers yet — keep playing!' : 'এখনও তালিকায় কেউ নেই—খেলতে থাকুন!',
         notEligible: en ? 'Not eligible yet' : 'যোগ্যতা বাকি',
         boards: {
             [BOARD_IDS.NEW_PLAYER]: {
                 title: en ? 'New Player Champion' : 'সেরা নতুন',
                 logic: en
                     ? 'Joined within 90 days. Need 500 pts, 15 hourlies, or 5 lessons.'
-                    : '৯০ দিনের মধ্যে যোগ দিয়েছেন। লাগবে ৫০০ পয়েন্ট, ১৫টি কুইজ অথবা ৫টি পাঠ।',
-                rankBy: en ? 'By monthly points' : 'মাসিক পয়েন্ট অনুযায়ী',
-                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ পাবেন পুরস্কার',
+                    : 'যোগদানের ৯০ দিনের মধ্যে ৫০০ পয়েন্ট, ১৫টি কুইজ বা ৫টি পাঠ শেষ করলে তালিকায় স্থান পাবেন।',
+                rankBy: en ? 'By monthly points' : 'মাসিক পয়েন্ট অনুযায়ী',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পাবেন পুরস্কার',
             },
             [BOARD_IDS.MOST_IMPROVED]: {
                 title: en ? 'Most Improved' : 'সবচেয়ে এগিয়ে',
                 logic: en
                     ? 'Beat last month. Need 200+ last month and 500+ this month.'
-                    : 'গত মাসের চেয়ে এগোন। গত মাসে ২০০+, এই মাসে ৫০০+ পয়েন্ট লাগবে।',
-                rankBy: en ? 'By growth vs last month' : 'গত মাসের চেয়ে বাড়তি পয়েন্ট',
-                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ পাবেন পুরস্কার',
+                    : 'গত মাসের চেয়ে পয়েন্ট বৃদ্ধি অনুযায়ী সেরা। শর্ত: গত মাসে ২০০+ ও চলতি মাসে ৫০০+ পয়েন্ট।',
+                rankBy: en ? 'By growth vs last month' : 'পয়েন্ট বৃদ্ধি অনুযায়ী',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পাবেন পুরস্কার',
             },
             [BOARD_IDS.TOP_LEARNER]: {
                 title: en ? 'Top Learner' : 'পড়াশোনা',
                 logic: en
                     ? 'Most reading points this month. Need 8+ lessons done.'
-                    : 'এই মাসে পাঠ পড়ে সবচেয়ে বেশি পয়েন্ট। কমপক্ষে ৮টি পাঠ শেষ করতে হবে।',
-                rankBy: en ? 'By reading points' : 'রিডিং পয়েন্ট অনুযায়ী',
-                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ পাবেন পুরস্কার',
+                    : 'এই মাসে পাঠ পড়ে সর্বোচ্চ রিডিং পয়েন্ট অর্জনকারী (কমপক্ষে ৮টি পাঠ সম্পন্ন)।',
+                rankBy: en ? 'By reading points' : 'রিডিং পয়েন্ট অনুযায়ী',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পাবেন পুরস্কার',
             },
             [BOARD_IDS.MAIN]: {
                 title: en ? 'Monthly Champion' : 'মাসের সেরা',
                 logic: en
                     ? 'Top 3 by this month’s quiz + reading points.'
-                    : 'এই মাসের কুইজ ও পড়ার পয়েন্ট মিলিয়ে সেরা ৩।',
-                rankBy: en ? 'By total monthly points' : 'মাসিক মোট পয়েন্ট অনুযায়ী',
-                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ পাবেন পুরস্কার',
+                    : 'চলতি মাসের কুইজ ও পাঠ পড়ার মোট পয়েন্ট অনুযায়ী শীর্ষ ৩ জন।',
+                rankBy: en ? 'By total monthly points' : 'মাসিক মোট পয়েন্ট অনুযায়ী',
+                prize: en ? 'Top 3 win prizes' : 'সেরা ৩ জন পাবেন পুরস্কার',
             },
         },
         stats: {
@@ -295,6 +295,9 @@ export function getMonthlyPlayerScore(item, monthlyBoardTab) {
     if (!item) return 0;
     if (monthlyBoardTab === BOARD_IDS.MOST_IMPROVED) return Number(item.improvement) || 0;
     if (monthlyBoardTab === BOARD_IDS.TOP_LEARNER) return Number(item.learner_score) || 0;
+    if (monthlyBoardTab === BOARD_IDS.NEW_PLAYER || monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION || monthlyBoardTab === BOARD_IDS.MAIN) {
+        return Number(item.monthly_grand_score ?? item.points ?? item.score) || 0;
+    }
     return Number(item.points ?? item.score) || 0;
 }
 
@@ -381,7 +384,7 @@ export function getMonthlyBoardMeta(monthlyBoardTab, language, encouragementBoar
 export function normalizeMonthlyDisplayPoints(item, year, month) {
     const basePoints = Number(item.points) || 0;
     const viewReadingInMonth = Number(item.reading_points) || 0;
-    const profileReading = Number(item.profiles?.reading_points) || 0;
+    const profileReading = Number(item.profiles?.reading_points_ledger ?? item.profiles?.reading_points) || 0;
     const joinDate = item.profiles?.created_at ? new Date(item.profiles.created_at).getTime() : 0;
     const startOfMonth = new Date(year, month - 1, 1).getTime();
     const isNewUser = joinDate >= startOfMonth;
@@ -400,11 +403,17 @@ export function mapMonthlyRow(item, year, month) {
         completed_lessons: item.completed_lessons || item.profiles?.completed_lessons || [],
         slm_id: item.profiles?.slm_id || null,
         points,
+        base_points: item.base_points ?? points,
+        monthly_grand_score: item.monthly_grand_score ?? points,
+        active_days: item.active_days ?? 0,
+        eligible_days: item.eligible_days ?? null,
+        consistency_rate: item.consistency_rate ?? 0,
+        consistency_pct: item.consistency_pct ?? 0,
         reading_points: Number(item.reading_points) || 0,
         quiz_points: Number(item.quiz_points) || 0,
         total_penalties: Number(item.total_penalties) || 0,
-        joined_at: item.profiles?.created_at || null,
-        all_time_reading_points: Number(item.profiles?.reading_points) || 0,
+        joined_at: item.profiles?.created_at || item.joined_at || null,
+        all_time_reading_points: Number(item.profiles?.reading_points_ledger ?? item.profiles?.reading_points) || 0,
     };
 }
 
@@ -511,15 +520,26 @@ export function buildEncouragementBoards({
             completed_lessons: prof.completed_lessons || [],
             slm_id: prof.slm_id,
             points: 0,
+            base_points: 0,
+            monthly_grand_score: 0,
+            active_days: prof.active_days ?? 0,
+            eligible_days: prof.eligible_days ?? null,
+            consistency_rate: prof.consistency_rate ?? 0,
+            consistency_pct: prof.consistency_pct ?? 0,
             reading_points: 0,
             quiz_points: 0,
             total_penalties: 0,
             joined_at: prof.created_at,
-            all_time_reading_points: Number(prof.reading_points) || 0,
+            all_time_reading_points: Number(prof.reading_points_ledger ?? prof.reading_points) || 0,
         };
     }
 
-    const allCurrent = Object.values(currentByUser).sort((a, b) => b.points - a.points);
+    const allCurrent = Object.values(currentByUser).sort((a, b) => {
+        const scoreA = a.monthly_grand_score ?? a.points;
+        const scoreB = b.monthly_grand_score ?? b.points;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return b.points - a.points;
+    });
     const mainChampion = allCurrent[0] || null;
     const prevChampion = [...previous].sort((a, b) => b.points - a.points)[0] || null;
     const championTopIds = new Set(allCurrent.slice(0, RULES.TOP_N).map((p) => p.user_id));
@@ -536,6 +556,9 @@ export function buildEncouragementBoards({
             eligibility_note: meetsNewPlayerActivity(p, activity) ? null : eligibilityNote(p, activity, language),
         }))
         .sort((a, b) => {
+            const scoreA = a.monthly_grand_score ?? a.points;
+            const scoreB = b.monthly_grand_score ?? b.points;
+            if (scoreB !== scoreA) return scoreB - scoreA;
             if (b.points !== a.points) return b.points - a.points;
             if (b.hourly !== a.hourly) return b.hourly - a.hourly;
             if (b.reading_points !== a.reading_points) return b.reading_points - a.reading_points;

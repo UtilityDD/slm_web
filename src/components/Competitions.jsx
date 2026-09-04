@@ -44,6 +44,7 @@ import MonthWinnersReveal from './MonthWinnersReveal';
 import { checkReadingGate } from '../utils/readingHabitGate';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import ReadingGateModal from './ReadingGateModal';
+import { invalidateLeaderboardCaches } from '../utils/leaderboardCacheKeys';
 import { blockGuestWrite, isGuestUser, guestPreviewText } from '../utils/guestPreview';
 import { BrutalLoaderContent } from './loaders/PageLoader';
 import {
@@ -59,6 +60,7 @@ import {
     isPrizeSuperseded,
     isPrizeRecipient,
     PRIZE_STATUS,
+    BOARD_IDS,
     MONTHLY_SUB_TAB,
     MONTHLY_SUB_TAB_ORDER,
 } from '../utils/monthlyEncouragementBoards';
@@ -67,7 +69,11 @@ import {
     getHallOfFamePrizeViewCopy,
     normalizeHallOfFameViewMode,
 } from '../utils/hallOfFamePrizes';
-import { HOF_GALLERY_BOARDS_VERSION } from '../utils/hallOfFameSnapshots';
+import {
+    HOF_GALLERY_BOARDS_VERSION,
+    hallOfFamePastMonths,
+    peekCachedHallOfFame,
+} from '../utils/hallOfFameSnapshots';
 import HallOfFameWinnerCard from './HallOfFameWinnerCard';
 import HallOfFameUserPrizesView from './HallOfFameUserPrizesView';
 import LeaderboardRankChip from './LeaderboardRankChip';
@@ -75,6 +81,9 @@ import ReadingLevelAvatarFrame from './ReadingLevelAvatarFrame';
 import LeaderboardUserSheet from './LeaderboardUserSheet';
 import AvatarPhoto, { imagePreviewFromEvent } from './AvatarPhoto';
 import { AVATAR_EDGE } from '../utils/avatarImage';
+import AnnualGrandTrophyLeaderboard from './AnnualGrandTrophyLeaderboard';
+import MonthlyScoreDetailModal from './MonthlyScoreDetailModal';
+import { fetchAnnualGrandTrophy } from '../utils/dailyActivityService';
 
 /** Sync peek of SWR monthly cache so Rank can paint before network. */
 function peekCachedMonthlyLeaderboard() {
@@ -399,7 +408,9 @@ export default function Competitions({
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
     const [fetchError, setFetchError] = useState(false);
     const [showCompactView, setShowCompactView] = useState(!isFullLeaderboard);
-    const [leaderboardTab, setLeaderboardTab] = useState('monthly'); // 'monthly' | 'all-time'
+    const [leaderboardTab, setLeaderboardTab] = useState('monthly'); // 'monthly' | 'annual' | 'all-time'
+    const [annualLeaderboard, setAnnualLeaderboard] = useState([]);
+    const [loadingAnnual, setLoadingAnnual] = useState(false);
     const [monthlyBoardTab, setMonthlyBoardTab] = useState(MONTHLY_SUB_TAB.CHAMPION);
     const [monthlyLeaderboard, setMonthlyLeaderboard] = useState(() => (
         isFullLeaderboard ? peekCachedMonthlyLeaderboard() : []
@@ -424,7 +435,7 @@ export default function Competitions({
     // Hall of Fame Gallery State
     const [showHallOfFame, setShowHallOfFame] = useState(isPrizesSurface);
     const [hallOfFameBoardTab, setHallOfFameBoardTab] = useState(MONTHLY_SUB_TAB.CHAMPION);
-    const [hallOfFameData, setHallOfFameData] = useState([]);
+    const [hallOfFameData, setHallOfFameData] = useState(() => (isPrizesSurface || isRankSurface ? peekCachedHallOfFame() : []));
     const [loadingGallery, setLoadingGallery] = useState(false);
     const [maximizedAvatar, setMaximizedAvatar] = useState(null);
     const openMaximizedImage = (url, event, extra = {}) => {
@@ -815,6 +826,7 @@ export default function Competitions({
     const [showHourlyPenaltyInfoModal, setShowHourlyPenaltyInfoModal] = useState(false);
     const [showMonthlyBoardInfoModal, setShowMonthlyBoardInfoModal] = useState(false);
     const [leaderboardUserSheet, setLeaderboardUserSheet] = useState(null);
+    const [selectedMonthlyDetailPlayer, setSelectedMonthlyDetailPlayer] = useState(null);
     const encouragementCopy = getEncouragementCopy(language);
     const activeMonthlyList = leaderboardTab === 'monthly'
         ? getMonthlyPrizeDisplayList(monthlyBoardTab, monthlyLeaderboard, encouragementBoards)
@@ -839,6 +851,9 @@ export default function Competitions({
             if (isFullLeaderboard) {
                 // Rank / Prizes: cache-first monthly boards (force only when caller asks)
                 promises.push(fetchMonthlyLeaderboard(forceRefresh));
+                if (leaderboardTab === 'annual') {
+                    promises.push(fetchAnnualLeaderboard(forceRefresh));
+                }
             } else {
                 promises.push(fetchHourlyQuiz());
             }
@@ -856,9 +871,7 @@ export default function Competitions({
                         });
                     }
                 } else {
-                    // Play: hourly quiz + compact ladder only. Do not pull monthly/HoF
-                    // (those belong to Rank/Prizes and were the fat uncached path).
-                    promises.push(fetchLeaderboard(forceRefresh));
+                    // Play: hourly quiz attempts + user rank only. Do not pull monthly/HoF/full
                     promises.push(fetchTodayAttempts());
                     promises.push(fetchUserRank(forceRefresh));
                 }
@@ -1216,9 +1229,13 @@ export default function Competitions({
                 return [mockAttempt, ...prev];
             });
 
-            fetchLeaderboard(true);
-            fetchFullLeaderboard(true);
-            fetchMonthlyLeaderboard(true);
+            invalidateLeaderboardCaches(user?.id);
+            if (isFullLeaderboard) {
+                fetchFullLeaderboard(true);
+                fetchMonthlyLeaderboard(true);
+                fetchAnnualLeaderboard(true);
+            }
+            if (user) fetchUserRank(true);
             refreshProfile(user, true);
 
             // Update updated_at in profiles table to reflect recent activity
@@ -1311,9 +1328,12 @@ export default function Competitions({
 
             // Refresh data
             await fetchTodayAttempts();
-            await fetchLeaderboard(true);
-            await fetchFullLeaderboard(true);
-            await fetchMonthlyLeaderboard(true);
+            invalidateLeaderboardCaches(user?.id);
+            if (isFullLeaderboard) {
+                await fetchFullLeaderboard(true);
+                await fetchMonthlyLeaderboard(true);
+            }
+            if (user) await fetchUserRank(true);
             if (submission.quiz_id === hourlyQuiz?.id) {
                 // Update local state immediately to lock the UI
                 setLastAttemptTime(submission.timestamp);
@@ -1627,42 +1647,22 @@ export default function Competitions({
     };
 
     const fetchLeaderboard = async (forceRefresh = false) => {
-        try {
-            const cacheKey = 'leaderboard_top_10_all_time_rdg';
-
-            const formattedData = await requestManager.fetch(
-                cacheKey,
-                async () => {
-                    const query = supabase
-                        .from('leaderboard_view')
-                        .select('*')
-                        .order('score', { ascending: false })
-                        .limit(10);
-
-                    const { data, error } = await query;
-
-                    if (error) throw error;
-
-                    return (data || []).map(item => ({
-                        ...item,
-                        points: item.score ?? 0,
-                        reading_points: item.reading_points ?? 0
-                    }));
-                },
-                { ttl: 5, swr: true, forceRefresh }
-            );
-
-            if (formattedData) {
-                setLeaderboard(formattedData);
-            }
-            if (user) fetchUserRank(forceRefresh);
-
-        } catch (error) {
-            console.error('Error fetching leaderboard:', error);
-            setFetchError(true);
-        }
+        if (user) fetchUserRank(forceRefresh);
     };
 
+    const fetchAnnualLeaderboard = async (forceRefresh = false) => {
+        setLoadingAnnual(true);
+        try {
+            const data = await fetchAnnualGrandTrophy(forceRefresh);
+            if (data && Array.isArray(data)) {
+                setAnnualLeaderboard(data);
+            }
+        } catch (error) {
+            console.error('Error fetching annual leaderboard:', error);
+        } finally {
+            setLoadingAnnual(false);
+        }
+    };
 
     const fetchFullLeaderboard = async (forceRefresh = false) => {
         setLoadingFull(true);
@@ -1712,14 +1712,19 @@ export default function Competitions({
     };
 
     const fetchHallOfFameGallery = async (forceRefresh = false) => {
-        const hasCurrentBoards = hallOfFameData.length > 0
+        const pastCount = hallOfFamePastMonths().length;
+        const hasCurrentBoards = hallOfFameData.length >= pastCount
             && hallOfFameData[0]?.boardsVersion === HOF_GALLERY_BOARDS_VERSION;
         if (!forceRefresh && hasCurrentBoards) return;
         
-        setLoadingGallery(true);
+        if (hallOfFameData.length === 0) {
+            setLoadingGallery(true);
+        }
         try {
             const archive = await leaderboardService.fetchHallOfFame(forceRefresh);
-            if (archive) setHallOfFameData(archive);
+            if (archive && Array.isArray(archive) && archive.length > 0) {
+                setHallOfFameData(archive);
+            }
         } catch (error) {
             console.error('Error fetching gallery:', error);
         } finally {
@@ -1748,6 +1753,13 @@ export default function Competitions({
         setLeaderboardTab('monthly');
     };
 
+    const switchToAnnualLeaderboard = () => {
+        setLeaderboardTab('annual');
+        if (annualLeaderboard.length === 0) {
+            fetchAnnualLeaderboard();
+        }
+    };
+
     const switchToAllTimeLeaderboard = () => {
         setLeaderboardTab('all-time');
         if (fullLeaderboard.length === 0) {
@@ -1767,13 +1779,8 @@ export default function Competitions({
             onOpenUserProgress(userId);
             return;
         }
-        if (isFullLeaderboard) {
-            setLeaderboardUserSheet({ userId, preview, rank });
-            return;
-        }
-        if (typeof onOpenUserProgress === 'function') {
-            onOpenUserProgress(userId);
-        }
+        // Anyone else: open LeaderboardUserSheet (PublicPrideCard for linemen, full admin sheet for admin)
+        setLeaderboardUserSheet({ userId, preview, rank });
     };
 
     const startQuiz = async (quiz) => {
@@ -2165,55 +2172,66 @@ export default function Competitions({
                 {/* Sticky controls — tabs first, no page title */}
                 <div className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#fffdf7]/90 backdrop-blur-md">
                     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
-                        {!showHallOfFame && leaderboardTab === 'monthly' && (
-                            <div
-                                className="flex w-full min-w-0 gap-1 rounded-full bg-slate-100/90 p-1 shadow-sm"
-                                role="tablist"
-                                aria-label={language === 'en' ? 'Monthly boards' : 'মাসিক বোর্ড'}
-                            >
-                                {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                        {!showHallOfFame && (
+                            <>
+                                <div className="flex w-full min-w-0 gap-1.5 rounded-2xl bg-slate-100 p-1 shadow-inner mb-2">
                                     <button
-                                        key={tabId}
                                         type="button"
-                                        role="tab"
-                                        aria-selected={monthlyBoardTab === tabId}
-                                        onClick={() => setMonthlyBoardTab(tabId)}
-                                        title={encouragementCopy.monthlyTabs[tabId]}
-                                        className={`flex-1 min-w-0 truncate rounded-full px-2 py-2.5 text-[13px] font-black leading-tight transition-all active:scale-[0.98] sm:px-3 sm:py-3 sm:text-base ${
-                                            monthlyBoardTab === tabId
+                                        onClick={switchToMonthlyLeaderboard}
+                                        className={`flex-1 min-w-0 truncate rounded-xl py-2 px-3 text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 ${
+                                            leaderboardTab === 'monthly'
                                                 ? 'bg-white text-orange-600 shadow-sm'
                                                 : 'text-slate-600 hover:text-slate-900'
                                         } ${language === 'bn' ? 'font-bengali' : ''}`}
                                     >
-                                        <span className="sm:hidden">
-                                            {encouragementCopy.monthlyTabsShort?.[tabId] || encouragementCopy.monthlyTabs[tabId]}
-                                        </span>
-                                        <span className="hidden sm:inline">
-                                            {encouragementCopy.monthlyTabs[tabId]}
-                                        </span>
+                                        <span>📅</span>
+                                        <span>{language === 'en' ? 'Monthly' : 'চলতি মাস'}</span>
                                     </button>
-                                ))}
-                            </div>
-                        )}
+                                    <button
+                                        type="button"
+                                        onClick={switchToAnnualLeaderboard}
+                                        className={`flex-1 min-w-0 truncate rounded-xl py-2 px-3 text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-1.5 ${
+                                            leaderboardTab === 'annual'
+                                                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm'
+                                                : 'text-amber-800 hover:text-amber-950'
+                                        } ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    >
+                                        <span>🏆</span>
+                                        <span>{language === 'en' ? '7th March Trophy' : '৭ই মার্চ ট্রফি'}</span>
+                                    </button>
+                                </div>
 
-                        {!showHallOfFame && leaderboardTab === 'all-time' && (
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <button
-                                    type="button"
-                                    onClick={switchToMonthlyLeaderboard}
-                                    className={`inline-flex min-w-0 items-center gap-1.5 text-sm font-bold text-orange-600 hover:text-orange-700 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0" aria-hidden>
-                                        <path d="m15 18-6-6 6-6" />
-                                    </svg>
-                                    <span className="truncate sm:hidden">
-                                        {language === 'en' ? 'Monthly' : 'মাসিক'}
-                                    </span>
-                                    <span className="hidden truncate sm:inline">
-                                        {language === 'en' ? 'Monthly leaderboard' : 'মাসিক লিডারবোর্ড'}
-                                    </span>
-                                </button>
-                            </div>
+                                {leaderboardTab === 'monthly' && (
+                                    <div
+                                        className="flex w-full min-w-0 gap-1 rounded-full bg-slate-100/90 p-1 shadow-sm"
+                                        role="tablist"
+                                        aria-label={language === 'en' ? 'Monthly boards' : 'মাসিক বোর্ড'}
+                                    >
+                                        {MONTHLY_SUB_TAB_ORDER.map((tabId) => (
+                                            <button
+                                                key={tabId}
+                                                type="button"
+                                                role="tab"
+                                                aria-selected={monthlyBoardTab === tabId}
+                                                onClick={() => setMonthlyBoardTab(tabId)}
+                                                title={encouragementCopy.monthlyTabs[tabId]}
+                                                className={`flex-1 min-w-0 truncate rounded-full px-2 py-2 text-[12px] font-black leading-tight transition-all active:scale-[0.98] sm:px-3 sm:py-2.5 sm:text-sm ${
+                                                    monthlyBoardTab === tabId
+                                                        ? 'bg-white text-orange-600 shadow-sm'
+                                                        : 'text-slate-600 hover:text-slate-900'
+                                                } ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            >
+                                                <span className="sm:hidden">
+                                                    {encouragementCopy.monthlyTabsShort?.[tabId] || encouragementCopy.monthlyTabs[tabId]}
+                                                </span>
+                                                <span className="hidden sm:inline">
+                                                    {encouragementCopy.monthlyTabs[tabId]}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {showHallOfFame && (
@@ -2398,24 +2416,35 @@ export default function Competitions({
                 ) : (
                     <>
                     <div className={`max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-3 ${leaderboardTab === 'all-time' ? 'pb-48 md:pb-56' : 'pb-24 md:pb-28'}`}>
-                    {leaderboardTab === 'monthly' && (
-                        <div className="mx-auto mb-1 max-w-2xl px-2 sm:mb-2">
-                            {monthlyBoardMeta ? (
-                                <MonthlyBoardHeader
-                                    meta={monthlyBoardMeta}
-                                    language={language}
-                                    monthlyBoardTab={monthlyBoardTab}
-                                    onInfoClick={() => setShowMonthlyBoardInfoModal(true)}
-                                    onAllTimeClick={switchToAllTimeLeaderboard}
-                                />
-                            ) : (
-                                <div className="h-8" aria-hidden />
+                    {leaderboardTab === 'annual' ? (
+                        <AnnualGrandTrophyLeaderboard
+                            annualLeaderboard={annualLeaderboard}
+                            loading={loadingAnnual}
+                            language={language}
+                            currentUserId={user?.id}
+                            onOpenUserProgress={openUserProgress}
+                            onMaximizeImage={openMaximizedImage}
+                            onRefresh={() => fetchAnnualLeaderboard(true)}
+                        />
+                    ) : (
+                        <>
+                            {leaderboardTab === 'monthly' && (
+                                <div className="mx-auto mb-1 max-w-2xl px-2 sm:mb-2">
+                                    {monthlyBoardMeta ? (
+                                        <MonthlyBoardHeader
+                                            meta={monthlyBoardMeta}
+                                            language={language}
+                                            monthlyBoardTab={monthlyBoardTab}
+                                            onInfoClick={() => setShowMonthlyBoardInfoModal(true)}
+                                        />
+                                    ) : (
+                                        <div className="h-8" aria-hidden />
+                                    )}
+                                </div>
                             )}
-                        </div>
-                    )}
 
-                    {/* Winners Podium / List Container */}
-                    <div className="space-y-4">
+                            {/* Winners Podium / List Container */}
+                            <div className="space-y-4">
                         {(() => {
                             const boardList = leaderboardTab === 'all-time' ? fullLeaderboard : activeMonthlyList;
                             const boardLoading = leaderboardTab === 'all-time' ? loadingFull : loadingMonthly;
@@ -2452,9 +2481,11 @@ export default function Competitions({
 
                             return (
                             <>
-                                {/* Top 3 — compact strip on monthly; tall podium on all-time */}
+                                {/* Top 3 Podium Stage */}
                                 {(() => {
-                                    const list = leaderboardTab === 'all-time' ? fullLeaderboard : monthlyPodiumList;
+                                    const list = monthlyPodiumList;
+                                    if (!list || list.length === 0) return null;
+
                                     let topPlayers = [];
                                     if (list.length === 1) {
                                         topPlayers = [list[0]];
@@ -2470,67 +2501,6 @@ export default function Competitions({
                                             : (topPlayers.length === 2 ? (idx === 0 ? 2 : 1) : (idx === 0 ? 2 : idx === 1 ? 1 : 3))
                                     );
 
-                                    // --- Monthly: compact Top 3 strip ---
-                                    if (leaderboardTab === 'monthly') {
-                                        return (
-                                            <div className="mb-3 animate-fade-in overflow-visible rounded-2xl border border-orange-200/70 bg-gradient-to-b from-amber-50/90 via-[#fffdf7] to-white px-3 py-3.5 shadow-md shadow-orange-500/10 sm:mb-4 sm:px-5 sm:py-4">
-                                                <div className="grid grid-cols-3 items-end gap-2 sm:gap-3">
-                                                    {topPlayers.map((player, idx) => {
-                                                        const rank = resolveRank(idx);
-                                                        const isWinner = topPlayers.length === 1 ? true : idx === 1;
-                                                        const superseded = isPrizeSuperseded(player);
-                                                        const displayName = formatPodiumFirstName(player.full_name);
-                                                        const avatarSize = isWinner
-                                                            ? 'h-14 w-14 sm:h-16 sm:w-16'
-                                                            : 'h-12 w-12 sm:h-14 sm:w-14';
-
-                                                        return (
-                                                            <div
-                                                                key={player.user_id}
-                                                                role="button"
-                                                                tabIndex={0}
-                                                                onClick={() => openUserProgress(player.user_id, player, rank)}
-                                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
-                                                                className={`flex min-h-[7.25rem] flex-col items-center justify-end cursor-pointer transition-transform active:scale-[0.97] sm:min-h-[8rem] ${isWinner && !superseded ? '-translate-y-0.5' : ''} ${superseded ? 'opacity-70' : ''}`}
-                                                            >
-                                                                <div className="relative mb-1.5 shrink-0">
-                                                                    <ReadingLevelAvatarFrame
-                                                                        level={player.training_level || 0}
-                                                                        readingPoints={firstTimeReadingPointsFromLessons(completedLessonsForBadge(player))}
-                                                                        language={language}
-                                                                        sizeClass={avatarSize}
-                                                                        avatarUrl={player.avatar_url}
-                                                                        displayEdge={AVATAR_EDGE.card}
-                                                                        fallbackLetter={displayName?.[0] || '?'}
-                                                                        faded={superseded}
-                                                                        onAvatarClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            openMaximizedImage(player.avatar_url, e);
-                                                                        }}
-                                                                        cornerSlot={(
-                                                                            <LeaderboardRankChip
-                                                                                rank={rank}
-                                                                                superseded={superseded}
-                                                                                size="sm"
-                                                                                className="absolute -left-1 -top-0.5 z-10 rounded bg-white/95 px-1 py-0.5 shadow-sm"
-                                                                            />
-                                                                        )}
-                                                                    />
-                                                                </div>
-                                                                <p className={`max-w-full px-0.5 text-center text-[11px] font-black leading-tight sm:text-xs ${
-                                                                    superseded ? 'text-slate-400 line-through' : 'text-slate-900'
-                                                                } ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                                    <span className="block truncate">{displayName}</span>
-                                                                </p>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    // --- All-time: existing tall podium ---
                                     const rankRing = {
                                         1: 'ring-[3px] ring-amber-400 shadow-[0_0_32px_rgba(251,191,36,0.45)]',
                                         2: 'ring-[3px] ring-slate-300 shadow-[0_0_20px_rgba(148,163,184,0.4)]',
@@ -2543,68 +2513,87 @@ export default function Competitions({
                                     };
 
                                     return (
-                                        <div className="leaderboard-podium-stage relative mb-5 overflow-visible rounded-3xl border border-orange-200/70 bg-gradient-to-b from-amber-50 via-orange-50/50 to-white px-2 pb-2 pt-11 shadow-lg shadow-orange-500/10 sm:mb-6 sm:px-5 sm:pb-3 sm:pt-12">
-                                            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden>
+                                        <div className="leaderboard-podium-stage relative mb-5 overflow-visible rounded-3xl border border-orange-200/70 bg-gradient-to-b from-amber-50 via-orange-50/50 to-white px-2 pb-2 pt-11 shadow-lg shadow-orange-500/10 sm:mb-6 sm:px-5 sm:pb-3 sm:pt-12 animate-fade-in">
+                                            <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden="true">
                                                 <div className="absolute -left-8 top-0 h-36 w-36 rounded-full bg-amber-300/35 blur-3xl" />
                                                 <div className="absolute -right-10 top-6 h-32 w-32 rounded-full bg-orange-400/25 blur-3xl" />
                                             </div>
 
                                             <div className="relative z-10 grid grid-cols-3 items-end gap-2 sm:gap-4">
-                                            {topPlayers.map((player, idx) => {
-                                                const isWinner = topPlayers.length === 1 ? true : (topPlayers.length === 2 ? idx === 1 : idx === 1);
-                                                const rank = resolveRank(idx);
-                                                const superseded = false;
-                                                const displayName = formatPodiumFirstName(player.full_name);
+                                                {topPlayers.map((player, idx) => {
+                                                    const isWinner = topPlayers.length === 1 ? true : (topPlayers.length === 2 ? idx === 1 : idx === 1);
+                                                    const rank = resolveRank(idx);
+                                                    const superseded = isPrizeSuperseded(player);
+                                                    const displayName = formatPodiumFirstName(player.full_name);
+                                                    const formattedScore = formatMonthlyPlayerScore(player, monthlyBoardTab);
 
-                                                return (
-                                                    <div
-                                                        key={player.user_id}
-                                                        role="button"
-                                                        tabIndex={0}
-                                                        onClick={() => openUserProgress(player.user_id, player, rank)}
-                                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openUserProgress(player.user_id, player, rank); }}
-                                                        className={`flex flex-col items-center cursor-pointer transition-transform active:scale-[0.97] ${isWinner ? '-translate-y-1.5' : ''}`}
-                                                    >
-                                                        <div className="relative mb-2.5 flex flex-col items-center">
-                                                            {rank === 1 && (
-                                                                <span className="pointer-events-none absolute -top-9 left-1/2 z-30 -translate-x-1/2 sm:-top-10" aria-hidden>
-                                                                    <span className="animate-crown block text-2xl leading-none sm:text-3xl">👑</span>
-                                                                </span>
-                                                            )}
-                                                            <div className={`relative ${isWinner ? 'h-[5.25rem] w-[5.25rem] sm:h-28 sm:w-28' : 'h-[4.35rem] w-[4.35rem] sm:h-24 sm:w-24'} shrink-0`}>
-                                                                <div
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        openMaximizedImage(player.avatar_url, e);
-                                                                    }}
-                                                                    className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''}`}
-                                                                >
-                                                                    {player.avatar_url ? (
-                                                                        <AvatarPhoto url={player.avatar_url} edge={AVATAR_EDGE.podium} className="h-full w-full object-cover" alt="" />
-                                                                    ) : (
-                                                                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-2xl font-black text-slate-500 sm:text-3xl">
-                                                                            {displayName?.[0] || '?'}
-                                                                        </div>
-                                                                    )}
+                                                    return (
+                                                        <div
+                                                            key={player.user_id}
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            onClick={() => setSelectedMonthlyDetailPlayer({ ...player, standing_rank: rank })}
+                                                            onKeyDown={(e) => { 
+                                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                                    setSelectedMonthlyDetailPlayer({ ...player, standing_rank: rank });
+                                                                }
+                                                            }}
+                                                            className={`flex flex-col items-center cursor-pointer transition-transform active:scale-[0.97] ${isWinner ? '-translate-y-1.5' : ''} ${superseded ? 'opacity-70' : ''}`}
+                                                        >
+                                                            <div className="relative mb-2.5 flex flex-col items-center">
+                                                                {rank === 1 && (
+                                                                    <span className="pointer-events-none absolute -top-9 left-1/2 z-30 -translate-x-1/2 sm:-top-10" aria-hidden="true">
+                                                                        <span className="animate-crown block text-2xl leading-none sm:text-3xl">👑</span>
+                                                                    </span>
+                                                                )}
+                                                                <div className={`relative ${isWinner ? 'h-16 w-16 sm:h-20 sm:w-20' : 'h-14 w-14 sm:h-16 sm:w-16'} shrink-0`}>
+                                                                    <div
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            openMaximizedImage(player.avatar_url, e);
+                                                                        }}
+                                                                        className={`absolute inset-0 cursor-zoom-in overflow-hidden rounded-full border-[3px] border-white bg-white transition-transform active:scale-95 sm:border-4 ${rankRing[rank] || ''}`}
+                                                                    >
+                                                                        {player.avatar_url ? (
+                                                                            <AvatarPhoto url={player.avatar_url} edge={AVATAR_EDGE.podium} className="h-full w-full object-cover" alt="" />
+                                                                        ) : (
+                                                                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-xl font-black text-slate-500 sm:text-2xl">
+                                                                                {displayName?.[0] || '?'}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                        <p className={`mb-2 max-w-full px-0.5 text-center text-xs font-black leading-snug text-slate-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                            <span className="block truncate">{displayName}</span>
-                                                        </p>
+                                                            <p className={`mb-1 max-w-full px-0.5 text-center text-xs font-black leading-tight ${superseded ? 'text-slate-400 line-through' : 'text-slate-900'} sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                <span className="block truncate">{displayName}</span>
+                                                            </p>
 
-                                                        <div
-                                                            className={`flex w-full items-start justify-center rounded-t-2xl pt-1.5 shadow-inner ${pedestalClass[rank]}`}
-                                                            aria-hidden
-                                                        >
-                                                            <span className="text-sm font-black text-white drop-shadow-sm sm:text-base">
-                                                                {rank}
+                                                            {/* Consistency Pill for Champion & New Player */}
+                                                            {(monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION || monthlyBoardTab === BOARD_IDS.MAIN || monthlyBoardTab === BOARD_IDS.NEW_PLAYER) && player.active_days != null && (
+                                                                <span className="mb-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-100/90 px-1.5 py-0.5 text-[9px] font-black text-amber-900 sm:text-[10px]">
+                                                                    <span>🔥</span>
+                                                                    <span>{player.active_days}{language === 'bn' ? 'দিন' : 'd'}</span>
+                                                                    <span className="text-amber-700 font-semibold">({player.consistency_pct ?? 0}%)</span>
+                                                                </span>
+                                                            )}
+
+                                                            {/* Monthly Score */}
+                                                            <span className="mb-2 font-mono text-xs font-black text-orange-950 sm:text-sm">
+                                                                {formattedScore}
                                                             </span>
+
+                                                            <div
+                                                                className={`flex w-full items-start justify-center rounded-t-2xl pt-1.5 shadow-inner ${pedestalClass[rank]}`}
+                                                                aria-hidden="true"
+                                                            >
+                                                                <span className="text-sm font-black text-white drop-shadow-sm sm:text-base">
+                                                                    {rank}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     );
@@ -2625,7 +2614,7 @@ export default function Competitions({
                                         return (
                                         <div 
                                             key={`${item.user_id}-${item.prize_status || 'row'}-${idx}`}
-                                            onClick={() => openUserProgress(item.user_id, item, rankLabel)}
+                                            onClick={() => setSelectedMonthlyDetailPlayer({ ...item, standing_rank: rankLabel })}
                                             className={`flex items-center gap-2 border-b border-slate-100 transition-colors last:border-b-0 last:rounded-b-2xl group cursor-pointer active:bg-orange-50/60 first:rounded-t-2xl sm:gap-3 ${
                                                 isMonthly ? 'min-h-[52px] px-2.5 py-2.5 pr-3 sm:px-4 sm:py-3' : 'p-2.5 sm:gap-4 sm:p-4'
                                             } ${
@@ -2762,12 +2751,20 @@ export default function Competitions({
                                                 </p>
                                                 {leaderboardTab === 'monthly' && (
                                                     <div className={superseded ? "opacity-35" : ""}>
-                                                        <MonthlyHourlyAvgPill
-                                                            hourly={item.hourly}
-                                                            language={language}
-                                                            encouragementBoards={encouragementBoards}
-                                                            align="end"
-                                                        />
+                                                        {(monthlyBoardTab === MONTHLY_SUB_TAB.CHAMPION || monthlyBoardTab === BOARD_IDS.MAIN || monthlyBoardTab === BOARD_IDS.NEW_PLAYER) && item.active_days != null ? (
+                                                            <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-900 leading-none">
+                                                                <span>🔥</span>
+                                                                <span>{item.active_days}{language === 'bn' ? 'দিন' : 'd'}</span>
+                                                                <span className="text-amber-700 font-bold">({item.consistency_pct ?? 0}%)</span>
+                                                            </span>
+                                                        ) : (
+                                                            <MonthlyHourlyAvgPill
+                                                                hourly={item.hourly}
+                                                                language={language}
+                                                                encouragementBoards={encouragementBoards}
+                                                                align="end"
+                                                            />
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -2779,6 +2776,8 @@ export default function Competitions({
                             );
                         })()}
                     </div>
+                        </>
+                    )}
                 </div>
 
                 {/* My Position Sticky Bar — portal so it stacks above SLM Radio FAB (outside scroll root) */}
@@ -2861,7 +2860,7 @@ export default function Competitions({
                                 placeholderEdge={AVATAR_EDGE.card}
                                 className="h-full w-full object-cover"
                                 alt={maximizedAvatar.title || ''}
-                                fetchPriority="high"
+                                fetchpriority="high"
                             />
                         )}
                         {(maximizedAvatar.title || maximizedAvatar.subtitle) && (
@@ -2881,6 +2880,17 @@ export default function Competitions({
                     </div>
                 </div>
             )}
+
+            <MonthlyScoreDetailModal
+                player={selectedMonthlyDetailPlayer}
+                isOpen={Boolean(selectedMonthlyDetailPlayer)}
+                onClose={() => setSelectedMonthlyDetailPlayer(null)}
+                monthlyBoardTab={monthlyBoardTab}
+                language={language}
+                isYou={Boolean(user?.id && selectedMonthlyDetailPlayer?.user_id === user.id)}
+                onOpenUserProgress={openUserProgress}
+                onMaximizeImage={openMaximizedImage}
+            />
 
             <MonthlyBoardInfoModal
                 open={showMonthlyBoardInfoModal}
@@ -3620,6 +3630,22 @@ export default function Competitions({
                 language={language}
                 meta={monthlyBoardMeta}
                 onClose={() => setShowMonthlyBoardInfoModal(false)}
+            />
+            <LeaderboardUserSheet
+                open={Boolean(leaderboardUserSheet)}
+                userId={leaderboardUserSheet?.userId}
+                preview={leaderboardUserSheet?.preview}
+                rank={leaderboardUserSheet?.rank}
+                language={language}
+                context={{
+                    tab: leaderboardTab,
+                    monthlyBoardTab,
+                    boardTitle: monthlyBoardMeta?.title,
+                }}
+                viewerUserId={user?.id || null}
+                viewerIsAdmin={userProfile?.role === 'admin'}
+                hallOfFameData={hallOfFameData}
+                onClose={() => setLeaderboardUserSheet(null)}
             />
         </div>
     );

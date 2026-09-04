@@ -23,7 +23,7 @@ import {
 } from '../utils/monthlyEncouragementBoards';
 
 const ADMIN_PROFILE_SELECT =
-    'full_name, avatar_url, district, training_level, points, reading_points, quiz_points, total_penalties, last_login_at, created_at, slm_id, block, blood_group, phone, phone_number';
+    'full_name, avatar_url, district, training_level, points, reading_points, reading_points_ledger, quiz_points, total_penalties, last_login_at, created_at, slm_id, block, blood_group, phone, phone_number';
 
 const TOOL_ICONS = {
     Pliers: '🔧',
@@ -271,7 +271,7 @@ export default function LeaderboardUserSheet({
         (async () => {
             try {
                 const bundle = await requestManager.fetch(
-                    `leaderboard_admin_card_v1_${userId}`,
+                    `leaderboard_admin_card_v2_${userId}`,
                     async () => {
                         const [profileRes, ppeRows, toolsRes] = await Promise.all([
                             supabase
@@ -290,8 +290,14 @@ export default function LeaderboardUserSheet({
                         if (profileRes.error) throw profileRes.error;
                         if (toolsRes.error) throw toolsRes.error;
 
+                        const rawProfile = profileRes.data || {};
+                        const normalizedProfile = {
+                            ...rawProfile,
+                            reading_points: rawProfile.reading_points_ledger ?? rawProfile.reading_points ?? 0,
+                        };
+
                         return {
-                            profile: profileRes.data,
+                            profile: normalizedProfile,
                             ppeAnswers: buildAnswersFromRows(ppeRows || []),
                             tools: toolsRes.data || [],
                         };
@@ -316,7 +322,19 @@ export default function LeaderboardUserSheet({
         return () => { active = false; };
     }, [open, userId, canSeePrivate]);
 
-    const merged = useMemo(() => ({ ...(preview || {}), ...(profile || {}) }), [profile, preview]);
+    const merged = useMemo(() => {
+        const raw = { ...(preview || {}), ...(profile || {}) };
+        const readingPoints =
+            profile?.reading_points_ledger ??
+            preview?.reading_points_ledger ??
+            preview?.reading_points ??
+            profile?.reading_points ??
+            0;
+        return {
+            ...raw,
+            reading_points: readingPoints,
+        };
+    }, [profile, preview]);
     const prizes = useMemo(
         () => (userId && hallOfFameData?.length ? getUserPrizeWins(hallOfFameData, userId, language) : []),
         [hallOfFameData, userId, language]

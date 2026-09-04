@@ -1,6 +1,11 @@
 import { supabase } from "../supabaseClient";
 import { requestManager } from "./requestManager";
 import {
+    fetchMonthlyDailyActivityMap,
+    getMonthlyElapsedDays,
+    calculateUserMonthlyConsistency,
+} from "./dailyActivityService";
+import {
     aggregateActivityAttempts,
     archiveBoardsFromEncouragement,
     BOARD_IDS,
@@ -16,15 +21,15 @@ import {
     clearAllMonthSnapshots,
     HOF_GALLERY_BOARDS_VERSION,
     HOF_GALLERY_CACHE_KEY,
+    HOF_START,
+    hallOfFamePastMonths,
     readClosedMonthSnapshots,
     writeMonthSnapshot,
 } from "./hallOfFameSnapshots";
-
-const HOF_START = { year: 2026, month: 3 };
 const HOF_MONTHLY_SELECT =
-    'user_id, full_name, avatar_url, district, training_level, points, reading_points, quiz_points, total_penalties, month_num, year_num, profiles(slm_id, reading_points, district, created_at)';
+    'user_id, full_name, avatar_url, district, training_level, points, reading_points, quiz_points, total_penalties, month_num, year_num, profiles(slm_id, points, reading_points, reading_points_ledger, district, created_at)';
 const HOF_PROFILE_SELECT =
-    'id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points';
+    'id, full_name, avatar_url, district, training_level, slm_id, created_at, points, reading_points, reading_points_ledger';
 const FAT_PROFILE_SELECT = `${HOF_PROFILE_SELECT}, completed_lessons`;
 
 const IST_OFFSET_MS = 330 * 60 * 1000;
@@ -217,21 +222,49 @@ async function fetchMonthlyActivityAttempts(start, end) {
     return all;
 }
 
-function hallOfFamePastMonths(now = new Date()) {
-    const currentY = now.getFullYear();
-    const currentM = now.getMonth() + 1;
-    const months = [];
-    let year = HOF_START.year;
-    let month = HOF_START.month;
-    while (year < currentY || (year === currentY && month < currentM)) {
-        months.push({ year, month });
-        month += 1;
-        if (month > 12) {
-            month = 1;
-            year += 1;
+/**
+ * Server-side activity aggregation via RPC.
+ * Non-destructive: if the RPC is not deployed or fails, it falls back to
+ * fetchMonthlyActivityAttempts / fetchMonthActivityForUsers + aggregateActivityAttempts.
+ */
+async function fetchMonthlyActivitySummary(start, end, userIds = null) {
+    try {
+        const params = {
+            p_start: start,
+            p_end: end,
+        };
+        if (Array.isArray(userIds) && userIds.length > 0) {
+            params.p_user_ids = userIds;
         }
+        const { data, error } = await supabase.rpc('get_monthly_encouragement_activity', params);
+
+        if (!error && Array.isArray(data)) {
+            const byUser = {};
+            for (const row of data) {
+                if (!row?.user_id) continue;
+                byUser[row.user_id] = {
+                    hourly: Number(row.hourly) || 0,
+                    lessons: Number(row.lessons) || 0,
+                    learner_score: Number(row.learner_score) || 0,
+                };
+            }
+            return byUser;
+        }
+        if (error) {
+            // Function might not be created yet in this environment
+            console.warn('[leaderboard] get_monthly_encouragement_activity RPC unavailable, falling back to client aggregation:', error.message);
+        }
+    } catch (err) {
+        console.warn('[leaderboard] get_monthly_encouragement_activity error, falling back:', err);
     }
-    return months.slice(-12);
+
+    // Graceful non-destructive fallback
+    if (Array.isArray(userIds) && userIds.length > 0) {
+        const rows = await fetchMonthActivityForUsers(start, end, userIds);
+        return aggregateActivityAttempts(rows);
+    }
+    const rows = await fetchMonthlyActivityAttempts(start, end);
+    return aggregateActivityAttempts(rows);
 }
 
 function prevMonthOf(year, month) {
@@ -310,7 +343,7 @@ async function fetchLeaderboardActivityByUserIds(userIds) {
             const chunk = unique.slice(i, i + chunkSize);
             const { data, error } = await supabase
                 .from('leaderboard_view')
-                .select('*')
+                .select('user_id, last_active, last_login_at')
                 .in('user_id', chunk);
 
             if (error) {
@@ -454,15 +487,16 @@ export const leaderboardService = {
         return requestManager.fetch(
             cacheKey,
             async () => {
-                const [viewRes, deltas] = await Promise.all([
+                const [viewRes, deltas, monthlyActivityMap] = await Promise.all([
                     supabase
                         .from('monthly_leaderboard_view')
-                        .select('*, profiles(reading_points, district, created_at, completed_lessons)')
+                        .select('*, profiles(points, reading_points, reading_points_ledger, district, created_at, slm_id, completed_lessons)')
                         .eq('month_num', m)
                         .eq('year_num', y)
                         .order('points', { ascending: false })
                         .limit(100),
                     fetchIstMonthDeltas(y, m),
+                    fetchMonthlyDailyActivityMap(y, m, forceRefresh),
                 ]);
 
                 if (viewRes.error) throw viewRes.error;
@@ -474,11 +508,12 @@ export const leaderboardService = {
                 // deltas above re-attribute the IST boundary hours; lesson_bonus rows can still land
                 // in an adjacent month, leaving points under-counted while profiles.reading_points is correct.
                 const startOfMonth = new Date(y, m - 1, 1).getTime();
+                const elapsedDays = getMonthlyElapsedDays(y, m);
 
                 const rows = data.map(item => {
                     const basePoints = Number(item.points) || 0;
                     const viewReadingInMonth = Number(item.reading_points) || 0;
-                    const profileReading = Number(item.profiles?.reading_points) || 0;
+                    const profileReading = Number(item.profiles?.reading_points_ledger ?? item.profiles?.reading_points) || 0;
                     const joinDate = item.profiles?.created_at ? new Date(item.profiles.created_at).getTime() : 0;
 
                     const isNewUser = joinDate >= startOfMonth;
@@ -487,16 +522,37 @@ export const leaderboardService = {
                     const readingGap = isNewUser ? Math.max(0, profileReading - viewReadingInMonth) : 0;
                     const displayPoints = basePoints + readingGap;
 
+                    const userActivity = monthlyActivityMap?.get(item.user_id) || { active_days: 0 };
+                    const consistency = calculateUserMonthlyConsistency(
+                        item.profiles?.created_at,
+                        elapsedDays,
+                        userActivity.active_days,
+                        y,
+                        m
+                    );
+                    const monthlyGrandScore = Math.round(displayPoints * (1 + consistency.consistency_rate));
+
                     return {
                         ...item,
+                        base_points: displayPoints,
                         points: displayPoints,
+                        monthly_grand_score: monthlyGrandScore,
+                        active_days: consistency.active_days,
+                        eligible_days: consistency.eligible_days,
+                        consistency_rate: consistency.consistency_rate,
+                        consistency_pct: consistency.consistency_pct,
                         reading_points_added: readingGap,
                         all_time_reading_points: profileReading,
                         district: item.profiles?.district || null,
                         completed_lessons: item.completed_lessons || item.profiles?.completed_lessons || [],
                         is_new_user: isNewUser
                     };
-                }).sort((a, b) => b.points - a.points);
+                }).sort((a, b) => {
+                    if (b.monthly_grand_score !== a.monthly_grand_score) {
+                        return b.monthly_grand_score - a.monthly_grand_score;
+                    }
+                    return b.points - a.points;
+                });
 
                 const activityByUser = await fetchLeaderboardActivityByUserIds(rows.map((row) => row.user_id));
                 return applyLeaderboardActivityToRows(rows, activityByUser);
@@ -517,20 +573,24 @@ export const leaderboardService = {
                 const pastMonths = hallOfFamePastMonths();
                 if (pastMonths.length === 0) return [];
 
-                if (forceRefresh) {
-                    clearAllMonthSnapshots();
-                }
-
+                // Closed months in the past are immutable; do not wipe snapshots on pull-to-refresh.
+                // Snapshots are automatically invalidated only when HOF_GALLERY_BOARDS_VERSION is bumped.
                 const snapshotByKey = readClosedMonthSnapshots(pastMonths);
-                if (allClosedMonthsSnapshotted(pastMonths, snapshotByKey)) {
+                const missingMonths = pastMonths.filter(
+                    ({ year, month }) => !snapshotByKey.has(`${year}-${month}`)
+                );
+
+                if (missingMonths.length === 0) {
                     return pastMonths
                         .slice()
                         .reverse()
-                        .map(({ year, month }) => snapshotByKey.get(`${year}-${month}`));
+                        .map(({ year, month }) => snapshotByKey.get(`${year}-${month}`))
+                        .filter(Boolean);
                 }
 
+                // Incrementally query only the missing months and their preceding month for deltas/rankings
                 const monthKeysToFetch = new Set();
-                for (const { year, month } of pastMonths) {
+                for (const { year, month } of missingMonths) {
                     monthKeysToFetch.add(`${year}-${month}`);
                     const prev = prevMonthOf(year, month);
                     if (isHofMonth(prev.year, prev.month)) {
@@ -558,8 +618,8 @@ export const leaderboardService = {
                 );
                 const profileById = await fetchProfilesForIds(missingIds, HOF_PROFILE_SELECT);
 
-                const oldest = pastMonths[0];
-                const joinerCutoff = getNewPlayerCutoff(oldest.year, oldest.month);
+                const oldestMissing = missingMonths[0];
+                const joinerCutoff = getNewPlayerCutoff(oldestMissing.year, oldestMissing.month);
                 const { data: joinerProfiles, error: joinersError } = await supabase
                     .from('profiles')
                     .select(HOF_PROFILE_SELECT)
@@ -573,61 +633,62 @@ export const leaderboardService = {
                     );
                 }
 
-                const pastActivity = await Promise.all(
-                    pastMonths.map(async ({ year, month }) => {
+                const missingActivity = await Promise.all(
+                    missingMonths.map(async ({ year, month }) => {
                         const { start, end } = monthBounds(year, month);
                         const key = `${year}-${month}`;
                         const userIds = (byMonth[key] || []).map((row) => row.user_id);
-                        const rows = await fetchMonthActivityForUsers(start, end, userIds);
-                        return [key, aggregateActivityAttempts(rows)];
+                        const activityMap = await fetchMonthlyActivitySummary(start, end, userIds);
+                        return [key, activityMap];
                     })
                 );
-                const activityByMonth = Object.fromEntries(pastActivity);
+                const activityByMonth = Object.fromEntries(missingActivity);
 
-                const entries = pastMonths
-                    .slice()
-                    .reverse()
-                    .map(({ year, month }) => {
-                        const key = `${year}-${month}`;
-                        const prev = prevMonthOf(year, month);
-                        const prevKey = `${prev.year}-${prev.month}`;
-                        const cutoff = getNewPlayerCutoff(year, month);
+                const computedByKey = new Map();
+                for (const { year, month } of missingMonths) {
+                    const key = `${year}-${month}`;
+                    const prev = prevMonthOf(year, month);
+                    const prevKey = `${prev.year}-${prev.month}`;
+                    const cutoff = getNewPlayerCutoff(year, month);
 
-                        const encouragement = buildEncouragementBoards({
-                            currentRows: byMonth[key] || [],
-                            previousRows: byMonth[prevKey] || [],
-                            joinerProfiles: (joinerProfiles || []).filter(
-                                (profile) => profile.created_at && new Date(profile.created_at) >= cutoff
-                            ),
-                            activity: activityByMonth[key] || {},
-                            year,
-                            month,
-                            prevYear: prev.year,
-                            prevMonth: prev.month,
-                            language: 'bn',
-                        });
-
-                        const boards = slimArchiveBoards(archiveBoardsFromEncouragement(encouragement));
-                        const championWinners = (boards[BOARD_IDS.MAIN] || []).map((winner) => ({
-                            ...winner,
-                            points: winner.points ?? 0,
-                        }));
-
-                        return {
-                            month,
-                            year,
-                            boards,
-                            boardsVersion: HOF_GALLERY_BOARDS_VERSION,
-                            prizeWinners: encouragement.prizeWinners,
-                            winners: championWinners,
-                        };
+                    const encouragement = buildEncouragementBoards({
+                        currentRows: byMonth[key] || [],
+                        previousRows: byMonth[prevKey] || [],
+                        joinerProfiles: (joinerProfiles || []).filter(
+                            (profile) => profile.created_at && new Date(profile.created_at) >= cutoff
+                        ),
+                        activity: activityByMonth[key] || {},
+                        year,
+                        month,
+                        prevYear: prev.year,
+                        prevMonth: prev.month,
+                        language: 'bn',
                     });
 
-                for (const entry of entries) {
+                    const boards = slimArchiveBoards(archiveBoardsFromEncouragement(encouragement));
+                    const championWinners = (boards[BOARD_IDS.MAIN] || []).map((winner) => ({
+                        ...winner,
+                        points: winner.points ?? 0,
+                    }));
+
+                    const entry = {
+                        month,
+                        year,
+                        boards,
+                        boardsVersion: HOF_GALLERY_BOARDS_VERSION,
+                        prizeWinners: encouragement.prizeWinners,
+                        winners: championWinners,
+                    };
+
                     writeMonthSnapshot(entry);
+                    computedByKey.set(key, entry);
                 }
 
-                return entries;
+                return pastMonths
+                    .slice()
+                    .reverse()
+                    .map(({ year, month }) => computedByKey.get(`${year}-${month}`) || snapshotByKey.get(`${year}-${month}`))
+                    .filter(Boolean);
             },
             { ttl: 30, swr: true, forceRefresh }
         );
@@ -651,45 +712,88 @@ export const leaderboardService = {
                 const cutoff = getNewPlayerCutoff(y, m);
                 const { start, end } = monthBounds(y, m);
 
-                const [currentRes, prevRes, joinersRes, activityRows, currentDeltas, prevDeltas] = await Promise.all([
+                const [currentRes, prevRes, joinersRes, activity, currentDeltas, prevDeltas, monthlyActivityMap] = await Promise.all([
                     supabase
                         .from('monthly_leaderboard_view')
-                        .select('*, profiles(reading_points, district, created_at, slm_id, completed_lessons)')
+                        .select('*, profiles(points, reading_points, reading_points_ledger, district, created_at, slm_id, completed_lessons)')
                         .eq('month_num', m)
                         .eq('year_num', y)
                         .order('points', { ascending: false })
                         .limit(100),
                     supabase
                         .from('monthly_leaderboard_view')
-                        .select('*, profiles(reading_points, district, created_at, slm_id, completed_lessons)')
+                        .select('*, profiles(points, reading_points, reading_points_ledger, district, created_at, slm_id, completed_lessons)')
                         .eq('month_num', prevM)
                         .eq('year_num', prevY)
                         .order('points', { ascending: false })
                         .limit(100),
                     supabase
                         .from('profiles')
-                        .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, reading_points, completed_lessons')
+                        .select('id, full_name, avatar_url, district, training_level, slm_id, created_at, points, reading_points, reading_points_ledger, completed_lessons')
                         .gte('created_at', cutoff.toISOString()),
-                    fetchMonthlyActivityAttempts(start, end),
+                    fetchMonthlyActivitySummary(start, end),
                     fetchIstMonthDeltas(y, m),
                     fetchIstMonthDeltas(prevY, prevM),
+                    fetchMonthlyDailyActivityMap(y, m, forceRefresh),
                 ]);
 
                 if (currentRes.error) throw currentRes.error;
                 if (prevRes.error) throw prevRes.error;
                 if (joinersRes.error) throw joinersRes.error;
 
-                const activity = aggregateActivityAttempts(activityRows);
-
                 const boundaryProfiles = await fetchProfilesForIds([
                     ...missingDeltaUserIds(currentRes.data, currentDeltas),
                     ...missingDeltaUserIds(prevRes.data, prevDeltas),
                 ]);
 
+                const elapsedDays = getMonthlyElapsedDays(y, m);
+                const rawCurrent = applyIstDeltasToRows(currentRes.data, currentDeltas, boundaryProfiles);
+                const currentWithConsistency = rawCurrent.map((row) => {
+                    const userAct = monthlyActivityMap?.get(row.user_id) || { active_days: 0 };
+                    const consistency = calculateUserMonthlyConsistency(
+                        row.profiles?.created_at,
+                        elapsedDays,
+                        userAct.active_days,
+                        y,
+                        m
+                    );
+                    const basePoints = Number(row.points) || 0;
+                    const grandScore = Math.round(basePoints * (1 + consistency.consistency_rate));
+                    return {
+                        ...row,
+                        base_points: basePoints,
+                        monthly_grand_score: grandScore,
+                        active_days: consistency.active_days,
+                        eligible_days: consistency.eligible_days,
+                        consistency_rate: consistency.consistency_rate,
+                        consistency_pct: consistency.consistency_pct,
+                    };
+                });
+
+                const joinersWithConsistency = (joinersRes.data || []).map((prof) => {
+                    const userAct = monthlyActivityMap?.get(prof.id) || { active_days: 0 };
+                    const consistency = calculateUserMonthlyConsistency(
+                        prof.created_at,
+                        elapsedDays,
+                        userAct.active_days,
+                        y,
+                        m
+                    );
+                    return {
+                        ...prof,
+                        base_points: 0,
+                        monthly_grand_score: 0,
+                        active_days: consistency.active_days,
+                        eligible_days: consistency.eligible_days,
+                        consistency_rate: consistency.consistency_rate,
+                        consistency_pct: consistency.consistency_pct,
+                    };
+                });
+
                 const encouragement = buildEncouragementBoards({
-                    currentRows: applyIstDeltasToRows(currentRes.data, currentDeltas, boundaryProfiles),
+                    currentRows: currentWithConsistency,
                     previousRows: applyIstDeltasToRows(prevRes.data, prevDeltas, boundaryProfiles),
-                    joinerProfiles: joinersRes.data || [],
+                    joinerProfiles: joinersWithConsistency,
                     activity,
                     year: y,
                     month: m,

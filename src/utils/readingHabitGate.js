@@ -98,6 +98,10 @@ export async function checkReadingGate({ userId, completedLessons, trainingChapt
     }
 
     const local = readLocalGateState(userId);
+    if (isWithinReadingGateWindow(local?.lastActivityAt)) {
+        return { allowed: true, lastActivityAt: local.lastActivityAt };
+    }
+
     const { ok: dbOk, at: dbAt } = await fetchLatestHabitActivity(userId);
     const lastAt = pickLatestActivityAt(dbAt, local?.lastActivityAt);
 

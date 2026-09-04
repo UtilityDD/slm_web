@@ -251,7 +251,7 @@ export default function IdleStoryReminder({
                     src={story.image}
                     alt=""
                     decoding="async"
-                    fetchPriority="high"
+                    fetchpriority="high"
                     className="absolute inset-0 h-full w-full object-cover"
                     style={{ objectPosition: EMOTIONAL_IMAGE_FOCUS[story.image] || 'center 20%' }}
                 />

@@ -179,7 +179,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                             reading_points: data.reading_points_ledger ?? data.reading_points ?? 0,
                         };
                     },
-                    { ttl: 5, swr: true, forceRefresh: true }
+                    { ttl: 5, swr: true, forceRefresh: false }
                 );
 
                 const profileData = await profilePromise;

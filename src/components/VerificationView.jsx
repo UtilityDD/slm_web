@@ -21,7 +21,7 @@ const VerificationView = ({ language, certificateId }) => {
                 setError(null);
                 
                 // Fetch profile data - look up by either id (UUID) or slm_id (Short ID)
-                let query = supabase.from('profiles').select('id, full_name, training_level, created_at, slm_id, points, reading_points, quiz_points');
+                let query = supabase.from('profiles').select('id, full_name, training_level, created_at, slm_id, points, reading_points, reading_points_ledger, quiz_points');
                 
                 // Improved matching logic
                 if (certificateId.includes('-') && certificateId.length > 30) {
@@ -58,7 +58,13 @@ const VerificationView = ({ language, certificateId }) => {
                         console.warn('Verification penalty fetch failed:', penaltyErr);
                     }
 
-                    setCertData({ ...data, totalPenaltySum });
+                    const certProfile = {
+                        ...data,
+                        reading_points: data.reading_points_ledger ?? data.reading_points ?? 0,
+                        totalPenaltySum,
+                    };
+
+                    setCertData(certProfile);
                     setStatus('verified');
                 } else {
                     console.warn('No data found for this Certificate ID');

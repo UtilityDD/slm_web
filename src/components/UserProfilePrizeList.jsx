@@ -3,10 +3,14 @@ import HallOfFamePrizeImage from './HallOfFamePrizeImage';
 import { getBoardTabLabel, getHallOfFamePrizeViewCopy, getUserPrizeWins } from '../utils/hallOfFamePrizes';
 import { getEncouragementCopy, getRankMedal } from '../utils/monthlyEncouragementBoards';
 import { leaderboardService } from '../utils/leaderboardService';
+import { peekCachedHallOfFame } from '../utils/hallOfFameSnapshots';
 
 export default function UserProfilePrizeList({ userId, language = 'bn' }) {
-    const [prizeWins, setPrizeWins] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [prizeWins, setPrizeWins] = useState(() => {
+        const cached = peekCachedHallOfFame();
+        return cached.length > 0 ? getUserPrizeWins(cached, userId, language) : [];
+    });
+    const [loading, setLoading] = useState(() => peekCachedHallOfFame().length === 0);
     const [maximizedImage, setMaximizedImage] = useState(null);
 
     const copy = getHallOfFamePrizeViewCopy(language);

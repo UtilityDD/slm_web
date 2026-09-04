@@ -50,7 +50,7 @@ const StoryCard = ({ story, onOpen, language, priority = false }) => {
                     alt=""
                     decoding="async"
                     loading={priority ? 'eager' : 'lazy'}
-                    fetchPriority={priority ? 'high' : 'auto'}
+                    fetchpriority={priority ? 'high' : 'auto'}
                     className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
                     style={{ objectPosition: storyImageFocus(story.image) }}
                 />
@@ -296,7 +296,7 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                     src={selectedStory.image}
                                     alt=""
                                     decoding="async"
-                                    fetchPriority="high"
+                                    fetchpriority="high"
                                     className="absolute inset-0 h-[115%] w-full object-cover motion-reduce:transform-none lg:h-full"
                                     style={{
                                         objectPosition: storyImageFocus(selectedStory.image),

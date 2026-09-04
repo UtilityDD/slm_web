@@ -197,7 +197,7 @@ export default function MorePage({
               {bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi'}
             </span>
             <span className={`mt-0.5 block font-semibold leading-snug text-emerald-50/95 ${bn ? 'font-bengali text-sm' : 'text-[11px]'}`}>
-              {bn ? 'পিটিডব্লিউ ও লাইন ক্লিয়ারেন্স গাইড' : 'PTW & line clearance guide'}
+              {bn ? 'ফিল্ড সুরক্ষা ও SOP গাইড' : 'Field safety & SOP guide'}
             </span>
           </span>
           <svg className="h-4 w-4 shrink-0 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
