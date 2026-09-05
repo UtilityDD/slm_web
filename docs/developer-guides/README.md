@@ -30,6 +30,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Android APK (Capacitor)](./android-apk.md) | Sideload APK vs PWA, version bump, slim sync, signing, update channel, dos/don’ts |
 | [Avatars, sponsor images, Free Storage](./avatars-sponsor-storage.md) | No `/render/image`, compress-on-upload, Free-plan transform quota |
 | [Reading habit & 48-hour gate](./reading-habit-and-gate.md) | Habit ledger separate from scoring; hourly quiz gate |
+| [Lineman-Friendly Bangla Style Guide](./lineman-friendly-bangla-style-guide.md) | Linguistic principles, field vocabulary, brotherly tone, and dual-sync workflow for training lessons |
 
 ## Conventions for new guides
 
