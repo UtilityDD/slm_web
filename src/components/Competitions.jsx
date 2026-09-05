@@ -1233,7 +1233,7 @@ export default function Competitions({
             if (isFullLeaderboard) {
                 fetchFullLeaderboard(true);
                 fetchMonthlyLeaderboard(true);
-                fetchAnnualLeaderboard(true);
+                fetchAnnualLeaderboard(); // respect 10-min SWR; no force — table grows to ~400k rows by year end
             }
             if (user) fetchUserRank(true);
             refreshProfile(user, true);

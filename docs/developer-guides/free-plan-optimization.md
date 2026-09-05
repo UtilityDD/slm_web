@@ -79,7 +79,9 @@ Hourly “this hour / today” queries on Home are **kept** (two bounded lookups
 | 1 | ~~All-time overlay~~ **Done (v1.3.152+)** | Rank uses `reading_points_ledger` via `leaderboard_view`. Keep dual-write RPCs + backfill script for new environments. |
 | 2 | ~~Live monthly from views~~ **Done (v1.3.154+)** | `fetchMonthlyActivitySummary` uses `get_monthly_encouragement_activity` RPC with dual-mode fallback, eliminating raw attempt paging across PostgREST. Activity lookup uses slim `user_id, last_active, last_login_at` select. |
 | 3 | ~~PTW poll~~ **Removed** | PTW online system and `usePtwWatch.js` completely removed from web app (reserved for future native app). Eliminates 3s polling and `ptw_permits` Realtime channel. |
-| 4 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
+| 1 | ~~`fetchAnnualGrandTrophy(true)` after quiz submit~~ **Done (v1.3.155+)** | Removed `forceRefresh=true`; 10-min SWR is sufficient. Table will grow to ~400k rows by March 2027 — avoiding force-paging is critical. |
+| 2 | **Server-side RPC for Annual Trophy aggregation** | Like `get_monthly_encouragement_activity`, push GROUP BY to Postgres so client downloads ~100 rows (one per user) instead of ~400k daily rows. Do before table exceeds ~100k rows. |
+| 3 | **Last:** 90-day `quiz_attempts` archive | Database size, not egress. Do after display no longer needs unbounded history. |
 | — | **Admin backup tables** | After dropping fat backups, run `20260904130000_restore_admin_backup_tables.sql` (empty tables + ledger-aware reset). |
 
 ~~Play (compact ladder, not Rank/Prizes) can still open another user’s My Progress.~~ **Done:** Other player taps route to `LeaderboardUserSheet` (PublicPrideCard for regular users; full identity/tools/PPE for admin), and eliminated dead `fetchLeaderboard` queries on Play.
