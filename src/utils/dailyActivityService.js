@@ -34,9 +34,46 @@ export async function fetchUserDailyActivity(userId, startDate, endDate) {
 }
 
 /**
+ * Map a raw row from get_annual_grand_trophy RPC to the canonical player shape.
+ * Ensures all numeric fields are JS numbers and adds rank.
+ */
+function mapRpcAnnualRow(row, idx) {
+    return {
+        user_id:               row.user_id,
+        full_name:             row.full_name || 'Lineman',
+        district:              row.district || null,
+        avatar_url:            row.avatar_url || null,
+        training_level:        Number(row.training_level) || 0,
+        slm_id:                row.slm_id || null,
+        created_at:            row.created_at || null,
+        lifetime_score:        Number(row.lifetime_score) || 0,
+        reading_points:        Number(row.reading_points) || 0,
+        active_days:           Number(row.active_days) || 0,
+        eligible_days:         Number(row.eligible_days) || 1,
+        total_quizzes:         Number(row.total_quizzes) || 0,
+        hourly_quizzes:        Number(row.hourly_quizzes) || 0,
+        reading_lessons:       Number(row.reading_lessons) || 0,
+        life_skills:           Number(row.life_skills) || 0,
+        points_earned:         Number(row.points_earned) || 0,
+        penalties_incurred:    Number(row.penalties_incurred) || 0,
+        net_points:            Number(row.net_points) || 0,
+        consistency_rate:      Number(row.consistency_rate) || 0,
+        consistency_pct:       Number(row.consistency_pct) || 0,
+        yearly_score:          Number(row.yearly_score) || 0,
+        is_qualified:          Boolean(row.is_qualified),
+        days_needed_to_qualify: Number(row.days_needed_to_qualify) || 0,
+        rank:                  idx + 1,
+    };
+}
+
+/**
  * Fetch Annual Grand Trophy leaderboard for March 7th prize cycle.
  * Option A (Consistency Multiplier Model):
  *   Yearly Score = Net Points * (1 + Active Days / Eligible Days)
+ *
+ * Primary path: get_annual_grand_trophy RPC — one aggregated row per user (~100 rows).
+ * Fallback:     client-side aggregation from daily_user_activity rows (used if RPC is
+ *               not yet deployed or returns an error).
  *
  * @param {boolean} [forceRefresh=false]
  */
@@ -44,6 +81,27 @@ export async function fetchAnnualGrandTrophy(forceRefresh = false) {
     return requestManager.fetch(
         `annual_grand_trophy_leaderboard_${ANNUAL_CYCLE.start}`,
         async () => {
+            // ── Primary: server-side RPC ──────────────────────────────────────────
+            try {
+                const { data, error } = await supabase.rpc('get_annual_grand_trophy', {
+                    p_start:           ANNUAL_CYCLE.start,
+                    p_end:             ANNUAL_CYCLE.end,
+                    p_cycle_start_ts:  new Date(ANNUAL_CYCLE.cycleStartEpoch).toISOString(),
+                    p_min_active_days: ANNUAL_CYCLE.minActiveDaysToQualify,
+                });
+
+                if (!error && Array.isArray(data) && data.length > 0) {
+                    return data.map(mapRpcAnnualRow);
+                }
+
+                if (error) {
+                    console.warn('[dailyActivityService] get_annual_grand_trophy RPC unavailable, falling back to client aggregation:', error.message);
+                }
+            } catch (rpcErr) {
+                console.warn('[dailyActivityService] get_annual_grand_trophy RPC error, falling back:', rpcErr);
+            }
+
+            // ── Fallback: client-side aggregation (legacy path) ───────────────────
             const pageSize = 1000;
             let offset = 0;
             const rows = [];
@@ -68,7 +126,7 @@ export async function fetchAnnualGrandTrophy(forceRefresh = false) {
                     .range(offset, offset + pageSize - 1);
 
                 if (error) {
-                    console.warn('[dailyActivityService] fetchAnnualGrandTrophy error:', error.message);
+                    console.warn('[dailyActivityService] fetchAnnualGrandTrophy fallback error:', error.message);
                     return [];
                 }
                 if (!data?.length) break;
@@ -141,23 +199,17 @@ export async function fetchAnnualGrandTrophy(forceRefresh = false) {
                 };
             });
 
-            // Rank: Qualified first by yearly_score descending.
-            // Non-qualified follow by active_days then yearly_score.
             results.sort((a, b) => {
-                if (a.is_qualified !== b.is_qualified) {
-                    return a.is_qualified ? -1 : 1;
-                }
+                if (a.is_qualified !== b.is_qualified) return a.is_qualified ? -1 : 1;
                 return b.yearly_score - a.yearly_score;
             });
 
-            return results.map((player, idx) => ({
-                ...player,
-                rank: idx + 1,
-            }));
+            return results.map((player, idx) => ({ ...player, rank: idx + 1 }));
         },
         { ttl: 10, swr: true, forceRefresh }
     );
 }
+
 
 /**
  * Calculate the longest consecutive active days streak from an array of date strings.
