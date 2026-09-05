@@ -38,7 +38,7 @@ export default function AnnualGrandTrophyLeaderboard({
 
     const qualifiedPlayers = annualLeaderboard.filter((p) => p.is_qualified);
     const topThree = qualifiedPlayers.slice(0, 3);
-    const restList = annualLeaderboard.slice(topThree.length);
+    const nonQualifiedCount = annualLeaderboard.length - qualifiedPlayers.length;
 
     // Podium re-ordering: [Silver (#2), Gold (#1), Bronze (#3)]
     let podiumOrdered = [];
@@ -166,9 +166,20 @@ export default function AnnualGrandTrophyLeaderboard({
                 </div>
             )}
 
-            {/* List Rows */}
+            {/* List Rows — qualified players only */}
             <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
-                {annualLeaderboard.map((item) => {
+                {qualifiedPlayers.length === 0 && (
+                    <div className={`flex flex-col items-center justify-center gap-1.5 py-10 text-center ${bn ? 'font-bengali' : ''}`}>
+                        <span className="text-3xl" aria-hidden="true">🏆</span>
+                        <p className="text-sm font-bold text-slate-500">
+                            {bn ? 'এখনও কেউ ৩০ দিনের যোগ্যতা অর্জন করেননি' : 'No one has reached 30 active days yet'}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                            {bn ? 'খেলতে থাকুন — যোগ্যতা অর্জনের পরই এখানে দেখা যাবে' : "Keep playing \u2014 you'll appear here once qualified"}
+                        </p>
+                    </div>
+                )}
+                {qualifiedPlayers.map((item) => {
                     const isYou = Boolean(currentUserId && item.user_id === currentUserId);
                     const isTopThree = item.rank <= 3 && item.is_qualified;
 
@@ -231,12 +242,6 @@ export default function AnnualGrandTrophyLeaderboard({
                                         </span>
                                     )}
 
-                                    {/* Qualification Pill if not yet qualified */}
-                                    {!item.is_qualified && (
-                                        <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500">
-                                            {bn ? `যোগ্যতা: আর ${item.days_needed_to_qualify} দিন` : `${item.days_needed_to_qualify}d to qualify`}
-                                        </span>
-                                    )}
                                 </div>
                             </div>
 
@@ -255,6 +260,16 @@ export default function AnnualGrandTrophyLeaderboard({
                     );
                 })}
             </div>
+
+            {/* Non-qualified footnote */}
+            {nonQualifiedCount > 0 && (
+                <p className={`text-center text-[11px] text-slate-400 font-semibold ${bn ? 'font-bengali' : ''}`}>
+                    {bn
+                        ? `আরও ${nonQualifiedCount} জন ৩০ দিনের লক্ষ্যে এগিয়ে চলেছেন`
+                        : `${nonQualifiedCount} more player${nonQualifiedCount > 1 ? 's' : ''} working toward 30 active days`
+                    }
+                </p>
+            )}
 
             {/* Score Breakdown Modal */}
             <AnnualTrophyDetailModal
