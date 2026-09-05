@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { cacheContactPendingCount, fetchSheetContacts, saveContactFollowUp, topicShortLabel } from '../utils/landingContactAdmin';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { cacheContactPendingCount, fetchSheetContacts, getCachedSheetContacts, saveContactFollowUp, topicShortLabel } from '../utils/landingContactAdmin';
 import { extractIndianMobileDigits } from '../utils/landingContactService';
 import SaveSuccessModal from './SaveSuccessModal';
 
@@ -263,9 +263,13 @@ export default function ContactResponsesCard({
   const isEn = language === 'en';
   const responderName = String(userProfile?.full_name || '').trim();
   const startOpen = Boolean(defaultOpen || standalone);
+
+  // Instant SWR cache initialization (0ms initial render)
+  const initialCache = useMemo(() => getCachedSheetContacts(), []);
   const [open, setOpen] = useState(startOpen);
-  const [loading, setLoading] = useState(startOpen);
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(() => initialCache?.rows || []);
+  const [loading, setLoading] = useState(() => startOpen && (!initialCache || !initialCache.rows || initialCache.rows.length === 0));
+  const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('pending');
   const [expandedId, setExpandedId] = useState(null);
   const [savingId, setSavingId] = useState(null);
@@ -273,20 +277,32 @@ export default function ContactResponsesCard({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const savingLockRef = useRef(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (isForce = false) => {
+    // If rows already exist on screen, don't flash skeleton — just background refresh
+    if (rows.length === 0) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
     try {
-      setRows(await fetchSheetContacts());
+      const fresh = await fetchSheetContacts({ force: isForce });
+      setRows(fresh);
     } catch {
-      setRows([]);
+      // Keep existing cached rows on network glitch
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, []);
+  }, [rows.length]);
 
   useEffect(() => {
-    if (open) load();
-  }, [open, load]);
+    if (open) {
+      // If we don't have fresh cached rows, or rows are empty, trigger load
+      if (!initialCache || !initialCache.isFresh || rows.length === 0) {
+        load(false);
+      }
+    }
+  }, [open, load, initialCache]);
 
   const pendingCount = rows.filter((row) => row.pending !== false).length;
   const visible = rows.filter((row) => (filter === 'pending' ? row.pending !== false : true));
@@ -389,44 +405,59 @@ export default function ContactResponsesCard({
 
       {open && (
         <div className={`space-y-3 px-4 pb-4 pt-3 ${standalone ? '' : 'border-t border-slate-100'}`}>
-          <div className="flex gap-1.5">
-            {FILTERS.map((item) => {
-              const active = filter === item.id;
-              const pendingTab = item.id === 'pending';
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setFilter(item.id)}
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ${
-                    active && pendingTab
-                      ? 'bg-rose-600 text-white'
-                      : active
-                        ? 'bg-slate-800 text-white'
-                        : pendingTab
-                          ? 'border border-rose-200 bg-rose-50 text-rose-700'
-                          : 'border border-slate-200 bg-white text-slate-600'
-                  }`}
-                >
-                  {isEn ? item.en : item.bn}
-                  {pendingTab && loading && rows.length === 0 ? (
-                    <span
-                      className={`ml-1.5 h-4 w-4 animate-pulse rounded-full ${
-                        active ? 'bg-white/55' : 'bg-rose-300'
-                      }`}
-                    />
-                  ) : pendingTab && pendingCount > 0 ? (
-                    <span
-                      className={`ml-1.5 min-w-[1.15rem] rounded-full px-1 text-center text-[10px] font-black tabular-nums ${
-                        active ? 'bg-white text-rose-700' : 'bg-rose-600 text-white'
-                      }`}
-                    >
-                      {pendingCount > 99 ? '99+' : pendingCount}
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex gap-1.5">
+              {FILTERS.map((item) => {
+                const active = filter === item.id;
+                const pendingTab = item.id === 'pending';
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setFilter(item.id)}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ${
+                      active && pendingTab
+                        ? 'bg-rose-600 text-white'
+                        : active
+                          ? 'bg-slate-800 text-white'
+                          : pendingTab
+                            ? 'border border-rose-200 bg-rose-50 text-rose-700'
+                            : 'border border-slate-200 bg-white text-slate-600'
+                    }`}
+                  >
+                    {isEn ? item.en : item.bn}
+                    {pendingTab && loading && rows.length === 0 ? (
+                      <span
+                        className={`ml-1.5 h-4 w-4 animate-pulse rounded-full ${
+                          active ? 'bg-white/55' : 'bg-rose-300'
+                        }`}
+                      />
+                    ) : pendingTab && pendingCount > 0 ? (
+                      <span
+                        className={`ml-1.5 min-w-[1.15rem] rounded-full px-1 text-center text-[10px] font-black tabular-nums ${
+                          active ? 'bg-white text-rose-700' : 'bg-rose-600 text-white'
+                        }`}
+                      >
+                        {pendingCount > 99 ? '99+' : pendingCount}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              disabled={refreshing || loading}
+              onClick={() => load(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600 shadow-2xs transition-all hover:bg-orange-50 active:scale-95 disabled:opacity-50"
+              title={isEn ? 'Force refresh from Google Sheet' : 'গুগল শিট থেকে রিফ্রেশ করুন'}
+            >
+              <span className={`inline-block text-[10px] ${refreshing ? 'animate-spin' : ''}`} aria-hidden>🔄</span>
+              <span className={isEn ? '' : 'font-bengali'}>
+                {refreshing ? (isEn ? 'Syncing…' : 'সিঙ্ক…') : (isEn ? 'Refresh' : 'রিফ্রেশ')}
+              </span>
+            </button>
           </div>
 
           {loading && rows.length === 0 ? (

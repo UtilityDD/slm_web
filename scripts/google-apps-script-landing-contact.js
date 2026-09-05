@@ -38,23 +38,65 @@ function doGet(e) {
   try {
     var pull = e && e.parameter && e.parameter.pull;
     if (pull && String(pull) === PULL_KEY) {
+      var cache = CacheService.getScriptCache();
+      var isForce = String(e.parameter.refresh || e.parameter.force || '') === '1';
+
       if (String(e.parameter.followup || '') === '1') {
-        return jsonOut(
-          writeFollowUp_({
-            id: e.parameter.id,
-            phone: e.parameter.phone,
-            contactedOn: e.parameter.contactedOn,
-            contactedBy: e.parameter.contactedBy,
-            remarks: e.parameter.remarks,
-            clearRemarks: e.parameter.clearRemarks,
-          })
-        );
+        var res = writeFollowUp_({
+          id: e.parameter.id,
+          phone: e.parameter.phone,
+          contactedOn: e.parameter.contactedOn,
+          contactedBy: e.parameter.contactedBy,
+          remarks: e.parameter.remarks,
+          clearRemarks: e.parameter.clearRemarks,
+        });
+        if (res && res.ok) {
+          try {
+            cache.remove('contact_inbox_json');
+            cache.remove('contact_inbox_pending');
+          } catch (ign) {}
+        }
+        return jsonOut(res);
       }
-      var pack = readAllRows_();
+
+      // Fast path for pending count badge
       if (e.parameter.count === '1') {
-        return jsonOut({ ok: true, pending: pack.pending });
+        if (!isForce) {
+          var cachedPending = cache.get('contact_inbox_pending');
+          if (cachedPending !== null) {
+            return jsonOut({ ok: true, pending: parseInt(cachedPending, 10) });
+          }
+        }
+        var pendingOnly = readPendingCountOnly_();
+        try {
+          cache.put('contact_inbox_pending', String(pendingOnly), 300); // 5 min cache
+        } catch (ign) {}
+        return jsonOut({ ok: true, pending: pendingOnly });
       }
-      return jsonOut({ ok: true, pending: pack.pending, rows: pack.rows });
+
+      // Fast path for all rows
+      if (!isForce) {
+        var cachedJson = cache.get('contact_inbox_json');
+        if (cachedJson !== null) {
+          return ContentService.createTextOutput(cachedJson).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+
+      var pack = readAllRows_();
+      var outputObj = { ok: true, pending: pack.pending, rows: pack.rows };
+      var outStr = JSON.stringify(outputObj);
+
+      // CacheService has a 100KB item limit
+      if (outStr.length < 95000) {
+        try {
+          cache.put('contact_inbox_json', outStr, 300);
+        } catch (ign) {}
+      }
+      try {
+        cache.put('contact_inbox_pending', String(pack.pending), 300);
+      } catch (ign) {}
+
+      return ContentService.createTextOutput(outStr).setMimeType(ContentService.MimeType.JSON);
     }
   } catch (err) {
     return jsonOut({ ok: false, error: String(err) });
@@ -105,6 +147,12 @@ function doPost(e) {
     }
 
     writeLandingRow_(sheet, data);
+
+    try {
+      var cache = CacheService.getScriptCache();
+      cache.remove('contact_inbox_json');
+      cache.remove('contact_inbox_pending');
+    } catch (ign) {}
 
     return jsonOut({ ok: true });
   } catch (err) {
@@ -330,28 +378,38 @@ function isPendingFollowUp_(row, cols) {
 function readAllRows_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet || sheet.getLastRow() < 2) return { rows: [], pending: 0 };
-  // Read-only: never call ensureHeadersOnly_ / heal here.
-  var cols = followUpIndexesRead_(sheet);
-  var width = Math.max(sheet.getLastColumn(), 12);
-  var values = sheet.getRange(2, 1, sheet.getLastRow() - 1, width).getValues();
+  if (!sheet) return { rows: [], pending: 0 };
+  
+  var values = sheet.getDataRange().getValues();
+  if (!values || values.length < 2) return { rows: [], pending: 0 };
+
+  var header = values[0];
+  var cols = {
+    on: findHeader_(header, 'Contacted On'),
+    by: findHeader_(header, 'Contacted By'),
+    remarks: findHeader_(header, 'Remarks'),
+    district: findHeader_(header, 'district'),
+    phone: findHeader_(header, 'Phone'),
+  };
+
   var rows = [];
   var pending = 0;
-  for (var i = 0; i < values.length; i++) {
+  for (var i = 1; i < values.length; i++) {
     var row = values[i];
     var name = String(row[1] || '').trim();
     var message = String(row[5] || '').trim();
     if (!name || !message) continue;
+
     var pendingRow = isPendingFollowUp_(row, cols);
     if (pendingRow) pending += 1;
+
     var district = cols.district >= 0 ? String(row[cols.district] || '').trim() : String(row[8] || '').trim();
     var contactedOnRaw = cols.on >= 0 ? row[cols.on] : '';
     var contactedOn = looksLikeFollowUpDate_(contactedOnRaw) ? cellText_(contactedOnRaw) : '';
-    // Display-only remap: if Contacted On holds a non-date and District is empty, show it as district in the API.
-    // Does not write back to the sheet.
     if (!district && contactedOnRaw && !contactedOn) district = cellText_(contactedOnRaw);
+
     rows.push({
-      id: String(i + 2),
+      id: String(i + 1), // 1-indexed row number in sheet
       timestamp: cellText_(row[0]),
       name: name,
       phone: String(row[2] || '').trim(),
@@ -359,7 +417,7 @@ function readAllRows_() {
       topic: String(row[4] || '').trim(),
       topicLabel: String(row[4] || '').trim(),
       message: message,
-      formatted: String(row[6] || '').trim(),
+      // Omit unused 55KB 'formatted' digest for ~60% faster payload transfer
       language: String(row[7] || '').trim(),
       district: district,
       contactedOn: contactedOn,
@@ -370,6 +428,32 @@ function readAllRows_() {
   }
   rows.reverse();
   return { rows: rows, pending: pending };
+}
+
+function readPendingCountOnly_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) return 0;
+
+  var values = sheet.getDataRange().getValues();
+  if (!values || values.length < 2) return 0;
+
+  var header = values[0];
+  var cols = {
+    on: findHeader_(header, 'Contacted On'),
+    by: findHeader_(header, 'Contacted By'),
+    remarks: findHeader_(header, 'Remarks'),
+  };
+
+  var pending = 0;
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    var name = String(row[1] || '').trim();
+    var message = String(row[5] || '').trim();
+    if (!name || !message) continue;
+    if (isPendingFollowUp_(row, cols)) pending += 1;
+  }
+  return pending;
 }
 
 function jsonOut(obj) {

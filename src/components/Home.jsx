@@ -21,7 +21,7 @@ import HomePrimaryActionCards from './HomePrimaryActionCards';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
 import { useCachedAvatar } from '../hooks/useCachedAvatar';
-import { fetchContactPendingCount, canViewContactResponses } from '../utils/landingContactAdmin';
+import { fetchContactPendingCount, canViewContactResponses, getCachedSheetContacts } from '../utils/landingContactAdmin';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
@@ -133,7 +133,13 @@ export default function Home({
       return undefined;
     }
     let cancelled = false;
-    setContactPendingReady(false);
+    const cachedPending = getCachedSheetContacts()?.pending;
+    if (cachedPending != null && Number.isFinite(cachedPending)) {
+      setContactPending(cachedPending);
+      setContactPendingReady(true);
+    } else {
+      setContactPendingReady(false);
+    }
     fetchContactPendingCount()
       .then((n) => {
         if (!cancelled) {
@@ -143,7 +149,6 @@ export default function Home({
       })
       .catch(() => {
         if (!cancelled) {
-          setContactPending(0);
           setContactPendingReady(true);
         }
       });
@@ -728,22 +733,19 @@ export default function Home({
                 <span className={bn ? 'home-level-badge__label' : undefined}>{badgeName}</span>
               </span>
             </div>
-            <div className={`mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
+            <div className={`mt-2.5 flex min-w-0 flex-wrap items-center gap-2 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
               <button
                 type="button"
                 onClick={() => go('leaderboard')}
-                className="inline-flex min-w-0 items-center gap-1 font-bold text-amber-800 transition-colors hover:text-amber-950 active:scale-[0.98]"
+                className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-amber-200/90 bg-amber-50/90 px-2.5 py-0.5 font-bold text-amber-900 shadow-2xs transition-all hover:bg-amber-100 hover:shadow-xs active:scale-95"
               >
-                <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <svg className="h-3.5 w-3.5 shrink-0 text-amber-700" viewBox="0 0 24 24" fill="none" aria-hidden>
                   <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M7 6H5.5a2 2 0 0 0 0 4H7M17 6h1.5a2 2 0 0 1 0 4H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
                 <span className="truncate">{rankDisplay || (bn ? 'র‍্যাঙ্ক' : 'Rank')}</span>
               </button>
-              <span className="text-slate-300" aria-hidden>
-                ·
-              </span>
-              <span className="inline-flex items-center gap-1 font-bold tabular-nums text-orange-800">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50/90 px-2.5 py-0.5 font-bold tabular-nums text-orange-950 shadow-2xs">
                 <span className="text-amber-500" aria-hidden>
                   ★
                 </span>
@@ -755,22 +757,22 @@ export default function Home({
           <button
             type="button"
             onClick={() => go('admin')}
-            className="relative shrink-0 rounded-full transition-transform active:scale-95"
+            className="home-avatar-btn"
             aria-label={bn ? 'প্রোফাইল' : 'Profile'}
           >
-            <div className="flex h-[4.75rem] w-[4.75rem] items-center justify-center overflow-hidden rounded-full border border-orange-200/80 bg-orange-400 text-slate-900 shadow-sm sm:h-[5.25rem] sm:w-[5.25rem]">
+            <div className="home-avatar-frame h-[4.5rem] w-[4.5rem] sm:h-[5rem] sm:w-[5rem]">
               {avatarSrc ? (
                 <img src={avatarSrc} alt="" className="h-full w-full object-cover" decoding="async" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center p-3.5 text-slate-900">
+                <div className="flex h-full w-full items-center justify-center p-3 text-slate-800">
                   <UserIcon className="h-full w-full" />
                 </div>
               )}
             </div>
-            <span
-              className="absolute bottom-0.5 left-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#fffdf7] bg-emerald-500"
-              aria-hidden
-            />
+            <span className="home-avatar-status" aria-hidden>
+              <span className="home-avatar-status__ping" />
+              <span className="home-avatar-status__dot" />
+            </span>
           </button>
         </header>
 
@@ -861,10 +863,10 @@ export default function Home({
               type="button"
               onClick={card.onClick}
               aria-label={card.ariaLabel || card.label}
-              className={`flex items-center gap-3 rounded-2xl border text-left shadow-sm transition-all active:scale-[0.99] ${card.accent} ${bn ? 'px-3 py-3' : 'px-3 py-2.5'}`}
+              className={`group flex items-center gap-3 rounded-2xl border text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] ${card.accent} ${bn ? 'px-3 py-3' : 'px-3 py-2.5'}`}
             >
               <span
-                className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${card.iconWrap}`}
+                className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-transform duration-200 group-hover:scale-105 ${card.iconWrap}`}
                 aria-hidden
               >
                 {card.icon}
@@ -911,7 +913,7 @@ export default function Home({
           <button
             type="button"
             onClick={() => go('emergency')}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-red-200/90 bg-red-50 px-3 py-3 transition-all active:scale-[0.99] sm:justify-start"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-red-200/90 bg-red-50/90 px-3 py-3 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-100/80 hover:shadow-sm active:scale-[0.98] sm:justify-start"
             aria-label={bn ? 'জরুরি' : 'Emergency'}
           >
             <span className="text-lg leading-none" aria-hidden>
@@ -927,7 +929,7 @@ export default function Home({
               if (navigator.vibrate) navigator.vibrate(5);
               openLinemanInviteWhatsApp(language);
             }}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-200/90 bg-emerald-50 px-3 py-3 transition-all active:scale-[0.99] sm:justify-start"
+            className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-200/90 bg-emerald-50/90 px-3 py-3 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-100/80 hover:shadow-sm active:scale-[0.98] sm:justify-start"
             aria-label={bn ? 'শেয়ার' : 'Invite'}
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white" aria-hidden>
@@ -996,18 +998,32 @@ export default function Home({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(5);
-              setCurrentView('amader-kotha');
-            }}
-            className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50 px-3.5 text-sm font-bold text-orange-800 shadow-sm transition-all hover:bg-orange-100 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
-            aria-label={bn ? 'আমাদের কথা' : 'Our Story'}
-          >
-            <span aria-hidden>📖</span>
-            <span>{bn ? 'আমাদের কথা' : 'Our Story'}</span>
-          </button>
+          <div className="flex w-full flex-wrap items-center justify-center gap-2.5 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(5);
+                setCurrentView('amader-kotha');
+              }}
+              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50/90 px-3.5 text-sm font-bold text-orange-900 shadow-2xs transition-all hover:bg-orange-100 hover:shadow-xs active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+              aria-label={bn ? 'আমাদের কথা' : 'Our Story'}
+            >
+              <span aria-hidden>📖</span>
+              <span>{bn ? 'আমাদের কথা' : 'Our Story'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(5);
+                setCurrentView('accident-stories');
+              }}
+              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-rose-200/90 bg-rose-50/90 px-3.5 text-sm font-bold text-rose-900 shadow-2xs transition-all hover:bg-rose-100 hover:shadow-xs active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+              aria-label={bn ? 'করুণ কাহিনী' : 'Tragic Stories'}
+            >
+              <span aria-hidden>🕯️</span>
+              <span>{bn ? 'করুণ কাহিনী' : 'Tragic Stories'}</span>
+            </button>
+          </div>
         </div>
 
       </div>

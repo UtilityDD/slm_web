@@ -10,6 +10,8 @@ export function canViewContactResponses(profile) {
 
 const COUNT_CACHE_KEY = 'slm_contact_pending_count';
 const COUNT_CACHE_MS = 60 * 1000;
+const ROWS_CACHE_KEY = 'slm_cached_contact_rows_v1';
+const ROWS_FRESH_MS = 2 * 60 * 1000; // 2 minutes fresh
 
 function sheetUrl(extra) {
   const params = new URLSearchParams({ pull: CONTACT_PULL_KEY, ...extra });
@@ -28,7 +30,7 @@ export function topicShortLabel(topic, isEn) {
 
 function readCountCache() {
   try {
-    const raw = sessionStorage.getItem(COUNT_CACHE_KEY);
+    const raw = sessionStorage.getItem(COUNT_CACHE_KEY) || localStorage.getItem(COUNT_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed || Date.now() - parsed.at > COUNT_CACHE_MS) return null;
@@ -40,7 +42,9 @@ function readCountCache() {
 
 function writeCountCache(pending) {
   try {
-    sessionStorage.setItem(COUNT_CACHE_KEY, JSON.stringify({ pending, at: Date.now() }));
+    const payload = JSON.stringify({ pending, at: Date.now() });
+    sessionStorage.setItem(COUNT_CACHE_KEY, payload);
+    localStorage.setItem(COUNT_CACHE_KEY, payload);
   } catch {
     /* ignore */
   }
@@ -50,12 +54,46 @@ export function cacheContactPendingCount(pending) {
   writeCountCache(Number(pending) || 0);
 }
 
+export function getCachedSheetContacts() {
+  try {
+    const raw = localStorage.getItem(ROWS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.rows)) return null;
+    const age = Date.now() - (parsed.at || 0);
+    return {
+      rows: parsed.rows,
+      pending: Number(parsed.pending) || 0,
+      at: parsed.at,
+      isFresh: age < ROWS_FRESH_MS,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveCachedSheetContacts(rows, pending) {
+  try {
+    const payload = {
+      rows: Array.isArray(rows) ? rows : [],
+      pending: Number(pending) || 0,
+      at: Date.now(),
+    };
+    localStorage.setItem(ROWS_CACHE_KEY, JSON.stringify(payload));
+    writeCountCache(payload.pending);
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function fetchContactPendingCount({ force = false } = {}) {
   if (!force) {
     const cached = readCountCache();
     if (cached != null && Number.isFinite(cached)) return cached;
+    const cachedRows = getCachedSheetContacts();
+    if (cachedRows?.pending != null && Number.isFinite(cachedRows.pending)) return cachedRows.pending;
   }
-  const res = await fetch(sheetUrl({ count: '1' }));
+  const res = await fetch(sheetUrl({ count: '1', ...(force ? { refresh: '1' } : {}) }));
   if (!res.ok) throw new Error('sheet');
   const json = await res.json();
   if (!json || json.ok === false) throw new Error('sheet');
@@ -64,13 +102,14 @@ export async function fetchContactPendingCount({ force = false } = {}) {
   return pending;
 }
 
-export async function fetchSheetContacts() {
-  const res = await fetch(sheetUrl());
+export async function fetchSheetContacts({ force = false } = {}) {
+  const res = await fetch(sheetUrl(force ? { refresh: '1' } : {}));
   if (!res.ok) throw new Error('sheet');
   const json = await res.json();
   if (!json || json.ok === false) throw new Error('sheet');
   const rows = Array.isArray(json.rows) ? json.rows : [];
-  if (json.pending != null) writeCountCache(Number(json.pending) || 0);
+  const pending = json.pending != null ? Number(json.pending) : rows.filter(r => r.pending !== false).length;
+  saveCachedSheetContacts(rows, pending);
   return rows;
 }
 

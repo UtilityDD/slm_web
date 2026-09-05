@@ -28,71 +28,119 @@ function storyParagraphs(text) {
         .filter(Boolean);
 }
 
-const StoryCard = ({ story, onOpen, language, priority = false }) => {
+function FadeIn({ children, delay = 0, className = '' }) {
+    return (
+        <div
+            className={`amader-kotha__fade ${className}`}
+            style={{ animationDelay: `${delay}ms` }}
+        >
+            {children}
+        </div>
+    );
+}
+
+const StoryCard = ({ story, onOpen, onShare, language, priority = false }) => {
     const title = story.title[language];
     const excerpt = story.excerpt[language];
     const category = story.category[language];
+    const bn = language === 'bn';
     const openLabel =
         language === 'en'
             ? `Open story: ${title}. ${excerpt}`
-            : `গল্প খুলুন: ${title}। ${excerpt}`;
+            : `ঘটনা দেখুন: ${title}। ${excerpt}`;
 
     return (
-        <button
-            type="button"
-            onClick={() => onOpen(story)}
-            aria-label={openLabel}
-            className="group w-full overflow-hidden rounded-3xl border border-slate-200/70 bg-white text-left shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_36px_-14px_rgba(15,23,42,0.22)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 touch-manipulation"
-        >
-            <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 sm:aspect-[5/6]">
+        <article className="group relative flex flex-col overflow-hidden rounded-[1.65rem] border border-orange-200/70 bg-white shadow-[0_10px_30px_rgba(194,65,12,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(194,65,12,0.15)]">
+            <button
+                type="button"
+                onClick={() => onOpen(story)}
+                aria-label={openLabel}
+                className="relative aspect-[16/11] w-full overflow-hidden bg-orange-50 text-left touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+            >
                 <img
                     src={story.image}
                     alt=""
                     decoding="async"
                     loading={priority ? 'eager' : 'lazy'}
                     fetchpriority={priority ? 'high' : 'auto'}
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 motion-reduce:group-hover:scale-100"
                     style={{ objectPosition: storyImageFocus(story.image) }}
                 />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
-                <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                <div className="absolute left-3.5 top-3.5 flex items-center gap-2">
                     <span
-                        className={`rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold tracking-wide text-orange-800 shadow-sm backdrop-blur ${
-                            language === 'bn' ? 'font-bengali' : ''
+                        className={`rounded-full bg-white/95 px-3 py-1 text-[11px] font-black tracking-wide text-orange-950 shadow-sm backdrop-blur ${
+                            bn ? 'font-bengali' : ''
                         }`}
                     >
                         {category}
                     </span>
-                </div>
-            </div>
-
-            <div className="space-y-2.5 px-5 py-5 sm:px-6 sm:py-6">
-                <h2
-                    className={`text-[1.35rem] font-black leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-2xl ${
-                        language === 'bn' ? 'font-bengali' : ''
-                    }`}
-                >
-                    {title}
-                </h2>
-                <p
-                    className={`text-sm leading-relaxed text-slate-600 line-clamp-3 sm:text-[0.95rem] sm:leading-relaxed ${
-                        language === 'bn' ? 'font-bengali' : ''
-                    }`}
-                >
-                    {excerpt}
-                </p>
-                <div
-                    className={`mt-1 flex items-center gap-1.5 pt-1 text-sm font-bold text-orange-600 ${
-                        language === 'bn' ? 'font-bengali' : ''
-                    }`}
-                >
-                    <span>{language === 'en' ? 'Read the full story' : 'পুরো ঘটনা পড়ুন'}</span>
-                    <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
-                        →
+                    <span
+                        className={`rounded-full bg-rose-600/90 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-sm backdrop-blur ${
+                            bn ? 'font-bengali' : ''
+                        }`}
+                    >
+                        {bn ? 'সত্য ঘটনা' : 'True Account'}
                     </span>
                 </div>
+            </button>
+
+            <div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => onOpen(story)}
+                        className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 rounded-lg"
+                    >
+                        <h2
+                            className={`text-xl font-black leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-2xl ${
+                                bn ? 'font-bengali amader-kotha__display' : ''
+                            }`}
+                        >
+                            {title}
+                        </h2>
+                    </button>
+                    <p
+                        className={`mt-2.5 text-sm font-semibold leading-relaxed text-slate-600 line-clamp-3 sm:text-[15px] ${
+                            bn ? 'font-bengali' : ''
+                        }`}
+                    >
+                        {excerpt}
+                    </p>
+                </div>
+
+                <div className="mt-5 flex items-center justify-between border-t border-orange-100/80 pt-4">
+                    <button
+                        type="button"
+                        onClick={() => onOpen(story)}
+                        className={`inline-flex items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50/80 px-3.5 py-1.5 text-xs font-black text-orange-900 shadow-2xs transition-all hover:bg-orange-100 hover:shadow-xs active:scale-95 ${
+                            bn ? 'font-bengali' : ''
+                        }`}
+                    >
+                        <span>{bn ? 'পুরো ঘটনা পড়ুন' : 'Read full story'}</span>
+                        <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+                            →
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => onShare(story)}
+                        aria-label={bn ? 'শেয়ার করুন' : 'Share story'}
+                        title={bn ? 'শেয়ার করুন' : 'Share story'}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/90 bg-white text-slate-600 shadow-2xs transition-all hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700 active:scale-90"
+                    >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                            />
+                        </svg>
+                    </button>
+                </div>
             </div>
-        </button>
+        </article>
     );
 };
 
@@ -131,6 +179,11 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
         }
         metaThemeColor.setAttribute('content', '#fffdf7');
 
+        const prevTitle = document.title;
+        document.title = bn
+            ? 'করুণ কাহিনী · ছিন্নভিন্ন স্বপ্ন — SmartLineMan'
+            : 'Tragic Stories · Shattered Dreams — SmartLineMan';
+
         return () => {
             const savedTheme = storageUtils.getItem('appTheme') || 'dark';
             if (savedTheme === 'dark') {
@@ -141,8 +194,9 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
             if (previousThemeColor) {
                 metaThemeColor.setAttribute('content', previousThemeColor);
             }
+            document.title = prevTitle;
         };
-    }, []);
+    }, [bn]);
 
     // Prefetch story images so opening a card feels instant.
     useEffect(() => {
@@ -188,135 +242,187 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
         : [];
 
     return (
-        <div className="relative z-[20] flex h-full min-h-0 w-full flex-1 flex-col bg-[#fffdf7] text-slate-900">
-            <header className="shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur safe-area-inset-top">
-                <div className="mx-auto grid w-full max-w-lg grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-3 py-3 sm:max-w-xl sm:px-4 lg:max-w-6xl">
+        <div className={`amader-kotha min-h-screen bg-[#fffdf7] pb-28 text-slate-900 ${bn ? 'font-bengali' : ''}`}>
+            {/* Sticky Header */}
+            <header className="sticky top-0 z-40 border-b border-orange-200/50 bg-[#fffdf7]/92 backdrop-blur-md safe-area-inset-top">
+                <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3 sm:px-6">
                     <button
                         type="button"
                         onClick={() => (selectedStory ? setSelectedStory(null) : setCurrentView('home'))}
                         aria-label={backLabel}
-                        className="flex h-10 w-10 items-center justify-center justify-self-start rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
                     >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="m15 18-6-6 6-6" />
                         </svg>
                     </button>
-
-                    <div className="min-w-0 justify-self-center text-center">
-                        {!selectedStory ? (
-                            <div className="px-1">
-                                <p
-                                    className={`text-lg font-black leading-tight tracking-tight text-slate-900 sm:text-xl ${
-                                        bn ? 'font-bengali' : ''
-                                    }`}
-                                >
-                                    {bn ? 'ছিন্নভিন্ন স্বপ্ন' : 'Shattered Dreams'}
-                                </p>
-                                <p
-                                    className={`mt-0.5 text-[11px] font-semibold text-slate-500 ${
-                                        bn ? 'font-bengali' : ''
-                                    }`}
-                                >
-                                    {bn ? 'কিছু না-ফেরা মানুষের গল্প' : 'Stories of those who never returned'}
-                                </p>
-                            </div>
-                        ) : (
-                            <p
-                                className={`line-clamp-2 px-1 text-sm font-black leading-snug text-slate-900 sm:text-base ${
-                                    bn ? 'font-bengali' : ''
-                                }`}
-                            >
-                                {selectedStory.title[language]}
+                    <div className="min-w-0 flex-1">
+                        <h1 className={`truncate text-lg font-black tracking-tight text-slate-900 sm:text-xl ${bn ? 'amader-kotha__display' : ''}`}>
+                            {selectedStory ? selectedStory.title[language] : (bn ? 'করুণ কাহিনী' : 'Tragic Stories')}
+                        </h1>
+                        {!selectedStory && (
+                            <p className="truncate text-xs font-semibold text-orange-800/80">
+                                {bn ? 'ছিন্নভিন্ন স্বপ্ন · কিছু না-ফেরা মানুষের গল্প' : 'Shattered Dreams · Stories of Those Who Never Returned'}
                             </p>
                         )}
                     </div>
-
-                    <div className="h-10 w-10 shrink-0 justify-self-end" aria-hidden />
                 </div>
             </header>
 
-            <main className="min-h-0 flex-1 overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+            <main className="mx-auto max-w-2xl px-4 pt-6 sm:px-6 sm:pt-8">
                 {!selectedStory ? (
-                    <div className="mx-auto w-full max-w-lg px-4 pb-10 pt-6 sm:max-w-xl sm:px-5 sm:pt-7">
-                        <h1 className="sr-only">
-                            {bn
-                                ? 'ছিন্নভিন্ন স্বপ্ন, কিছু না-ফেরা মানুষের গল্প'
-                                : 'Shattered Dreams, stories of those who never returned'}
-                        </h1>
+                    <div className="space-y-8">
+                        {/* Top Hero Poster Card — In the style of Amader Kotha */}
+                        <FadeIn>
+                            <section className="amader-kotha__poster overflow-hidden rounded-[1.75rem] border border-orange-200/60 bg-white shadow-[0_16px_40px_rgba(194,65,12,0.12)]">
+                                <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900 sm:aspect-[16/9]">
+                                    <img
+                                        src="/assets/emotional/lineman.webp"
+                                        alt={bn ? 'লাইনম্যানের পরিবারের ছবি' : 'Lineman family waiting'}
+                                        decoding="async"
+                                        fetchpriority="high"
+                                        className="h-full w-full object-cover object-top"
+                                    />
+                                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
+                                    <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
+                                        <span className="inline-block rounded-full bg-rose-600/90 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-sm backdrop-blur">
+                                            {bn ? 'সচেতনতার শিক্ষা' : 'Life Awareness'}
+                                        </span>
+                                        <p className="mt-2 text-xl font-black text-white drop-shadow-sm sm:text-2xl">
+                                            {bn ? '‘লাইন তো বন্ধই ছিল—তবু ঘরে ফেরা হলো না।’' : '“The line seemed dead—yet he never returned.”'}
+                                        </p>
+                                    </div>
+                                </div>
 
-                        <div
-                            className="flex flex-col gap-6 sm:gap-7"
-                            role="feed"
-                            aria-label={language === 'en' ? 'Stories' : 'গল্পসমূহ'}
-                        >
-                            {stories.map((story, index) => (
-                                <StoryCard
-                                    key={story.id}
-                                    story={story}
-                                    language={language}
-                                    priority={index === 0}
-                                    onOpen={(s) => {
-                                        setDetailScrollY(0);
-                                        setSelectedStory(s);
-                                    }}
-                                />
-                            ))}
-                            <div className={`w-full ${bn ? 'font-bengali' : ''}`}>
+                                <div className="border-t border-orange-100 bg-gradient-to-b from-orange-50/80 to-[#fffdf7] px-5 py-5 text-center sm:px-8 sm:py-6">
+                                    <p className="mb-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-orange-700/80">
+                                        {bn ? 'স্মার্ট লাইনম্যান · জীবনের শপথ' : 'SMARTLINEMAN · LIFE PLEDGE'}
+                                    </p>
+                                    <h2 className={`text-2xl font-black leading-tight text-orange-950 sm:text-3xl ${bn ? 'amader-kotha__display' : ''}`}>
+                                        {bn ? 'ছিন্নভিন্ন স্বপ্ন — কিছু না-ফেরা মানুষের কথা' : 'Shattered Dreams — The Unreturned'}
+                                    </h2>
+                                    <p className="mx-auto mt-3 max-w-lg text-[15px] font-semibold leading-relaxed text-slate-700 sm:text-base">
+                                        {bn
+                                            ? 'কাজের একটু তাড়াহুড়ো বা সামান্য অসাবধানতায় এক নিমেষে নিভে গেছে বহু তাজা প্রাণ। রেখে গেছে এক বুক হাহাকার আর অসহায় পরিবার। এই ঘটনাগুলো কাউকে ভয় দেখাতে নয়—মাঠে নামার আগে নিজেকে নিরাপদে বাড়ি ফেরানোর শপথ মনে করিয়ে দিতে।'
+                                            : 'A moment of haste or an unchecked back-feed has taken precious lives, leaving behind shattered families. These accounts are not to frighten, but to remind us that returning home safe is our highest duty.'}
+                                    </p>
+                                </div>
+                            </section>
+                        </FadeIn>
+
+                        {/* Mantra Box — In the style of Amader Kotha */}
+                        <FadeIn delay={100}>
+                            <section className="amader-kotha__mantra rounded-[1.75rem] px-6 py-6 text-center sm:px-8">
+                                <span className="inline-block text-2xl" aria-hidden>🕯️</span>
+                                <p className={`mt-2 text-lg font-black leading-snug text-slate-900 sm:text-xl ${bn ? 'amader-kotha__display' : ''}`}>
+                                    {bn
+                                        ? 'একটি দুর্ঘটনা শুধু একজন লাইনম্যানকে কাড়ে না, একটি পুরো পরিবারকে চিরদিনের জন্য অন্ধকারে ঠেলে দেয়।'
+                                        : 'A workplace accident does not just take a lineman; it plunges an entire family into darkness forever.'}
+                                </p>
+                                <p className="mt-2 text-sm font-semibold text-orange-900/80">
+                                    {bn
+                                        ? 'পারমিট, ডিসচার্জ রড ও পূর্ণ পিপিই ছাড়া কখনো লাইনে হাত দেবেন না।'
+                                        : 'Never touch a wire without written permits, discharge rods, and full PPE.'}
+                                </p>
+                            </section>
+                        </FadeIn>
+
+                        {/* Stories Grid */}
+                        <FadeIn delay={160}>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className={`text-lg font-black text-slate-900 sm:text-xl ${bn ? 'amader-kotha__display' : ''}`}>
+                                        {bn ? 'বাস্তব ঘটনার বিবরণ' : 'Documented Accounts'}
+                                    </h3>
+                                    <span className="text-xs font-bold text-orange-800">
+                                        {stories.length} {bn ? 'টি ঘটনা' : 'Cases'}
+                                    </span>
+                                </div>
+
+                                <div className="grid gap-5 sm:grid-cols-2">
+                                    {stories.map((story, index) => (
+                                        <StoryCard
+                                            key={story.id}
+                                            story={story}
+                                            language={language}
+                                            priority={index === 0}
+                                            onOpen={(s) => {
+                                                setDetailScrollY(0);
+                                                setSelectedStory(s);
+                                            }}
+                                            onShare={handleShare}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </FadeIn>
+
+                        {/* End of list heartfelt message */}
+                        <FadeIn delay={220}>
+                            <div className="pt-2">
                                 {!loadMoreRevealed ? (
                                     <button
                                         type="button"
                                         onClick={() => setLoadMoreRevealed(true)}
                                         aria-expanded={false}
-                                        className="min-h-[48px] w-full rounded-full border border-slate-200/80 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50 active:scale-[0.99]"
+                                        className="min-h-[48px] w-full rounded-full border border-orange-200/90 bg-orange-50/70 px-4 py-3 text-sm font-bold text-orange-900 shadow-2xs transition-all hover:bg-orange-100 active:scale-[0.99]"
                                     >
-                                        {language === 'en' ? 'Load more stories' : 'আরও গল্প দেখুন'}
+                                        {bn ? 'তালিকার সমাপ্তি দেখুন' : 'View list conclusion'}
                                     </button>
                                 ) : (
-                                    <p
+                                    <div
                                         role="status"
-                                        aria-live="polite"
-                                        className="rounded-2xl border border-dashed border-orange-200/80 bg-orange-50/60 px-4 py-4 text-center text-sm font-semibold leading-relaxed text-slate-700 sm:text-base"
+                                        className="rounded-2xl border border-dashed border-rose-300 bg-rose-50/80 p-5 text-center shadow-xs"
                                     >
-                                        {language === 'en'
-                                            ? "May this list end here. Let no other family's dreams be shattered."
-                                            : 'এই তালিকা এখানেই শেষ হোক। আর কোনো পরিবারের স্বপ্ন যেন ছিন্নভিন্ন না হয়।'}
-                                    </p>
+                                        <span className="text-2xl" aria-hidden>🕊️</span>
+                                        <p className={`mt-2 text-base font-black text-rose-950 sm:text-lg ${bn ? 'amader-kotha__display' : ''}`}>
+                                            {bn
+                                                ? 'এই তালিকা এখানেই শেষ হোক। আর কোনো পরিবারের স্বপ্ন যেন ছিন্নভিন্ন না হয়।'
+                                                : "May this list end here. Let no other family's dreams be shattered."}
+                                        </p>
+                                        <p className="mt-1 text-xs font-semibold text-rose-800/80">
+                                            {bn
+                                                ? 'নিরাপদ থাকুন, সহকর্মীকে নিরাপদে রাখুন। বাড়ি ফিরুন হাসিমুখে।'
+                                                : 'Stay safe, protect your brothers, and return home with a smile.'}
+                                        </p>
+                                    </div>
                                 )}
                             </div>
-                        </div>
+                        </FadeIn>
                     </div>
                 ) : (
+                    /* Single Story View — Styled with Amader Kotha Aesthetics */
                     <article
                         onScroll={handleDetailScroll}
-                        className="min-h-full animate-fadeIn lg:overflow-visible"
+                        className="animate-fadeIn space-y-6 pb-6"
                     >
-                        <div className="lg:mx-auto lg:grid lg:min-h-full lg:max-w-6xl lg:grid-cols-2 lg:gap-0">
-                            <div className="relative min-h-[42vh] w-full overflow-hidden sm:min-h-[48vh] lg:sticky lg:top-0 lg:h-[calc(100dvh-4.5rem)] lg:min-h-0">
+                        {/* Poster Header */}
+                        <section className="amader-kotha__poster overflow-hidden rounded-[1.75rem] border border-orange-200/70 bg-white shadow-[0_16px_40px_rgba(194,65,12,0.12)]">
+                            <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950 sm:aspect-[16/9]">
                                 <img
                                     src={selectedStory.image}
                                     alt=""
                                     decoding="async"
                                     fetchpriority="high"
-                                    className="absolute inset-0 h-[115%] w-full object-cover motion-reduce:transform-none lg:h-full"
+                                    className="h-full w-full object-cover"
                                     style={{
                                         objectPosition: storyImageFocus(selectedStory.image),
                                         transform:
                                             !reduceMotion && typeof window !== 'undefined' && window.innerWidth < 1024
-                                                ? `translateY(${detailScrollY * 0.18}px)`
+                                                ? `translateY(${detailScrollY * 0.12}px)`
                                                 : 'none'
                                     }}
                                 />
-                                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-900/85 via-slate-900/35 to-transparent px-5 pb-6 pt-20 sm:px-8 sm:pb-8 lg:px-10 lg:pb-10">
-                                    <span
-                                        className={`mb-2.5 inline-block rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold text-orange-800 shadow-sm backdrop-blur ${
-                                            bn ? 'font-bengali' : ''
-                                        }`}
-                                    >
+                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+                                <div className="absolute left-4 top-4">
+                                    <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-black text-orange-950 shadow-sm backdrop-blur">
                                         {selectedStory.category[language]}
                                     </span>
+                                </div>
+                                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
                                     <h1
-                                        className={`max-w-xl text-[1.65rem] font-black leading-[1.15] text-white drop-shadow-sm sm:text-3xl lg:text-4xl ${
-                                            bn ? 'font-bengali' : ''
+                                        className={`text-2xl font-black leading-tight text-white drop-shadow-md sm:text-3xl lg:text-4xl ${
+                                            bn ? 'font-bengali amader-kotha__display' : ''
                                         }`}
                                     >
                                         {selectedStory.title[language]}
@@ -324,90 +430,98 @@ const AwarenessStories = ({ setCurrentView, language = 'en', initialStoryId = nu
                                 </div>
                             </div>
 
-                            <div className="bg-[#fffdf7] px-4 py-6 sm:px-7 sm:py-9 lg:py-12 lg:pl-10 lg:pr-12">
-                                <div className="mx-auto max-w-prose space-y-6">
-                                    <div className="flex flex-wrap items-center justify-between gap-3">
-                                        <div className="flex min-w-0 items-center gap-3">
-                                            <div
-                                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500 text-sm font-black text-white shadow-sm shadow-orange-500/30"
-                                                aria-hidden
-                                            >
-                                                SLM
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className={`text-sm font-black text-slate-900 ${bn ? 'font-bengali' : ''}`}>
-                                                    {language === 'en' ? 'True account' : 'সত্য ঘটনা'}
-                                                </p>
-                                                <p className={`text-xs font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>
-                                                    {language === 'en'
-                                                        ? 'For awareness — not gossip'
-                                                        : 'সচেতনতার শিক্ষা — গুজব নয়'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleShare(selectedStory)}
-                                            aria-label={language === 'en' ? 'Share this story' : 'এই ঘটনা শেয়ার করুন'}
-                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition-all hover:bg-orange-50 active:scale-95"
-                                        >
-                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-
-                                    <div
-                                        className={`space-y-4 text-[1.05rem] leading-[1.75] text-slate-700 sm:text-lg sm:leading-[1.8] ${
-                                            bn ? 'font-bengali' : ''
-                                        } reading-content`}
-                                    >
-                                        {detailParagraphs.map((para, i) => (
-                                            <p key={i}>{para}</p>
-                                        ))}
-                                    </div>
-
-                                    <aside
-                                        className={`border-l-4 border-orange-400 bg-orange-50/80 px-5 py-5 sm:px-6 sm:py-6 ${
-                                            bn ? 'font-bengali' : ''
-                                        }`}
-                                        aria-label={
-                                            language === 'en' ? 'Takeaway for this story' : 'এই গল্প থেকে মনে রাখার কথা'
-                                        }
-                                    >
-                                        <p className="text-[11px] font-bold uppercase tracking-wide text-orange-700">
-                                            {language === 'en' ? 'Remember' : 'মনে রাখবেন'}
+                            {/* Trust Bar & Share Button */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-orange-100 bg-orange-50/70 px-5 py-3.5 sm:px-6">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-black text-white shadow-xs">
+                                        SLM
+                                    </span>
+                                    <div>
+                                        <p className="text-xs font-black text-slate-900">
+                                            {bn ? 'স্মার্ট লাইনম্যান সচেতনতা সেল' : 'SLM Safety Awareness Cell'}
                                         </p>
-                                        <p className="mt-2 text-base font-bold leading-relaxed text-slate-800 sm:text-lg">
-                                            {selectedStory.moral[language]}
+                                        <p className="text-[11px] font-semibold text-slate-500">
+                                            {bn ? 'সত্য ঘটনা · সচেতনতার শিক্ষা' : 'Documented Field Case'}
                                         </p>
-                                    </aside>
-
-                                    <div className="flex flex-col gap-3 pb-8 pt-1 sm:flex-row">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setSelectedStory(null);
-                                                setDetailScrollY(0);
-                                            }}
-                                            className="min-h-[48px] flex-1 rounded-full bg-orange-500 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]"
-                                        >
-                                            {language === 'en' ? 'Back to list' : 'তালিকায় ফিরুন'}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleShare(selectedStory)}
-                                            className="min-h-[48px] flex-1 rounded-full border border-slate-200/80 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50 active:scale-[0.99]"
-                                        >
-                                            {language === 'en' ? 'Share story' : 'শেয়ার করুন'}
-                                        </button>
                                     </div>
                                 </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleShare(selectedStory)}
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/90 bg-white px-3 py-1.5 text-xs font-bold text-orange-900 shadow-2xs transition-all hover:bg-orange-50 active:scale-95"
+                                >
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden>
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                                        />
+                                    </svg>
+                                    <span>{bn ? 'শেয়ার করুন' : 'Share'}</span>
+                                </button>
                             </div>
+                        </section>
+
+                        {/* Article Text Content */}
+                        <div className="rounded-[1.75rem] border border-orange-100/90 bg-white p-6 shadow-sm sm:p-8">
+                            <div
+                                className={`space-y-4 text-[1.05rem] leading-[1.8] text-slate-800 sm:text-lg sm:leading-[1.85] ${
+                                    bn ? 'font-bengali' : ''
+                                }`}
+                            >
+                                {detailParagraphs.map((para, i) => (
+                                    <p key={i} className="text-justify sm:text-left">
+                                        {para}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Moral / Takeaway — Styled like Amader Kotha Mantra */}
+                        <section className="amader-kotha__mantra rounded-[1.75rem] p-6 text-left shadow-sm sm:p-7">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xl" aria-hidden>⚠️</span>
+                                <h3 className={`text-base font-black text-rose-900 sm:text-lg ${bn ? 'amader-kotha__display' : ''}`}>
+                                    {bn ? 'এই ঘটনা থেকে মনে রাখার শিক্ষা' : 'Critical Takeaway from This Case'}
+                                </h3>
+                            </div>
+                            <p className={`mt-3 text-lg font-black leading-snug text-slate-900 sm:text-xl ${bn ? 'amader-kotha__display' : ''}`}>
+                                {selectedStory.moral[language]}
+                            </p>
+                            <p className="mt-2 text-xs font-semibold text-orange-950/80">
+                                {bn
+                                    ? 'আপনার সুরক্ষা শুধু আপনার নয়—আপনার পুরো পরিবারের বেঁচে থাকার অবলম্বন।'
+                                    : 'Your personal safety is the lifeline of your entire household.'}
+                            </p>
+                        </section>
+
+                        {/* Bottom Buttons */}
+                        <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedStory(null);
+                                    setDetailScrollY(0);
+                                }}
+                                className="min-h-[48px] flex-1 rounded-full bg-orange-500 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.98]"
+                            >
+                                {bn ? '← অন্য ঘটনাগুলো দেখুন' : '← Back to stories'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleShare(selectedStory)}
+                                className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border border-orange-200/90 bg-orange-50 px-5 py-3 text-sm font-bold text-orange-900 shadow-2xs transition-all hover:bg-orange-100 active:scale-[0.98]"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                                    />
+                                </svg>
+                                <span>{bn ? 'সহকর্মীদের সাথে শেয়ার করুন' : 'Share with colleagues'}</span>
+                            </button>
                         </div>
                     </article>
                 )}
