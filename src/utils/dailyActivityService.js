@@ -299,39 +299,65 @@ export function calculateUserMonthlyConsistency(createdAt, elapsedDays, activeDa
     };
 }
 
+const EMPTY_USER_ACTIVITY = { active_days: 0 };
+
 /**
- * Fetch daily activity map for all active users in a given month.
- * Cached via requestManager with 10s TTL and request deduplication.
+ * Look up one user's monthly activity from a Map or a JSON-cached plain object.
+ * requestManager persists via JSON.stringify, which turns Map into {}.
+ */
+export function getUserMonthlyActivity(activityByUser, userId) {
+    if (!activityByUser || !userId) return EMPTY_USER_ACTIVITY;
+    const row = typeof activityByUser.get === 'function'
+        ? activityByUser.get(userId)
+        : activityByUser[userId];
+    return row || EMPTY_USER_ACTIVITY;
+}
+
+/**
+ * Fetch daily activity for all active users in a given month.
+ * Cached via requestManager. Must return a JSON-serializable object (not Map),
+ * or a later cache hit crashes monthly leaderboards on `.get()`.
  *
  * @param {number} year
  * @param {number} month (1-12)
  * @param {boolean} [forceRefresh=false]
- * @returns {Promise<Map<string, { active_days: number, activity_dates: string[], total_quizzes: number, hourly_quizzes: number, reading_lessons: number, points_earned: number, penalties_incurred: number, net_points: number }>>}
+ * @returns {Promise<Record<string, { active_days: number, activity_dates: string[], total_quizzes: number, hourly_quizzes: number, reading_lessons: number, points_earned: number, penalties_incurred: number, net_points: number }>>}
  */
 export async function fetchMonthlyDailyActivityMap(year, month, forceRefresh = false) {
     const daysInMonth = new Date(year, month, 0).getDate();
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
-    const cacheKey = `monthly_daily_activity_map_${year}_${month}`;
+    const cacheKey = `monthly_daily_activity_obj_${year}_${month}`;
 
     return requestManager.fetch(
         cacheKey,
         async () => {
-            const { data: rows, error } = await supabase
-                .from('daily_user_activity')
-                .select('user_id, activity_date, quizzes_played, hourly_quizzes_played, reading_lessons_completed, life_skills_played, points_earned, penalties_incurred, net_points')
-                .gte('activity_date', startDate)
-                .lte('activity_date', endDate);
+            const pageSize = 1000;
+            let offset = 0;
+            const rows = [];
 
-            if (error) {
-                console.warn('[dailyActivityService] fetchMonthlyDailyActivityMap error:', error.message);
-                return new Map();
+            while (true) {
+                const { data, error } = await supabase
+                    .from('daily_user_activity')
+                    .select('user_id, activity_date, quizzes_played, hourly_quizzes_played, reading_lessons_completed, life_skills_played, points_earned, penalties_incurred, net_points')
+                    .gte('activity_date', startDate)
+                    .lte('activity_date', endDate)
+                    .range(offset, offset + pageSize - 1);
+
+                if (error) {
+                    console.warn('[dailyActivityService] fetchMonthlyDailyActivityMap error:', error.message);
+                    return {};
+                }
+                if (!data?.length) break;
+                rows.push(...data);
+                if (data.length < pageSize) break;
+                offset += pageSize;
             }
 
-            const byUser = new Map();
-            for (const r of rows || []) {
-                if (!byUser.has(r.user_id)) {
-                    byUser.set(r.user_id, {
+            const byUser = {};
+            for (const r of rows) {
+                if (!byUser[r.user_id]) {
+                    byUser[r.user_id] = {
                         active_days: 0,
                         total_quizzes: 0,
                         hourly_quizzes: 0,
@@ -340,9 +366,9 @@ export async function fetchMonthlyDailyActivityMap(year, month, forceRefresh = f
                         penalties_incurred: 0,
                         net_points: 0,
                         activity_dates: [],
-                    });
+                    };
                 }
-                const u = byUser.get(r.user_id);
+                const u = byUser[r.user_id];
                 const isActive = (Number(r.quizzes_played) > 0) || (Number(r.reading_lessons_completed) > 0) || (Number(r.points_earned) > 0);
                 if (isActive) {
                     u.active_days += 1;

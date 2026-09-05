@@ -134,15 +134,23 @@ export function getHallOfFameWinners(entry, boardTab) {
     const boardKey = getHallOfFameBoardKey(boardTab);
     let winners = [];
     if (entry.boards && Object.prototype.hasOwnProperty.call(entry.boards, boardKey)) {
-        winners = entry.boards[boardKey];
+        winners = [...(entry.boards[boardKey] || [])];
     } else if (boardTab === MONTHLY_SUB_TAB.CHAMPION && entry.winners?.length) {
-        winners = entry.winners;
+        winners = [...entry.winners];
     }
     // v8+ archives may include every eligible new player; Hall of Fame shows prize rows only.
     if (entry.boardsVersion >= 8) {
-        return winners.filter((w) => isPrizeSuperseded(w) || isPrizeRecipient(w));
+        winners = winners.filter((w) => isPrizeSuperseded(w) || isPrizeRecipient(w));
     }
-    return winners;
+    // Prize cards must sit in 1st → 3rd order. Standing order puts superseded leaders first
+    // and shifts prize images onto the wrong names in the 3-column grid.
+    return [...winners].sort((a, b) => {
+        const aPrize = isPrizeRecipient(a);
+        const bPrize = isPrizeRecipient(b);
+        if (aPrize && bPrize) return (Number(a.prize_rank) || 99) - (Number(b.prize_rank) || 99);
+        if (aPrize !== bPrize) return aPrize ? -1 : 1;
+        return (Number(a.standing_rank) || 99) - (Number(b.standing_rank) || 99);
+    });
 }
 
 /**

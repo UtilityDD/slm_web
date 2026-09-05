@@ -22,6 +22,7 @@ function WinnerPrizeTile({ win, language, boardLabel, onMaximizeImage }) {
             <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
                 <div className="absolute inset-0 flex items-center justify-center p-1.5">
                     <HallOfFamePrizeImage
+                        key={(win.prize.imageCandidates || []).join('|') || win.prize.imageUrl || 'empty'}
                         candidates={win.prize.imageCandidates || []}
                         alt={win.prize.imageAlt || win.prize.title || ''}
                         className="max-h-full max-w-full object-contain"

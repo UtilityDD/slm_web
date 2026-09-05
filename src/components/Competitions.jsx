@@ -2387,7 +2387,7 @@ export default function Competitions({
                                                     </p>
                                                 ) : monthWinners.map((winner, winIdx) => (
                                                     <HallOfFameWinnerCard
-                                                        key={`${winner.user_id}-${winner.prize_status || 'row'}-${winIdx}`}
+                                                        key={`${entry.year}-${entry.month}-${winner.user_id}-${winner.prize_rank || 'none'}-${winner.prize_status || 'row'}`}
                                                         winner={winner}
                                                         winIdx={winIdx}
                                                         entry={entry}

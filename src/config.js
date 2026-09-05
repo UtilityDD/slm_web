@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.159";
+export const CURRENT_APP_VERSION = "1.3.160";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update — Lesson 1.1 is now in clearer, lineman-friendly Bangla.",
-  bn: "নতুন ভার্সন আপডেট করুন—পাঠ ১.১ এখন সহজ ও লাইনম্যান-বান্ধব বাংলায়।",
+  en: "Please update — some bugs fixed.",
+  bn: "নতুন ভার্সন আপডেট করুন—কিছু বাগ ঠিক করা হয়েছে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */

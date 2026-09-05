@@ -4,6 +4,7 @@ import {
     fetchMonthlyDailyActivityMap,
     getMonthlyElapsedDays,
     calculateUserMonthlyConsistency,
+    getUserMonthlyActivity,
 } from "./dailyActivityService";
 import {
     aggregateActivityAttempts,
@@ -18,7 +19,7 @@ import {
 } from "./monthlyEncouragementBoards";
 import {
     allClosedMonthsSnapshotted,
-    clearAllMonthSnapshots,
+    clearObsoleteMonthSnapshots,
     HOF_GALLERY_BOARDS_VERSION,
     HOF_GALLERY_CACHE_KEY,
     HOF_START,
@@ -496,7 +497,10 @@ export const leaderboardService = {
                         .order('points', { ascending: false })
                         .limit(100),
                     fetchIstMonthDeltas(y, m),
-                    fetchMonthlyDailyActivityMap(y, m, forceRefresh),
+                    fetchMonthlyDailyActivityMap(y, m, forceRefresh).catch((err) => {
+                        console.warn('[leaderboard] monthly activity map failed:', err?.message || err);
+                        return {};
+                    }),
                 ]);
 
                 if (viewRes.error) throw viewRes.error;
@@ -522,7 +526,7 @@ export const leaderboardService = {
                     const readingGap = isNewUser ? Math.max(0, profileReading - viewReadingInMonth) : 0;
                     const displayPoints = basePoints + readingGap;
 
-                    const userActivity = monthlyActivityMap?.get(item.user_id) || { active_days: 0 };
+                    const userActivity = getUserMonthlyActivity(monthlyActivityMap, item.user_id);
                     const consistency = calculateUserMonthlyConsistency(
                         item.profiles?.created_at,
                         elapsedDays,
@@ -572,6 +576,8 @@ export const leaderboardService = {
             async () => {
                 const pastMonths = hallOfFamePastMonths();
                 if (pastMonths.length === 0) return [];
+
+                clearObsoleteMonthSnapshots();
 
                 // Closed months in the past are immutable; do not wipe snapshots on pull-to-refresh.
                 // Snapshots are automatically invalidated only when HOF_GALLERY_BOARDS_VERSION is bumped.
@@ -734,7 +740,10 @@ export const leaderboardService = {
                     fetchMonthlyActivitySummary(start, end),
                     fetchIstMonthDeltas(y, m),
                     fetchIstMonthDeltas(prevY, prevM),
-                    fetchMonthlyDailyActivityMap(y, m, forceRefresh),
+                    fetchMonthlyDailyActivityMap(y, m, forceRefresh).catch((err) => {
+                        console.warn('[leaderboard] monthly activity map failed:', err?.message || err);
+                        return {};
+                    }),
                 ]);
 
                 if (currentRes.error) throw currentRes.error;
@@ -749,7 +758,7 @@ export const leaderboardService = {
                 const elapsedDays = getMonthlyElapsedDays(y, m);
                 const rawCurrent = applyIstDeltasToRows(currentRes.data, currentDeltas, boundaryProfiles);
                 const currentWithConsistency = rawCurrent.map((row) => {
-                    const userAct = monthlyActivityMap?.get(row.user_id) || { active_days: 0 };
+                    const userAct = getUserMonthlyActivity(monthlyActivityMap, row.user_id);
                     const consistency = calculateUserMonthlyConsistency(
                         row.profiles?.created_at,
                         elapsedDays,
@@ -771,7 +780,7 @@ export const leaderboardService = {
                 });
 
                 const joinersWithConsistency = (joinersRes.data || []).map((prof) => {
-                    const userAct = monthlyActivityMap?.get(prof.id) || { active_days: 0 };
+                    const userAct = getUserMonthlyActivity(monthlyActivityMap, prof.id);
                     const consistency = calculateUserMonthlyConsistency(
                         prof.created_at,
                         elapsedDays,

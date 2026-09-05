@@ -74,6 +74,7 @@ function PrizeFocusCard({
                         className="group/img absolute inset-0 flex items-center justify-center p-2 sm:p-2.5"
                     >
                         <HallOfFamePrizeImage
+                            key={imageCandidates.join('|') || 'empty'}
                             candidates={imageCandidates}
                             alt={prize.imageAlt || prize.title || ''}
                             className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"

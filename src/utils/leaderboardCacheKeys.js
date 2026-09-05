@@ -18,13 +18,16 @@ export function invalidateLeaderboardCaches(userId) {
     cacheHelper.clear('hall_of_fame_gallery_v8');
     cacheHelper.clear('hall_of_fame_gallery_v9');
     cacheHelper.clear('hall_of_fame_gallery_v10');
+    cacheHelper.clear('hall_of_fame_gallery_v11');
     cacheHelper.clear(HOF_GALLERY_CACHE_KEY);
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth() + 1;
+    cacheHelper.clear(`monthly_daily_activity_map_${y}_${m}`);
+    cacheHelper.clear(`monthly_daily_activity_obj_${y}_${m}`);
     if (userId) {
         cacheHelper.clear(`user_rank_all_time_${userId}`);
         cacheHelper.clear(`user_rank_all_time_rdg_${userId}`);
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = now.getMonth() + 1;
         cacheHelper.clear(`leaderboard_monthly_${y}_${m}`);
         cacheHelper.clear(`leaderboard_monthly_ist_${y}_${m}`);
         cacheHelper.clear(`leaderboard_monthly_ist_badge_${y}_${m}`);

@@ -10,6 +10,12 @@ import { storageUtils } from './storageUtils';
 
 const activeRequests = new Map();
 
+/** localStorage JSON cannot persist Map; stringify turns it into {}. */
+function toPersistableCacheData(data) {
+    if (data instanceof Map) return Object.fromEntries(data);
+    return data;
+}
+
 export const requestManager = {
     /**
      * Fetch with optimization options.
@@ -76,7 +82,7 @@ export const requestManager = {
             .then(data => {
                 // Save to cache
                 if (data !== null && data !== undefined) {
-                    cacheHelper.set(key, data, ttl);
+                    cacheHelper.set(key, toPersistableCacheData(data), ttl);
                 }
                 return data;
             })
