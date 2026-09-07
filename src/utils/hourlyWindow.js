@@ -1,7 +1,9 @@
 /**
  * Catch-up windows for hourly quizzes (IST).
  * Day slots (6 AM–10 PM): open 3h 15m from that hour’s start.
- * Night slots (11 PM–5 AM): open 6h 15m from that hour’s start.
+ * Night slots (11 PM–5 AM): open 6h 15m from that hour’s start — while it is still night.
+ * Once daytime starts (6 AM–10 PM now), insist 3h 15m lookback so leftover
+ * night hours do not stay playable all morning.
  * Server must use the same numbers; the phone only displays them.
  */
 
@@ -37,6 +39,18 @@ export function isNightSlotHour(hour) {
 
 export function hourlyWindowMinutesForHour(hour) {
     return isNightSlotHour(hour) ? HOURLY_NIGHT_WINDOW_MIN : HOURLY_DAY_WINDOW_MIN;
+}
+
+/** True 6 AM–10 PM IST (10 PM is day). Night is 11 PM–5 AM. */
+export function isDaytimeNow(nowMs = Date.now()) {
+    return !isNightSlotHour(getIstParts(nowMs).hour);
+}
+
+/** Slot’s own window, capped to the day window while it is daytime now. */
+export function effectiveHourlyWindowMinutes(slotHour, nowMs = Date.now()) {
+    const own = hourlyWindowMinutesForHour(slotHour);
+    if (isDaytimeNow(nowMs)) return Math.min(own, HOURLY_DAY_WINDOW_MIN);
+    return own;
 }
 
 export function formatHourlyQuizId(year, month, day, hour) {
@@ -75,7 +89,7 @@ export function isHourlySlotOpen(slot, nowMs = Date.now()) {
     if (!slot) return false;
     const diff = minutesSinceSlotStart(slot, nowMs);
     if (diff < -HOURLY_FUTURE_DRIFT_MIN) return false;
-    return diff <= hourlyWindowMinutesForHour(slot.hour);
+    return diff <= effectiveHourlyWindowMinutes(slot.hour, nowMs);
 }
 
 export function isHourlyQuizIdOpen(quizId, nowMs = Date.now()) {
@@ -87,7 +101,7 @@ export function isHourlyQuizIdOpen(quizId, nowMs = Date.now()) {
 export function minutesUntilHourlySlotCloses(slot, nowMs = Date.now()) {
     if (!isHourlySlotOpen(slot, nowMs)) return 0;
     const endMs = slotStartMs(slot.year, slot.month, slot.day, slot.hour)
-        + hourlyWindowMinutesForHour(slot.hour) * 60000;
+        + effectiveHourlyWindowMinutes(slot.hour, nowMs) * 60000;
     return Math.max(0, Math.ceil((endMs - Number(nowMs)) / 60000));
 }
 
@@ -109,7 +123,7 @@ function playedIdSet(playedQuizIds) {
 
 /**
  * Unplayed hours the user may still take (one 5-question set each).
- * Includes last night’s 11 PM when it is still inside the 6h window.
+ * Includes last night’s 11 PM when it is still inside the night window.
  */
 export function listPlayableHourlySlots(playedQuizIds, nowMs = Date.now()) {
     const played = playedIdSet(playedQuizIds);

@@ -3,7 +3,8 @@
 -- Apply only after the new 5-question catch-up client is live.
 -- The old makeup client (100–300 pts) would have scores clamped to 50.
 -- Day slots (06–22 IST): submit within 3h 15m of that hour’s start.
--- Night slots (23, 00–05 IST): submit within 6h 15m (sleep mercy from 11 PM).
+-- Night slots (23, 00–05 IST): submit within 6h 15m while it is still night.
+-- During daytime (now 06–22 IST), leftover night hours also cap at 3h 15m.
 -- Future slots still blocked (5 min drift).
 -- Hourly attempts insert once; never overwrite a score.
 -- get_random_hourly_questions: same user+hour always gets the same pool.
@@ -35,6 +36,7 @@ DECLARE
   v_now_ist timestamp := (now() AT TIME ZONE 'Asia/Kolkata');
   v_diff_min numeric;
   v_slot_hour int;
+  v_now_hour int;
   v_window_min numeric;
   v_is_hourly boolean := false;
   v_bump_reading boolean;
@@ -65,10 +67,15 @@ BEGIN
       0, 0
     );
     v_diff_min := EXTRACT(EPOCH FROM (v_now_ist - v_slot_ist)) / 60.0;
+    v_now_hour := EXTRACT(HOUR FROM v_now_ist)::int;
     v_window_min := CASE
       WHEN v_slot_hour IN (23, 0, 1, 2, 3, 4, 5) THEN 375
       ELSE 195
     END;
+    -- Daytime insist: do not keep 6h night leftovers open after 6 AM.
+    IF v_now_hour NOT IN (23, 0, 1, 2, 3, 4, 5) THEN
+      v_window_min := LEAST(v_window_min, 195);
+    END IF;
 
     IF v_diff_min < -5 THEN
       RETURN json_build_object(
