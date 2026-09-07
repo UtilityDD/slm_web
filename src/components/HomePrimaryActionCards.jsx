@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSleepNudgeCopy } from '../utils/hourlyNightWindow';
 
 /**
  * Home primary CTAs: hourly quiz + শিখতে থাকুন.
@@ -17,6 +18,8 @@ export default function HomePrimaryActionCards({
   onHourlyClick,
   onLearningClick,
   demo = false,
+  showSleepNudge = false,
+  onDismissSleepNudge,
 }) {
   const hourlyPending = !hourlyDone;
   const focusLearning = hourlyDone;
@@ -29,17 +32,24 @@ export default function HomePrimaryActionCards({
   const resolvedHintFallback =
     hintFallback || (bn ? '৯০ দিনের নিরাপত্তা পাঠ' : '90-day safety path');
 
+  const sleepCopy = showSleepNudge
+    ? getSleepNudgeCopy(bn ? 'bn' : 'en', hourlyDone)
+    : null;
   const mins = Math.max(0, Number(waitMinutes) || 0);
-  const waitLabel = bn ? `${mins}মি পরে` : `in ${mins}m`;
+  const waitLabel = sleepCopy
+    ? sleepCopy.waitLabel
+    : bn
+      ? `${mins}মি পরে`
+      : `in ${mins}m`;
 
   const hourlyClass = `home-hourly-cta${demo ? '' : ' ripple'} mb-2.5 sm:mb-3${
     hourlyDone ? ' home-hourly-cta--done' : ''
   }`;
 
   const learningClass = focusLearning
-    ? `home-hourly-cta home-learning-cta--primary${demo ? '' : ' ripple'} mb-4 sm:mb-5`
+    ? `home-hourly-cta home-learning-cta--primary${demo ? '' : ' ripple'}`
     : [
-        'mb-4 flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all sm:mb-5 sm:py-3.5',
+        'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all sm:py-3.5',
         demo ? '' : 'active:scale-[0.99]',
         'border-slate-200/90 bg-white shadow-sm hover:border-orange-200 hover:bg-orange-50/40',
       ]
@@ -69,16 +79,21 @@ export default function HomePrimaryActionCards({
   );
 
   return (
-    <div className={demo ? 'pointer-events-none select-none' : undefined}>
+    <div className={`${demo ? 'pointer-events-none select-none ' : ''}mb-4 sm:mb-5`}>
+      <div className={`home-cta-stack${sleepCopy ? ' home-cta-stack--sleep' : ''}`}>
       <HourlyTag
         type={demo ? undefined : 'button'}
         onClick={demo ? undefined : onHourlyClick}
         className={hourlyClass}
         aria-label={
           hourlyDone
-            ? bn
-              ? `পরের কুইজ ${waitLabel} পরে`
-              : `Next quiz in ${waitLabel}`
+            ? sleepCopy
+              ? bn
+                ? 'ঘুমানোর সময়। পরের কুইজ সকালে।'
+                : 'Time to sleep. Next quiz in the morning.'
+              : bn
+                ? `পরের কুইজ ${waitLabel} পরে`
+                : `Next quiz in ${waitLabel}`
             : undefined
         }
       >
@@ -180,6 +195,44 @@ export default function HomePrimaryActionCards({
           </>
         )}
       </LearningTag>
+
+        {sleepCopy ? (
+          <div className="home-sleep-cover" role="status" aria-live="polite">
+            <div className="home-sleep-nudge">
+              <span className="home-sleep-nudge__moon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 14.5A8.5 8.5 0 0110.5 4 7 7 0 1019 15.4 8.4 8.4 0 0121 14.5z" />
+                </svg>
+              </span>
+              <span className="home-sleep-nudge__copy">
+                <span className={`home-sleep-nudge__title ${bn ? 'font-bengali' : ''}`}>
+                  {sleepCopy.title}
+                </span>
+                <span className={`home-sleep-nudge__body ${bn ? 'font-bengali' : ''}`}>
+                  {sleepCopy.body}
+                </span>
+              </span>
+              {demo ? (
+                <span className={`home-sleep-nudge__ok ${bn ? 'font-bengali' : ''}`}>
+                  {sleepCopy.dismiss}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className={`home-sleep-nudge__ok ${bn ? 'font-bengali' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof onDismissSleepNudge === 'function') onDismissSleepNudge();
+                  }}
+                >
+                  {sleepCopy.dismiss}
+                </button>
+              )}
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

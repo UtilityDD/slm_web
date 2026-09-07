@@ -3,8 +3,8 @@
 export const HOURLY_TIER_THRESHOLDS = [10000, 30000, 50000];
 
 const PENALTY_PER_WRONG = [0, 6, 8, 10];
-/** Soft cap so a long makeup set cannot wipe the whole attempt. */
-export const HOURLY_PENALTY_ATTEMPT_CAP = 20;
+/** Cap for one 5-question set (max 5 wrong × top per-wrong penalty). */
+export const HOURLY_PENALTY_ATTEMPT_CAP = 50;
 
 const ALLOWED_DIFFICULTIES = [
     ['easy'],

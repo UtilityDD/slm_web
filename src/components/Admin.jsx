@@ -910,7 +910,7 @@ function UserProfileCard({
   );
 }
 
-export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey, onPreviewCelebration, onPreviewMonthWinners }) {
+export default function Admin({ user, userProfile, language, setCurrentView, onPreviewProfileNudge, onPreviewPpeNudge, onPreviewIdleStory, onPreviewOnboarding, onPreviewSponsorAd, onPreviewCultureSurvey, onPreviewCelebration, onPreviewMonthWinners, onPreviewAppUpdate }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -990,6 +990,7 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
   const [showMonthWinnersPreviewSection, setShowMonthWinnersPreviewSection] = useState(false);
   const [showOnboardingPreviewSection, setShowOnboardingPreviewSection] = useState(false);
   const [showHomeCtaPreviewSection, setShowHomeCtaPreviewSection] = useState(false);
+  const [showAppUpdatePreviewSection, setShowAppUpdatePreviewSection] = useState(false);
   const [showSponsorAdSection, setShowSponsorAdSection] = useState(false);
   const [sponsorAds, setSponsorAds] = useState([]);
   const [sponsorAdsLoading, setSponsorAdsLoading] = useState(false);
@@ -2777,6 +2778,44 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                   />
                 </div>
               </div>
+              <div>
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                  {isEn ? 'Night · covers quiz + reading' : 'রাত · কুইজ ও পাঠের উপর'}
+                </p>
+                <div className="rounded-2xl border border-slate-100 bg-[#fffdf7] p-3 space-y-4">
+                  <HomePrimaryActionCards
+                    demo
+                    bn={!isEn}
+                    hourlyDone={false}
+                    hourLabel="11PM"
+                    pointsLabel="+50"
+                    showSleepNudge
+                    learningLabel={isEn ? 'Continue Training' : 'শিখতে থাকুন'}
+                    topicPrefix={isEn ? "Today's topic:" : 'আজকের বিষয়:'}
+                    topicTitle={
+                      isEn
+                        ? 'Day-one uniform & PPE'
+                        : 'প্রথম দিনের ইউনিফর্ম ও পিপিই (PPE)'
+                    }
+                  />
+                  <HomePrimaryActionCards
+                    demo
+                    bn={!isEn}
+                    hourlyDone
+                    hourLabel="11PM"
+                    pointsLabel="+50"
+                    waitMinutes={32}
+                    showSleepNudge
+                    learningLabel={isEn ? 'Continue Training' : 'শিখতে থাকুন'}
+                    topicPrefix={isEn ? "Today's topic:" : 'আজকের বিষয়:'}
+                    topicTitle={
+                      isEn
+                        ? 'Day-one uniform & PPE'
+                        : 'প্রথম দিনের ইউনিফর্ম ও পিপিই (PPE)'
+                    }
+                  />
+                </div>
+              </div>
               <p className="text-[11px] text-slate-400">
                 {isEn
                   ? 'Preview only — cards are not tappable here.'
@@ -3055,6 +3094,82 @@ export default function Admin({ user, userProfile, language, setCurrentView, onP
                 {isEn
                   ? 'Same slideshow as the monthly leaderboard. Preview only — does not mark it seen for users, and will not auto-open on the leaderboard for admins.'
                   : 'মাসিক লিডারবোর্ডের একই স্লাইডশো। শুধু প্রিভিউ — ইউজারের seen হবে না, অ্যাডমিনের লিডারবোর্ডে নিজে থেকেও খুলবে না।'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: preview full-screen version update */}
+      {isAdmin && !showAnalytics && showManageMenu && typeof onPreviewAppUpdate === 'function' && (
+        <div className={`mb-2 ${ADMIN_THEME.card}`}>
+          <button
+            type="button"
+            onClick={() => setShowAppUpdatePreviewSection((v) => !v)}
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-orange-50/60 transition-colors"
+          >
+            <span className="font-bold text-slate-800 text-xs">
+              🚀 {isEn ? 'Preview version update' : 'ভার্সন আপডেট প্রিভিউ'}
+            </span>
+            <span className="text-slate-400 text-xs">{showAppUpdatePreviewSection ? '▲' : '▼'}</span>
+          </button>
+          {showAppUpdatePreviewSection && (
+            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => onPreviewAppUpdate({ channel: 'pwa', force: true })}
+                  className="rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold text-orange-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-100"
+                >
+                  {isEn ? 'PWA required' : 'PWA বাধ্যতামূলক'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPreviewAppUpdate({ channel: 'pwa', force: false })}
+                  className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                >
+                  {isEn ? 'PWA optional' : 'PWA ঐচ্ছিক'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPreviewAppUpdate({ channel: 'apk', force: false })}
+                  className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                >
+                  {isEn ? 'APK optional' : 'APK ঐচ্ছিক'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPreviewAppUpdate({ channel: 'apk', force: true })}
+                  className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                >
+                  {isEn ? 'APK required' : 'APK বাধ্যতামূলক'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPreviewAppUpdate({ channel: 'apk', force: false, busy: true, progress: 42 })}
+                  className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                >
+                  {isEn ? 'APK downloading' : 'APK ডাউনলোড'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onPreviewAppUpdate({
+                    channel: 'apk',
+                    force: true,
+                    needsPermission: true,
+                    error: isEn
+                      ? 'Install permission required. Enable it, return here, and try again.'
+                      : 'ইনস্টল অনুমতি প্রয়োজন। চালু করে ফিরে এসে আবার চেষ্টা করুন।',
+                  })}
+                  className="rounded-full border border-slate-200/80 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50"
+                >
+                  {isEn ? 'APK permission' : 'APK অনুমতি'}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isEn
+                  ? 'Opens the full-screen update modal. Preview taps do not refresh or download.'
+                  : 'ফুল-স্ক্রিন আপডেট মডাল খোলে। প্রিভিউ ট্যাপে রিফ্রেশ বা ডাউনলোড হবে না।'}
               </p>
             </div>
           )}

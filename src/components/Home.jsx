@@ -10,13 +10,20 @@ import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
 import { requestManager } from '../utils/requestManager';
 import {
-  buildMakeupSession,
-  countRecentMissedHours,
   formatMakeupMaxPoints,
   HOURLY_POINTS_PER_PACK,
 } from '../utils/hourlyMakeup';
+import {
+  countOpenCatchUpSlots,
+  getLiveHourlySlot,
+  listPlayableHourlySlots,
+} from '../utils/hourlyWindow';
 import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { resolveHomeLearningTopic } from '../utils/homeLearningTopic';
+import {
+  dismissSleepNudge,
+  shouldShowSleepNudge,
+} from '../utils/hourlyNightWindow';
 import HomePrimaryActionCards from './HomePrimaryActionCards';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
@@ -115,6 +122,7 @@ export default function Home({
   const [hourlyChecked, setHourlyChecked] = useState(false);
   const [hourlyMaxPoints, setHourlyMaxPoints] = useState(HOURLY_POINTS_PER_PACK);
   const [hourlyClockTick, setHourlyClockTick] = useState(0);
+  const [sleepNudgeTick, setSleepNudgeTick] = useState(0);
   const [userRank, setUserRank] = useState(null);
   const [learningTopic, setLearningTopic] = useState(null);
   const [contactPending, setContactPending] = useState(0);
@@ -236,7 +244,7 @@ export default function Home({
     };
   }, []);
 
-  // Green dot + max points (+50 / +100 / …) when this hour's quiz is still open.
+  // Green dot + +50 when this hour or a recent catch-up hour is still open.
   useEffect(() => {
     if (!user?.id) {
       setIsHourlyPending(false);
@@ -248,15 +256,9 @@ export default function Home({
     let cancelled = false;
     const checkHourlyEligibility = async () => {
       try {
-        const nowRaw = new Date();
-        const now = new Date(nowRaw.getTime() + (5.5 * 60 * 60 * 1000));
-        const year = now.getUTCFullYear();
-        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(now.getUTCDate()).padStart(2, '0');
-        const currentHour = now.getUTCHours();
-        const hour = String(currentHour).padStart(2, '0');
-        const quizId = `hourly-challenge-${year}-${month}-${day}-${hour}`;
-        const dayPrefix = `hourly-challenge-${year}-${month}-${day}-`;
+        const live = getLiveHourlySlot();
+        const quizId = live.quizId;
+        const dayPrefix = `hourly-challenge-${String(live.year).padStart(4, '0')}-${String(live.month).padStart(2, '0')}-${String(live.day).padStart(2, '0')}-`;
 
         const result = await requestManager.fetch(
           `hourly_eligibility_${user.id}_${quizId}`,
@@ -277,32 +279,38 @@ export default function Home({
 
             if (liveError) throw liveError;
 
-            const pending = (liveRows || []).length === 0;
-            const playedHours = [];
+            const livePending = (liveRows || []).length === 0;
+            const playedIds = [];
             if (!dayError && Array.isArray(dayRows)) {
               dayRows.forEach((row) => {
-                const h = parseInt(String(row.quiz_id).split('-').pop(), 10);
-                if (!Number.isNaN(h)) playedHours.push(h);
+                if (row?.quiz_id) playedIds.push(row.quiz_id);
               });
             }
-            return { pending, playedHours };
+            const lastNightIds = listPlayableHourlySlots([], Date.now())
+              .filter((slot) => slot.isLastNight)
+              .map((slot) => slot.quizId);
+            if (lastNightIds.length > 0) {
+              const { data: nightRows, error: nightError } = await supabase
+                .from('quiz_attempts')
+                .select('quiz_id')
+                .eq('user_id', user.id)
+                .in('quiz_id', lastNightIds);
+              if (nightError) throw nightError;
+              (nightRows || []).forEach((row) => {
+                if (row?.quiz_id) playedIds.push(row.quiz_id);
+              });
+            }
+            const catchUp = countOpenCatchUpSlots(playedIds);
+            return { pending: livePending || catchUp > 0, playedIds };
           },
-          { ttl: 3, swr: true, forceRefresh: false }
+          { ttl: 1, swr: true, forceRefresh: true }
         );
 
         if (cancelled || !result) return;
 
         setIsHourlyPending(result.pending);
         setHourlyChecked(true);
-
-        if (!result.pending) {
-          setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
-          return;
-        }
-
-        const playedHoursSet = new Set(result.playedHours || []);
-        const makeup = buildMakeupSession(countRecentMissedHours(currentHour, playedHoursSet));
-        setHourlyMaxPoints(makeup.pointsReward);
+        setHourlyMaxPoints(HOURLY_POINTS_PER_PACK);
       } catch (err) {
         console.error('Error checking hourly challenge:', err);
       }
@@ -310,9 +318,14 @@ export default function Home({
 
     checkHourlyEligibility();
     const intervalId = setInterval(checkHourlyEligibility, 5 * 60 * 1000);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') checkHourlyEligibility();
+    };
+    document.addEventListener('visibilitychange', onVis);
     return () => {
       cancelled = true;
       clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVis);
     };
   }, [user?.id]);
 
@@ -458,6 +471,11 @@ export default function Home({
     void hourlyClockTick;
     return minutesUntilNextIstHour();
   }, [hourlyClockTick]);
+  const showSleepNudge = useMemo(() => {
+    void hourlyClockTick;
+    void sleepNudgeTick;
+    return shouldShowSleepNudge();
+  }, [hourlyClockTick, sleepNudgeTick]);
 
   const go = (view) => {
     if (navigator.vibrate) navigator.vibrate(5);
@@ -820,6 +838,11 @@ export default function Home({
           hintFallback={trainingHintFallback}
           onHourlyClick={() => go('competitions')}
           onLearningClick={openLearningCard}
+          showSleepNudge={showSleepNudge}
+          onDismissSleepNudge={() => {
+            dismissSleepNudge();
+            setSleepNudgeTick((n) => n + 1);
+          }}
         />
 
         {(isSafetyMitra || isAdmin) && user?.id ? (

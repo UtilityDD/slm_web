@@ -26,7 +26,8 @@ import NetworkStatusListener from "./components/NetworkStatusListener";
 import WeatherAlertBanner from "./components/WeatherAlertBanner";
 import { useWeatherAlert } from "./hooks/useWeatherAlert";
 import { UserIcon } from "./components/icons";
-import { APP_NAME, CURRENT_APP_VERSION, CURRENT_APP_RELEASE_NOTES, WEBSITE_URL, SUPPORT_EMAIL, ANDROID_DOWNLOAD_PAGE_URL } from "./config";
+import { APP_NAME, CURRENT_APP_VERSION, CURRENT_APP_RELEASE_NOTES, WEBSITE_URL, SUPPORT_EMAIL, ANDROID_DOWNLOAD_PAGE_URL, ANDROID_APK_URL } from "./config";
+import AppUpdateModal from "./components/AppUpdateModal";
 import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
@@ -225,6 +226,7 @@ export default function SmartLinemanUI() {
   const [updateProgress, setUpdateProgress] = useState(0);
   const [updateError, setUpdateError] = useState('');
   const [updateNeedsPermission, setUpdateNeedsPermission] = useState(false);
+  const [updateModalPreview, setUpdateModalPreview] = useState(null);
   const [selectedProgressUserId, setSelectedProgressUserId] = useState(null);
   /** Where My Progress should return: home | leaderboard | prizes | training */
   const [progressReturnView, setProgressReturnView] = useState('home');
@@ -347,6 +349,7 @@ export default function SmartLinemanUI() {
               version_name: CURRENT_APP_VERSION,
               update_url: '#',
               release_notes: CURRENT_APP_RELEASE_NOTES,
+              channel: 'pwa',
             });
             setIsForceUpdate(true);
             setShowUpdateModal(true);
@@ -502,6 +505,10 @@ export default function SmartLinemanUI() {
 
     const closeShellOverlay = () => {
       if (showSessionEndedModal) return true; // cannot dismiss via back
+      if (updateModalPreview) {
+        setUpdateModalPreview(null);
+        return true;
+      }
       if (showUpdateModal && isForceUpdate) return true; // require update action
       if (celebrationPreview) {
         setCelebrationPreview(null);
@@ -613,6 +620,7 @@ export default function SmartLinemanUI() {
   }, [
     sidebarOpen,
     showUpdateModal,
+    updateModalPreview,
     isForceUpdate,
     showLogoutModal,
     showLanguageModal,
@@ -1692,6 +1700,17 @@ export default function SmartLinemanUI() {
               onPreviewMonthWinners={() =>
                 setMonthWinnersPreview({ key: Date.now() })
               }
+              onPreviewAppUpdate={(opts = {}) =>
+                setUpdateModalPreview({
+                  channel: opts.channel === 'apk' ? 'apk' : 'pwa',
+                  force: Boolean(opts.force),
+                  busy: Boolean(opts.busy),
+                  progress: Number.isFinite(opts.progress) ? opts.progress : 0,
+                  needsPermission: Boolean(opts.needsPermission),
+                  error: opts.error || '',
+                  key: Date.now(),
+                })
+              }
             />
           );
         case 'safety-culture-admin':
@@ -1846,6 +1865,7 @@ export default function SmartLinemanUI() {
     !!pushNotification ||
     showActiveBroadcastModal ||
     showUpdateModal ||
+    updateModalPreview ||
     showSessionEndedModal ||
     userTyping ||
     onAuthFlow ||
@@ -1891,6 +1911,7 @@ export default function SmartLinemanUI() {
     !!pushNotification ||
     showActiveBroadcastModal ||
     showUpdateModal ||
+    updateModalPreview ||
     showSessionEndedModal ||
     profileNudgeOpen ||
     ppeNudgeOpen ||
@@ -2079,153 +2100,69 @@ export default function SmartLinemanUI() {
               </div>
             )}
 
-            {showUpdateModal && activeShellOverlay === 'update' && updateInfo && createPortal(
-              <div className="native-sheet-scrim fixed inset-0 z-[450] bg-slate-900/45 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-                <div className="native-sheet-panel w-full sm:max-w-md animate-slide-up-sheet sm:animate-scale-in">
-                  <div className="native-sheet-card relative overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] shadow-xl sm:rounded-2xl">
-                    <NativeSheetHandle />
-                    <div className="flex items-start gap-3.5 px-6 pb-6 pt-2 text-left sm:p-7 sm:pt-7">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-2xl leading-none shadow-sm" aria-hidden="true">🚀</span>
-                      <div className="min-w-0 flex-1">
-                    <h2 className={`text-lg sm:text-xl font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>{language === 'en' ? 'New update' : 'নতুন আপডেট'}</h2>
-                    <p className={`mt-1 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                      {updateInfo.channel === 'apk'
-                        ? (isForceUpdate
-                          ? (language === 'en'
-                            ? `Please update to v${updateInfo.version_name} to keep using the app.`
-                            : `অ্যাপ চালাতে v${updateInfo.version_name} আপডেট করুন।`)
-                          : (language === 'en'
-                            ? `Version ${updateInfo.version_name} is ready. Download and install the update.`
-                            : `নতুন ভার্সন ${updateInfo.version_name} এসেছে। আপডেট ডাউনলোড করে ইনস্টল করুন।`))
-                        : (isForceUpdate
-                          ? (language === 'en' ? `Please update to v${updateInfo.version_name} to continue.` : `এগিয়ে যেতে v${updateInfo.version_name} আপডেট করুন।`)
-                          : (language === 'en' ? 'A new version is ready. Please update now.' : 'নতুন ভার্সন আপডেট করুন।'))}
-                    </p>
-                    {updateInfo.release_notes && (
-                      <p className={`mt-2 rounded-xl bg-orange-50 px-3 py-2 text-sm font-bold leading-snug text-orange-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {language === 'en'
-                          ? (updateInfo.release_notes.en || updateInfo.release_notes)
-                          : (updateInfo.release_notes.bn || updateInfo.release_notes.en || updateInfo.release_notes)}
-                      </p>
-                    )}
-                    {updateBusy && updateInfo.channel === 'apk' && (
-                      <div className="mt-3">
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-orange-100">
-                          <div
-                            className="h-full rounded-full bg-orange-500 transition-all duration-300"
-                            style={{ width: `${Math.max(4, Math.min(100, updateProgress || 0))}%` }}
-                          />
-                        </div>
-                        <p className={`mt-1.5 text-xs font-bold text-orange-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                          {language === 'en'
-                            ? `Downloading… ${Math.min(100, Math.round(updateProgress || 0))}%`
-                            : `ডাউনলোড হচ্ছে… ${Math.min(100, Math.round(updateProgress || 0))}%`}
-                        </p>
-                      </div>
-                    )}
-                    {updateNeedsPermission && (
-                      <p className={`mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold leading-snug text-amber-950 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {language === 'en'
-                          ? 'Allow “Install unknown apps” for SmartLineman, then tap Download Update again.'
-                          : 'SmartLineman-এর জন্য “অজানা অ্যাপ ইনস্টল” অনুমতি দিন, তারপর আবার Download Update চাপুন।'}
-                      </p>
-                    )}
-                    {updateError && (
-                      <p className={`mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold leading-snug text-rose-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        {updateError}
-                      </p>
-                    )}
-                      </div>
-                    </div>
+            {showUpdateModal && activeShellOverlay === 'update' && updateInfo ? (
+              <AppUpdateModal
+                language={language}
+                updateInfo={updateInfo}
+                isForceUpdate={isForceUpdate}
+                updateBusy={updateBusy}
+                updateProgress={updateProgress}
+                updateNeedsPermission={updateNeedsPermission}
+                updateError={updateError}
+                onPrimary={async () => {
+                  const hasDownloadUrl = updateInfo.update_url && updateInfo.update_url !== '#';
+                  if (!hasDownloadUrl) {
+                    applyAppRefresh();
+                    return;
+                  }
+                  if (updateInfo.channel !== 'apk' || !isNativeCapacitorPlatform()) {
+                    openExternalUrl(updateInfo.download_page || updateInfo.update_url);
+                    return;
+                  }
 
-                    <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-white/60 p-4 sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5">
-                      <button
-                        type="button"
-                        disabled={updateBusy}
-                        onClick={async () => {
-                          const hasDownloadUrl = updateInfo.update_url && updateInfo.update_url !== '#';
-                          if (!hasDownloadUrl) {
-                            applyAppRefresh();
-                            return;
-                          }
-                          if (updateInfo.channel !== 'apk' || !isNativeCapacitorPlatform()) {
-                            openExternalUrl(updateInfo.download_page || updateInfo.update_url);
-                            return;
-                          }
-
-                          setUpdateBusy(true);
-                          setUpdateError('');
-                          setUpdateNeedsPermission(false);
-                          setUpdateProgress(2);
-                          try {
-                            const result = await downloadAndInstallNativeUpdate(updateInfo.update_url, {
-                              onProgress: (pct) => setUpdateProgress(pct),
-                            });
-                            if (result.needsPermission) {
-                              setUpdateNeedsPermission(true);
-                              await openNativeInstallPermissionSettings();
-                              setUpdateError(
-                                language === 'en'
-                                  ? 'Install permission required. Enable it, return here, and try again.'
-                                  : 'ইনস্টল অনুমতি প্রয়োজন। চালু করে ফিরে এসে আবার চেষ্টা করুন।'
-                              );
-                              return;
-                            }
-                            if (!result.ok) {
-                              setUpdateError(
-                                language === 'en'
-                                  ? (result.error || 'Download failed. Try the download page instead.')
-                                  : (result.error || 'ডাউনলোড ব্যর্থ। ডাউনলোড পেজ দিয়ে চেষ্টা করুন।')
-                              );
-                              return;
-                            }
-                            setUpdateProgress(100);
-                          } catch (err) {
-                            setUpdateError(
-                              language === 'en'
-                                ? (err?.message || 'Download failed. Try the download page instead.')
-                                : (err?.message || 'ডাউনলোড ব্যর্থ। ডাউনলোড পেজ দিয়ে চেষ্টা করুন।')
-                            );
-                          } finally {
-                            setUpdateBusy(false);
-                          }
-                        }}
-                        className={`w-full min-h-[48px] rounded-full bg-orange-500 py-3 text-base font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:opacity-60 ${language === 'bn' ? 'font-bengali' : ''}`}
-                      >
-                        {updateBusy
-                          ? (language === 'en' ? 'Downloading…' : 'ডাউনলোড হচ্ছে…')
-                          : updateInfo.update_url && updateInfo.update_url !== '#'
-                            ? (language === 'en' ? 'Download Update' : 'আপডেট ডাউনলোড করুন')
-                            : (isForceUpdate
-                              ? (language === 'en' ? 'Update now' : 'আপডেট করুন')
-                              : (language === 'en' ? 'Update now' : 'আপডেট করুন'))}
-                      </button>
-                      {updateInfo.channel === 'apk' && (updateError || updateNeedsPermission) && (
-                        <button
-                          type="button"
-                          disabled={updateBusy}
-                          onClick={() => openExternalUrl(updateInfo.download_page || ANDROID_DOWNLOAD_PAGE_URL)}
-                          className={`w-full min-h-[48px] rounded-full border border-orange-200 bg-orange-50 py-3 text-base font-bold text-orange-900 shadow-sm transition-all hover:bg-orange-100 active:scale-[0.98] disabled:opacity-60 ${language === 'bn' ? 'font-bengali' : ''}`}
-                        >
-                          {language === 'en' ? 'Open download page' : 'ডাউনলোড পেজ খুলুন'}
-                        </button>
-                      )}
-                      {!isForceUpdate && (
-                        <button
-                          type="button"
-                          disabled={updateBusy}
-                          onClick={() => setShowUpdateModal(false)}
-                          className={`w-full min-h-[48px] rounded-full border border-slate-200/80 bg-white py-3 text-base font-bold text-slate-700 shadow-sm transition-all hover:bg-orange-50 active:scale-[0.98] disabled:opacity-60 ${language === 'bn' ? 'font-bengali' : ''}`}
-                        >
-                          {language === 'en' ? 'Later' : 'পরে'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>,
-              document.body
-            )}
+                  setUpdateBusy(true);
+                  setUpdateError('');
+                  setUpdateNeedsPermission(false);
+                  setUpdateProgress(2);
+                  try {
+                    const result = await downloadAndInstallNativeUpdate(updateInfo.update_url, {
+                      onProgress: (pct) => setUpdateProgress(pct),
+                    });
+                    if (result.needsPermission) {
+                      setUpdateNeedsPermission(true);
+                      await openNativeInstallPermissionSettings();
+                      setUpdateError(
+                        language === 'en'
+                          ? 'Install permission required. Enable it, return here, and try again.'
+                          : 'ইনস্টল অনুমতি প্রয়োজন। চালু করে ফিরে এসে আবার চেষ্টা করুন।'
+                      );
+                      return;
+                    }
+                    if (!result.ok) {
+                      setUpdateError(
+                        language === 'en'
+                          ? (result.error || 'Download failed. Try the download page instead.')
+                          : (result.error || 'ডাউনলোড ব্যর্থ। ডাউনলোড পেজ দিয়ে চেষ্টা করুন।')
+                      );
+                      return;
+                    }
+                    setUpdateProgress(100);
+                  } catch (err) {
+                    setUpdateError(
+                      language === 'en'
+                        ? (err?.message || 'Download failed. Try the download page instead.')
+                        : (err?.message || 'ডাউনলোড ব্যর্থ। ডাউনলোড পেজ দিয়ে চেষ্টা করুন।')
+                    );
+                  } finally {
+                    setUpdateBusy(false);
+                  }
+                }}
+                onOpenDownloadPage={() =>
+                  openExternalUrl(updateInfo.download_page || ANDROID_DOWNLOAD_PAGE_URL)
+                }
+                onLater={() => setShowUpdateModal(false)}
+              />
+            ) : null}
 
             <div className={`refresh-indicator ${isRefreshing || pullDistance > 20 ? 'visible' : ''}`} style={{ transform: isRefreshing ? 'translateY(0)' : `translateY(${Math.min(pullDistance - 60, 0)}px)`, opacity: Math.min(pullDistance / 60, 1) }}>
               <div className="refresh-indicator-content">
@@ -2598,6 +2535,26 @@ export default function SmartLinemanUI() {
           </div>
         </div>
         </LifeSkillRadioProvider>
+      ) : null}
+      {updateModalPreview ? (
+        <AppUpdateModal
+          key={updateModalPreview.key}
+          preview
+          language={language}
+          updateInfo={{
+            version_name: CURRENT_APP_VERSION,
+            update_url: updateModalPreview.channel === 'apk' ? ANDROID_APK_URL : '#',
+            download_page: ANDROID_DOWNLOAD_PAGE_URL,
+            release_notes: CURRENT_APP_RELEASE_NOTES,
+            channel: updateModalPreview.channel,
+          }}
+          isForceUpdate={Boolean(updateModalPreview.force)}
+          updateBusy={Boolean(updateModalPreview.busy)}
+          updateProgress={updateModalPreview.progress || 0}
+          updateNeedsPermission={Boolean(updateModalPreview.needsPermission)}
+          updateError={updateModalPreview.error || ''}
+          onClosePreview={() => setUpdateModalPreview(null)}
+        />
       ) : null}
       {(celebrationPreviewConfig || (celebrationSplashOpen && celebrationConfig)) && !nativeBootSplash ? (
         <CelebrationSplash

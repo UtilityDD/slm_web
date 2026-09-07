@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BrutalLoaderContent } from './loaders/PageLoader';
-import { getMakeupCopy } from '../utils/hourlyMakeup';
 
 const CX = 140;
 const CY = 140;
@@ -12,8 +11,9 @@ const PAD = 1.1;
 const THEME = {
     played: { fill: '#34d399', stroke: 'transparent' },
     live: { fill: '#f97316', stroke: 'transparent' },
+    open: { fill: '#fbbf24', stroke: 'transparent' },
     missed: { fill: '#cbd5e1', stroke: 'transparent' },
-    'upcoming-next': { fill: '#fbbf24', stroke: 'transparent' },
+    'upcoming-next': { fill: '#fde68a', stroke: 'transparent' },
     upcoming: { fill: '#f1f5f9', stroke: 'transparent' },
 };
 
@@ -62,6 +62,7 @@ function HourlyTimeBadge({ hour, variant = 'default', className = '' }) {
     const variants = {
         default: 'border-slate-200/80 bg-white text-slate-900 shadow-sm',
         live: 'border-orange-300 bg-orange-500 text-white shadow-md shadow-orange-500/35',
+        open: 'border-amber-300 bg-amber-400 text-amber-950 shadow-md shadow-amber-500/25',
         played: 'border-emerald-200 bg-emerald-400 text-slate-900 shadow-sm',
         missed: 'border-slate-200 bg-slate-100 text-slate-500 shadow-sm',
         next: 'border-amber-200 bg-amber-300 text-slate-900 shadow-sm',
@@ -171,6 +172,26 @@ function RingCenterFocus({ activeSlot, language, timeLeft, labels, hourlyQuizRef
         );
     }
 
+    if (activeSlot.status === 'open') {
+        const closes = Number(activeSlot.closesInMin);
+        return (
+            <div className="flex flex-col items-center justify-center text-center">
+                <span className={`mb-1 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-700 ${bn ? 'font-bengali normal-case' : ''}`}>
+                    {bn ? 'এখনও খোলা' : 'Still open'}
+                </span>
+                <p className="text-2xl font-black tabular-nums text-amber-800">
+                    {hour12}
+                    <span className="ml-1 text-xs font-bold text-amber-600">{period}</span>
+                </p>
+                {Number.isFinite(closes) && closes > 0 && (
+                    <p className={`mt-1 text-[10px] font-bold text-amber-700 ${bn ? 'font-bengali' : ''}`}>
+                        {bn ? `${closes} মি বাকি` : `${closes}m left`}
+                    </p>
+                )}
+            </div>
+        );
+    }
+
     if (activeSlot.status === 'missed') {
         return (
             <div className="flex flex-col items-center justify-center text-center">
@@ -205,23 +226,14 @@ export default function HourlyDayRing({
     loading,
     hourlyQuizRefreshBusy,
     labels,
-    onPlayLive,
+    onPlaySlot,
     onReview,
-    makeupPreview = null,
+    lastNightSlot = null,
 }) {
-    const makeupCopy = useMemo(() => {
-        if (!makeupPreview) return null;
-        return getMakeupCopy(
-            language,
-            makeupPreview.makeupMissed,
-            makeupPreview.packs,
-            makeupPreview.pointsReward
-        );
-    }, [language, makeupPreview]);
-
     const liveSlot = slots.find((s) => s.status === 'live');
+    const openSlot = slots.find((s) => s.status === 'open');
     const nextSlot = slots.find((s) => s.status === 'upcoming-next');
-    const defaultHour = liveSlot?.hour ?? nextSlot?.hour ?? slots.find((s) => s.status === 'played')?.hour ?? 12;
+    const defaultHour = liveSlot?.hour ?? openSlot?.hour ?? nextSlot?.hour ?? slots.find((s) => s.status === 'played')?.hour ?? 12;
 
     const [selectedHour, setSelectedHour] = useState(null);
 
@@ -233,7 +245,12 @@ export default function HourlyDayRing({
     const activeSlot = slots.find((s) => s.hour === activeHour) || liveSlot || nextSlot || slots[0];
     const playedCount = useMemo(() => slots.filter((s) => s.status === 'played').length, [slots]);
     const missedCount = useMemo(() => slots.filter((s) => s.status === 'missed').length, [slots]);
-    const pendingCount = Math.max(0, slots.length - playedCount - missedCount);
+    const openTodayCount = useMemo(
+        () => slots.filter((s) => s.status === 'open').length,
+        [slots]
+    );
+    const openCount = openTodayCount + (lastNightSlot ? 1 : 0);
+    const pendingCount = Math.max(0, slots.length - playedCount - missedCount - openTodayCount);
 
     const latestReviewable = useMemo(() => {
         const played = slots.filter((s) => s.status === 'played' && s.quizId);
@@ -308,7 +325,8 @@ export default function HourlyDayRing({
                     {slots.map((slot) => {
                         const isSelected = slot.hour === activeHour;
                         const isLive = slot.status === 'live';
-                        const grow = isSelected ? 4 : isLive ? 2.5 : 0;
+                        const isOpen = slot.status === 'open';
+                        const grow = isSelected ? 4 : isLive ? 2.5 : isOpen ? 1.8 : 0;
                         const startDeg = slot.hour * SEG + PAD - 90;
                         const endDeg = (slot.hour + 1) * SEG - PAD - 90;
                         const theme = THEME[slot.status] || THEME.upcoming;
@@ -394,54 +412,85 @@ export default function HourlyDayRing({
                     <span className="tabular-nums">{playedCount}</span>
                     {language === 'en' ? 'done' : 'শেষ'}
                 </span>
+                {openCount > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-800">
+                        <span className="tabular-nums">{openCount}</span>
+                        {language === 'en' ? 'open' : 'খোলা'}
+                    </span>
+                )}
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
                     <span className="tabular-nums">{missedCount}</span>
                     {language === 'en' ? 'miss' : 'মিস'}
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold text-orange-700">
                     <span className="tabular-nums">{pendingCount}</span>
                     {language === 'en' ? 'left' : 'বাকি'}
                 </span>
             </div>
 
+            {lastNightSlot && typeof onPlaySlot === 'function' && (
+                <button
+                    type="button"
+                    disabled={hourlyQuizRefreshBusy}
+                    onClick={() => { void onPlaySlot(lastNightSlot); }}
+                    className={`mt-3 flex min-h-[48px] w-full items-center justify-between gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-left shadow-sm ${contentWidth} ${language === 'bn' ? 'font-bengali' : ''}`}
+                >
+                    <span>
+                        <span className="block text-sm font-black text-indigo-950">
+                            {language === 'en' ? 'Last night 11 PM' : 'গত রাত ১১টা'}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] font-semibold text-indigo-700">
+                            {language === 'en' ? '5 questions · still open' : '৫টি প্রশ্ন · এখনও খোলা'}
+                        </span>
+                    </span>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white">
+                        <svg className="ml-0.5 h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M8 5v14l11-7z" /></svg>
+                    </span>
+                </button>
+            )}
+
             <div
-                id={activeSlot?.status === 'live' ? 'node-live' : activeSlot?.status === 'upcoming-next' ? 'node-upcoming-next' : undefined}
+                id={activeSlot?.status === 'live' || activeSlot?.status === 'open' ? 'node-live' : activeSlot?.status === 'upcoming-next' ? 'node-upcoming-next' : undefined}
                 className={`mt-3 flex min-h-[72px] items-stretch sm:mt-4 sm:min-h-[84px] ${contentWidth}`}
             >
-                {activeSlot?.status === 'live' ? (
+                {activeSlot?.status === 'live' || activeSlot?.status === 'open' ? (
                     <button
                         type="button"
                         disabled={hourlyQuizRefreshBusy}
-                        onClick={() => { void onPlayLive(); }}
+                        onClick={() => { void onPlaySlot?.(activeSlot.slot || activeSlot); }}
                         className="live-card-glow group w-full overflow-hidden rounded-2xl border border-orange-200/80 bg-white p-0 text-left shadow-md shadow-orange-500/10 transition-all hover:shadow-lg active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
                     >
                         <div className="relative z-10 flex items-stretch">
-                            <div className="flex shrink-0 items-center border-r border-slate-200/80 bg-orange-50 px-2.5 py-2.5 sm:px-3">
-                                <HourlyTimeBadge hour={activeSlot.hour} variant="live" />
+                            <div className={`flex shrink-0 items-center border-r border-slate-200/80 px-2.5 py-2.5 sm:px-3 ${activeSlot.status === 'open' ? 'bg-amber-50' : 'bg-orange-50'}`}>
+                                <HourlyTimeBadge hour={activeSlot.hour} variant={activeSlot.status === 'open' ? 'open' : 'live'} />
                             </div>
                             <div className="flex min-w-0 flex-1 items-center justify-between gap-2 px-3 py-2.5">
                                 <div className="min-w-0">
                                     <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {makeupCopy?.playTitle || (language === 'en' ? 'Play now' : 'এখন খেলুন')}
+                                        {language === 'en' ? 'Play now' : 'এখন খেলুন'}
                                     </p>
                                     <p className={`mt-0.5 text-[11px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {(makeupPreview?.makeupMissed || 0) > 0 && makeupCopy?.playSubtitle
-                                            ? makeupCopy.playSubtitle
+                                        {activeSlot.status === 'open'
+                                            ? (language === 'en'
+                                                ? `5 questions · closes in ${activeSlot.closesInMin || 0}m`
+                                                : `৫টি প্রশ্ন · ${activeSlot.closesInMin || 0} মি বাকি`)
                                             : (
                                                 <>
                                                     {labels.liveNow}
                                                     {timeLeft ? ` · ${timeLeft}` : ''}
+                                                    {' · '}
+                                                    {language === 'en' ? '5 questions' : '৫টি প্রশ্ন'}
                                                 </>
                                             )}
                                     </p>
                                 </div>
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-md shadow-orange-500/35 transition-transform group-hover:scale-105">
+                                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-md transition-transform group-hover:scale-105 ${activeSlot.status === 'open' ? 'bg-amber-500 shadow-amber-500/35' : 'bg-orange-500 shadow-orange-500/35'}`}>
                                     <svg className="ml-0.5 h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M8 5v14l11-7z" /></svg>
                                 </div>
                             </div>
                         </div>
                     </button>
-                ) : activeSlot?.status === 'upcoming-next' ? (
+                ) : activeSlot?.status === 'upcoming-next' && openCount === 0 ? (
                     <div className="w-full overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-[#fffdf7] to-white p-0 shadow-sm">
                         <div className="flex h-full items-stretch">
                             <div className="flex shrink-0 items-center border-r border-slate-200/80 bg-white px-2.5 py-2.5 sm:px-3">

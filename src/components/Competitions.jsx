@@ -23,11 +23,20 @@ import {
     pickQuestionsByDifficultyMix
 } from '../utils/hourlyDifficulty';
 import {
-    buildMakeupSession,
-    countRecentMissedHours,
-    getMakeupCopy,
     HOURLY_QUESTIONS_PER_PACK,
 } from '../utils/hourlyMakeup';
+import {
+    formatHourlyQuizId,
+    getLiveHourlySlot,
+    hourIdFromParts,
+    isHourlyQuizIdOpen,
+    listPlayableHourlySlots,
+    minutesUntilHourlySlotCloses,
+    nextPlayableSlotAfter,
+    parseHourlyQuizId,
+    HOURLY_POINTS_PER_SET,
+    HOURLY_QUESTIONS_PER_SET,
+} from '../utils/hourlyWindow';
 import {
     estimateAccuracyFromAttempts,
     getPackTimerCopy,
@@ -392,6 +401,7 @@ export default function Competitions({
     const [packOnTimeFlags, setPackOnTimeFlags] = useState([]); // boolean per pack
     const [packTimerTick, setPackTimerTick] = useState(0);
     const packTimingRef = React.useRef({ greenSeconds: 120, starts: [], onTime: [] });
+    const usedHourlyQuestionIdsRef = React.useRef(new Set());
     const [leaderboard, setLeaderboard] = useState([]);
     const [hourlyQuiz, setHourlyQuiz] = useState(null);
     const hourlyQuizRef = React.useRef(null);
@@ -626,8 +636,6 @@ export default function Competitions({
         const state = {
             quizId: activeQuiz.id,
             points_reward: activeQuiz.points_reward,
-            makeupPacks: activeQuiz.makeupPacks,
-            makeupMissed: activeQuiz.makeupMissed,
             packGreenSeconds,
             packStartTimes,
             packOnTimeFlags,
@@ -643,46 +651,44 @@ export default function Competitions({
     useEffect(() => {
         const checkResumption = () => {
             const savedState = storageUtils.getItem('slm_hourly_active_quiz_state');
-            if (savedState && hourlyQuiz && savedState.quizId === hourlyQuiz.id) {
-                const stateTime = new Date(savedState.timestamp);
-                const now = getSyncedTime();
-
-                const istState = getIstDate(stateTime);
-                const istNow = getIstDate(now);
-
-                // Only resume if it's the same hour/day in IST
-                if (istState.getUTCHours() === istNow.getUTCHours() &&
-                    istState.getUTCDate() === istNow.getUTCDate() &&
-                    istState.getUTCFullYear() === istNow.getUTCFullYear()) {
-                    setQuizQuestions(savedState.questions);
-                    setCurrentQuestionIndex(savedState.currentIndex);
-                    setUserAnswers(savedState.answers);
-                    setHintViewedQuestions(new Set(savedState.hints || []));
-                    const green = savedState.packGreenSeconds || 120;
-                    const starts = Array.isArray(savedState.packStartTimes) ? savedState.packStartTimes : [];
-                    const onTime = Array.isArray(savedState.packOnTimeFlags) ? savedState.packOnTimeFlags : [];
-                    setPackGreenSeconds(green);
-                    setPackStartTimes(starts);
-                    setPackOnTimeFlags(onTime);
-                    packTimingRef.current = { greenSeconds: green, starts, onTime };
-                    setActiveQuiz({
-                        ...hourlyQuiz,
-                        points_reward: savedState.points_reward ?? hourlyQuiz.points_reward ?? 50,
-                        makeupPacks: savedState.makeupPacks ?? 1,
-                        makeupMissed: savedState.makeupMissed ?? 0,
-                    });
-                    setQuizSubmitted(false);
-                    console.log('Restored quiz state for anti-cheat protection');
-                } else {
-                    storageUtils.removeItem('slm_hourly_active_quiz_state');
-                }
+            if (!savedState?.quizId || activeQuiz) return;
+            const nowMs = getSyncedTime().getTime();
+            const questionCount = Array.isArray(savedState.questions) ? savedState.questions.length : 0;
+            const staleMakeup = questionCount === 0
+                || questionCount > HOURLY_QUESTIONS_PER_SET
+                || Number(savedState.points_reward) > HOURLY_POINTS_PER_SET;
+            if (
+                staleMakeup
+                || !isHourlyQuizIdOpen(savedState.quizId, nowMs)
+                || playedHourlyIdSet().has(savedState.quizId)
+            ) {
+                storageUtils.removeItem('slm_hourly_active_quiz_state');
+                return;
             }
+            setQuizQuestions(savedState.questions || []);
+            setCurrentQuestionIndex(savedState.currentIndex || 0);
+            setUserAnswers(savedState.answers || {});
+            setHintViewedQuestions(new Set(savedState.hints || []));
+            const green = savedState.packGreenSeconds || 120;
+            const starts = Array.isArray(savedState.packStartTimes) ? savedState.packStartTimes : [];
+            const onTime = Array.isArray(savedState.packOnTimeFlags) ? savedState.packOnTimeFlags : [];
+            setPackGreenSeconds(green);
+            setPackStartTimes(starts);
+            setPackOnTimeFlags(onTime);
+            packTimingRef.current = { greenSeconds: green, starts, onTime };
+            setActiveQuiz({
+                id: savedState.quizId,
+                title: language === 'en' ? 'Hourly quiz' : 'ঘণ্টার কুইজ',
+                points_reward: savedState.points_reward ?? HOURLY_POINTS_PER_SET,
+                questions: savedState.questions || [],
+            });
+            setQuizSubmitted(false);
         };
 
-        if (hourlyQuiz && !activeQuiz) {
+        if (!activeQuiz) {
             checkResumption();
         }
-    }, [hourlyQuiz, activeQuiz]);
+    }, [hourlyQuiz, activeQuiz, todayAttempts]);
 
     const getSyncedTime = () => {
         return new Date(Date.now() + serverTimeOffset);
@@ -739,8 +745,8 @@ export default function Competitions({
             topPlayersToday: "Top Players Today",
             viewAll: "View All",
             antiCheatExitTitle: "Exit Quiz?",
-            antiCheatExitDesc: "Exiting now will submit this hourly challenge with 0 points.",
-            antiCheatExitMakeup: "This also cancels every set in this quiz.",
+            antiCheatExitDesc: "Exiting scores 0 for this hour only.",
+            antiCheatExitMakeup: "",
             antiCheatExitPenalty: "This is an anti-cheating safeguard and cannot be undone.",
             antiCheatStay: "Continue Quiz",
             antiCheatExitConfirm: "Exit with 0 Points",
@@ -802,8 +808,8 @@ export default function Competitions({
             topPlayersToday: "আজকের সেরা",
             viewAll: "সব দেখুন",
             antiCheatExitTitle: "কুইজ থেকে বের হবেন?",
-            antiCheatExitDesc: "এখন বের হলে এই কুইজে ০ পয়েন্ট পাবেন।",
-            antiCheatExitMakeup: "বেরোলে এই কুইজের সব সেটের পয়েন্টই যাবে।",
+            antiCheatExitDesc: "এখন বের হলে এই ঘণ্টায় ০ পয়েন্ট পাবেন।",
+            antiCheatExitMakeup: "",
             antiCheatExitPenalty: "নকল ঠেকাতে এই নিয়মটি এড়ানো যাবে না।",
             antiCheatStay: "কুইজ খেলতে থাকুন",
             antiCheatExitConfirm: "বের হয়ে যান (০ পয়েন্ট)",
@@ -843,10 +849,8 @@ export default function Competitions({
         setFetchError(false);
         
         try {
-            // Run fetches in parallel to avoid blocking
-            const promises = [
-                fetchServerTime()
-            ];
+            await fetchServerTime();
+            const promises = [];
 
             if (isFullLeaderboard) {
                 // Rank / Prizes: cache-first monthly boards (force only when caller asks)
@@ -936,36 +940,45 @@ export default function Competitions({
         return () => clearInterval(interval);
     }, [serverTimeOffset, isFullLeaderboard]);
 
-    // Simplified Hourly Quiz ID Generation
-    const getHourlyQuizId = () => {
-        const now = getIstDate(getSyncedTime());
-        const year = now.getUTCFullYear();
-        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(now.getUTCDate()).padStart(2, '0');
-        const hour = String(now.getUTCHours()).padStart(2, '0');
-        return `hourly-challenge-${year}-${month}-${day}-${hour}`;
-    };
+    const getHourlyQuizId = () => getLiveHourlySlot(getSyncedTime().getTime()).quizId;
 
-    // --- GAMIFIED LADDER: Data Layer ---
+    const playedHourlyIdSet = () => new Set((todayAttempts || []).map((row) => String(row.quiz_id || '')));
+
     const fetchTodayAttempts = async () => {
         if (!user) return;
-        const now = getIstDate(getSyncedTime());
-        const year = now.getUTCFullYear();
-        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(now.getUTCDate()).padStart(2, '0');
-        const prefix = `hourly-challenge-${year}-${month}-${day}-`;
+        const nowMs = getSyncedTime().getTime();
+        const live = getLiveHourlySlot(nowMs);
+        const prefix = `hourly-challenge-${hourIdFromParts(live.year, live.month, live.day, live.hour).slice(0, 10)}-`;
+        const playable = listPlayableHourlySlots([], nowMs);
+        const extraIds = playable
+            .filter((slot) => slot.isLastNight)
+            .map((slot) => slot.quizId);
 
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('quiz_attempts')
                 .select('quiz_id, score, penalty, created_at')
                 .eq('user_id', user.id)
-                .like('quiz_id', `${prefix}%`)
-                .order('created_at', { ascending: true });
+                .like('quiz_id', `${prefix}%`);
 
-            if (!error && data) {
-                setTodayAttempts(data);
+            const { data, error } = await query.order('created_at', { ascending: true });
+
+            let rows = (!error && data) ? data : [];
+            if (extraIds.length > 0) {
+                const { data: extra, error: extraError } = await supabase
+                    .from('quiz_attempts')
+                    .select('quiz_id, score, penalty, created_at')
+                    .eq('user_id', user.id)
+                    .in('quiz_id', extraIds);
+                if (extraError) throw extraError;
+                if (Array.isArray(extra)) {
+                    const seen = new Set(rows.map((row) => row.quiz_id));
+                    extra.forEach((row) => {
+                        if (!seen.has(row.quiz_id)) rows = [...rows, row];
+                    });
+                }
             }
+            setTodayAttempts(rows);
         } catch (e) {
             console.error('Error fetching today attempts:', e);
         }
@@ -990,52 +1003,50 @@ export default function Competitions({
 
 
     const buildHourlySlots = () => {
-        const now = getIstDate(getSyncedTime());
-        const currentHour = now.getUTCHours();
-        const year = now.getUTCFullYear();
-        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(now.getUTCDate()).padStart(2, '0');
+        const nowMs = getSyncedTime().getTime();
+        const live = getLiveHourlySlot(nowMs);
+        const currentHour = live.hour;
+        const year = live.year;
+        const month = String(live.month).padStart(2, '0');
+        const day = String(live.day).padStart(2, '0');
+        const playedIds = playedHourlyIdSet();
+        const playable = listPlayableHourlySlots(playedIds, nowMs);
+        const playableByHour = new Map();
+        playable.forEach((slot) => {
+            if (!slot.isLastNight) playableByHour.set(slot.hour, slot);
+        });
 
-        // Build a map of hour -> attempt
         const attemptMap = {};
-        todayAttempts.forEach(a => {
-            // quiz_id format: hourly-challenge-YYYY-MM-DD-HH
-            const hourStr = a.quiz_id.split('-').pop();
-            const hour = parseInt(hourStr, 10);
-            if (!isNaN(hour)) {
-                attemptMap[hour] = a;
+        todayAttempts.forEach((a) => {
+            const parsed = parseHourlyQuizId(a.quiz_id);
+            if (!parsed) return;
+            if (parsed.year === live.year && parsed.month === live.month && parsed.day === live.day) {
+                attemptMap[parsed.hour] = a;
             }
         });
 
-        // Check if current hour is locked (already played)
-        const isCurrentHourPlayed = !!attemptMap[currentHour] || (lastAttemptTime && (() => {
-            const last = getIstDate(new Date(lastAttemptTime));
-            return last.getUTCFullYear() === now.getUTCFullYear() &&
-                last.getUTCMonth() === now.getUTCMonth() &&
-                last.getUTCDate() === now.getUTCDate() &&
-                last.getUTCHours() === currentHour;
-        })());
+        const isCurrentHourPlayed = Boolean(attemptMap[currentHour] || playedIds.has(live.quizId));
 
         const slots = [];
-        // Show hours 0 to 23
         for (let h = 0; h <= 23; h++) {
             const attempt = attemptMap[h];
+            const quizId = formatHourlyQuizId(live.year, live.month, live.day, h);
             let status;
             if (h === currentHour) {
                 status = isCurrentHourPlayed ? 'played' : 'live';
             } else if (h < currentHour) {
-                status = attempt ? 'played' : 'missed';
+                if (attempt) status = 'played';
+                else if (playableByHour.has(h)) status = 'open';
+                else status = 'missed';
             } else if (h === currentHour + 1 && isCurrentHourPlayed) {
                 status = 'upcoming-next';
             } else {
                 status = 'upcoming';
             }
 
-            // Adjust label for 12-hour format
             const hour12 = h % 12 || 12;
             const ampm = h < 12 ? 'AM' : 'PM';
-
-            const quizId = `hourly-challenge-${year}-${month}-${day}-${String(h).padStart(2, '0')}`;
+            const playableSlot = playableByHour.get(h);
             const hasReview = Boolean(
                 storageUtils.getItem(`review_${quizId}`) ||
                 storageUtils.getItem(`review_hourly-challenge-${year}${month}${day}${String(h).padStart(2, '0')}`)
@@ -1049,10 +1060,16 @@ export default function Competitions({
                 label: `${hour12} ${ampm}`,
                 quizId,
                 hasReview,
+                closesInMin: playableSlot ? minutesUntilHourlySlotCloses(playableSlot, nowMs) : null,
+                slot: playableSlot || (status === 'live' ? live : null),
             });
         }
-        // Render 23 at top, 0 at bottom
         return slots.reverse();
+    };
+
+    const getLastNightOpenSlot = () => {
+        const nowMs = getSyncedTime().getTime();
+        return listPlayableHourlySlots(playedHourlyIdSet(), nowMs).find((slot) => slot.isLastNight) || null;
     };
 
     const getTodayNetScore = () => todayAttempts.reduce(
@@ -1080,36 +1097,23 @@ export default function Competitions({
                 streak++;
                 counting = true;
             } else if (counting) {
-                // Break streak if we hit a non-played slot (missed) after starting count
+                // Break streak if we hit a non-played slot after starting count
                 break;
-            } else if (slot.status === 'missed') {
-                // If we haven't started counting yet and hit a miss, streak is 0
+            } else if (slot.status === 'missed' || slot.status === 'open') {
                 break;
             }
         }
         return streak;
     };
 
-    const getLiveMakeupPreview = () => {
-        const now = getIstDate(getSyncedTime());
-        const currentHour = now.getUTCHours();
-        const playedHours = new Set();
-        todayAttempts.forEach((a) => {
-            const hour = parseInt(String(a.quiz_id).split('-').pop(), 10);
-            if (!Number.isNaN(hour)) playedHours.add(hour);
-        });
-        if (lastAttemptTime) {
-            const last = getIstDate(new Date(lastAttemptTime));
-            if (
-                last.getUTCFullYear() === now.getUTCFullYear() &&
-                last.getUTCMonth() === now.getUTCMonth() &&
-                last.getUTCDate() === now.getUTCDate()
-            ) {
-                playedHours.add(last.getUTCHours());
-            }
-        }
-        const makeupMissed = countRecentMissedHours(currentHour, playedHours);
-        return buildMakeupSession(makeupMissed);
+    const getPlayablePreview = () => {
+        const nowMs = getSyncedTime().getTime();
+        const open = listPlayableHourlySlots(playedHourlyIdSet(), nowMs);
+        return {
+            openCount: open.length,
+            catchUpCount: open.filter((slot) => !slot.isLive).length,
+            live: open.find((slot) => slot.isLive) || getLiveHourlySlot(nowMs),
+        };
     };
 
     const syncPackTimingRef = (patch) => {
@@ -1142,10 +1146,11 @@ export default function Competitions({
         const hoursLeft = buildHourlySlots().filter((slot) => (
             slot.status === 'live' || slot.status === 'upcoming' || slot.status === 'upcoming-next'
         )).length;
-        const makeup = getLiveMakeupPreview();
-        const makeupCopy = getMakeupCopy(language, makeup.makeupMissed, makeup.packs, makeup.pointsReward);
-        if (makeupCopy.chaseHint && makeup.makeupMissed > 0) {
-            return makeupCopy.chaseHint;
+        const preview = getPlayablePreview();
+        if (preview.catchUpCount > 0) {
+            return language === 'bn'
+                ? `${preview.catchUpCount}টি ঘণ্টা এখনও খোলা — প্রতিটি ৫টি প্রশ্ন।`
+                : `${preview.catchUpCount} hour(s) still open — 5 questions each.`;
         }
         return buildHourlyChaseMessage({ language, userRank, hoursLeft });
     }, [isFullLeaderboard, user, loading, language, userRank, todayAttempts, lastAttemptTime, serverTimeOffset]);
@@ -1170,8 +1175,8 @@ export default function Competitions({
         const quizId = quizIdOverride || activeQuiz?.id || getHourlyQuizId();
 
         // 2. Sanitize Inputs (Postgres expects Integers)
-        const cleanScore = Math.round(Number(score)) || 0;
-        const cleanPenalty = Math.round(Number(penalty)) || 0;
+        const cleanScore = Math.max(0, Math.min(HOURLY_POINTS_PER_SET, Math.round(Number(score)) || 0));
+        const cleanPenalty = Math.max(0, Math.min(HOURLY_POINTS_PER_SET, Math.round(Number(penalty)) || 0));
 
         const params = {
             p_quiz_id: quizId,
@@ -1192,12 +1197,17 @@ export default function Competitions({
             //     The DB returns { success: false, error } without a SQL error, so handle it here.
             if (data && data.success === false) {
                 const isTimeBlock = data.error === 'hourly_time_mismatch';
+                const isWindowClosed = data.error === 'hourly_window_closed';
                 const isGuestBlock = data.error === 'guest_preview';
                 setSyncStatus('failed');
                 setSubmitRejected({
-                    type: isTimeBlock ? 'time' : isGuestBlock ? 'guest' : 'other',
+                    type: isWindowClosed ? 'window' : isTimeBlock ? 'time' : isGuestBlock ? 'guest' : 'other',
                     message: isGuestBlock
                         ? guestPreviewText(language, 'blockedBody')
+                        : isWindowClosed
+                        ? (language === 'en'
+                            ? 'This hour has closed. Your score was not counted.'
+                            : 'এই ঘণ্টা বন্ধ হয়ে গেছে। স্কোর যোগ করা যায়নি।')
                         : isTimeBlock
                         ? (language === 'en'
                             ? 'This score was not counted. Your device clock does not match the real time, so this hourly play is invalid. Please set your phone date & time to "Automatic" and play during the live hour.'
@@ -1403,31 +1413,36 @@ export default function Competitions({
         }
     };
 
-    const fetchHourlyQuiz = async (forceRefresh = false) => {
+    const fetchHourlyQuiz = async (forceRefresh = false, hourIdOverride = null) => {
         if (isFullLeaderboard) return null;
 
-        const now = getIstDate(getSyncedTime());
-        // Use simpler strict format: YYYY-MM-DD-HH
-        const year = now.getUTCFullYear();
-        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(now.getUTCDate()).padStart(2, '0');
-        const hour = String(now.getUTCHours()).padStart(2, '0');
-        const hourId = `${year}-${month}-${day}-${hour}`;
-
-        const cacheKey = `hourly_quiz_db_bn_v4_${hourId}`;
+        const live = getLiveHourlySlot(getSyncedTime().getTime());
+        const hourId = hourIdOverride || live.hourId;
+        const quizId = `hourly-challenge-${hourId}`;
+        const cacheKey = `hourly_quiz_db_bn_v5_${hourId}_${user?.id || 'anon'}`;
 
         try {
             const quizData = await requestManager.fetch(
                 cacheKey,
                 async () => {
-                    const [{ data, error }, visualQuestions] = await Promise.all([
-                        supabase.rpc('get_random_hourly_questions', {
+                    const seededArgs = {
+                        lang: 'bn',
+                        limit_count: 30,
+                        p_user_id: user?.id || null,
+                        p_quiz_id: quizId,
+                    };
+                    let rpcResult = await supabase.rpc('get_random_hourly_questions', seededArgs);
+                    if (rpcResult.error) {
+                        rpcResult = await supabase.rpc('get_random_hourly_questions', {
                             lang: 'bn',
-                            // Larger pool for difficulty mix + up to 6 makeup packs (30 Q).
-                            limit_count: 80
-                        }),
-                        visualQuizService.fetchVisualQuestions({ language: 'bn', hourId })
-                    ]);
+                            limit_count: 30,
+                        });
+                    }
+                    const { data, error } = rpcResult;
+                    const visualQuestions = await visualQuizService.fetchVisualQuestions({
+                        language: 'bn',
+                        hourId,
+                    });
 
                     if (error) throw error;
 
@@ -1450,11 +1465,11 @@ export default function Competitions({
 
                     if (mergedQuestions.length > 0) {
                         return {
-                            id: `hourly-challenge-${hourId}`, // Ensure this ID format is consistent
+                            id: quizId,
                             title: language === 'en' ? 'Hourly quiz' : 'ঘণ্টার কুইজ',
                             description: language === 'en' ? 'Test your safety knowledge! New questions every hour.' : 'নিরাপত্তা জ্ঞান পরীক্ষা করুন! প্রতি ঘণ্টায় নতুন প্রশ্ন।',
                             duration_minutes: 5,
-                            points_reward: 50,
+                            points_reward: HOURLY_POINTS_PER_SET,
                             questions: mergedQuestions,
                             isLocal: false
                         };
@@ -1464,7 +1479,7 @@ export default function Competitions({
                 { ttl: 60, swr: true, forceRefresh }
             );
 
-            if (quizData) {
+            if (quizData && quizData.id === getHourlyQuizId()) {
                 setHourlyQuiz(quizData);
             }
             return quizData ?? null;
@@ -1509,16 +1524,32 @@ export default function Competitions({
 
         setHourlyQuizRefreshBusy(true);
         try {
-            let quiz = hourlyQuizRef.current;
-            const expectedId = getHourlyQuizId();
-            if (!quiz || quiz.id !== expectedId) {
-                quiz = await fetchHourlyQuiz(true);
+            const nowMs = getSyncedTime().getTime();
+            let target = getLiveHourlySlot(nowMs);
+            if (options.slot?.quizId) {
+                if (!isHourlyQuizIdOpen(options.slot.quizId, nowMs)) {
+                    if (typeof showNotification === 'function') {
+                        showNotification(
+                            language === 'en'
+                                ? 'This hour has closed. Pick another open hour.'
+                                : 'এই ঘণ্টা বন্ধ হয়ে গেছে। অন্য খোলা ঘণ্টা বেছে নিন।',
+                            'error'
+                        );
+                    }
+                    return;
+                }
+                const parsed = parseHourlyQuizId(options.slot.quizId);
+                target = {
+                    ...options.slot,
+                    quizId: options.slot.quizId,
+                    hourId: options.slot.hourId
+                        || (parsed ? hourIdFromParts(parsed.year, parsed.month, parsed.day, parsed.hour) : target.hourId),
+                };
             }
-            if (quiz && quiz.id !== getHourlyQuizId()) {
-                quiz = await fetchHourlyQuiz(true);
-            }
+            if (playedHourlyIdSet().has(target.quizId)) return;
+            const quiz = await fetchHourlyQuiz(true, target.hourId);
             if (!quiz) return;
-            await startQuiz(quiz);
+            await startQuiz({ ...quiz, id: target.quizId });
         } finally {
             setHourlyQuizRefreshBusy(false);
         }
@@ -1795,22 +1826,11 @@ export default function Competitions({
             return;
         }
 
-        // Double-check if already played this hour (Race Condition Guard)
-        const now = getSyncedTime();
-        if (lastAttemptTime) {
-            const last = getIstDate(new Date(lastAttemptTime));
-            const istNow = getIstDate(now);
-            if (last.getUTCFullYear() === istNow.getUTCFullYear() &&
-                last.getUTCMonth() === istNow.getUTCMonth() &&
-                last.getUTCDate() === istNow.getUTCDate() &&
-                last.getUTCHours() === istNow.getUTCHours()) {
-                return;
-            }
+        if (playedHourlyIdSet().has(quiz.id) || (todayAttempts || []).some((row) => row.quiz_id === quiz.id)) {
+            return;
         }
 
-        // Freeze makeup at Play: missed hours stay missed; live quiz grows by packs.
-        const makeup = getLiveMakeupPreview();
-        const questionTotal = makeup.questionCount;
+        const questionTotal = HOURLY_QUESTIONS_PER_SET;
         const lifetimePoints = getLifetimePoints(userProfile, userRank);
 
         let recentAccuracy = null;
@@ -1849,10 +1869,7 @@ export default function Competitions({
 
         const sessionQuiz = {
             ...quiz,
-            points_reward: makeup.pointsReward,
-            makeupPacks: makeup.packs,
-            makeupMissed: makeup.makeupMissed,
-            packGreenSeconds: greenSeconds,
+            points_reward: HOURLY_POINTS_PER_SET,
         };
         setActiveQuiz(sessionQuiz);
         setSearchCount(0);
@@ -1875,31 +1892,29 @@ export default function Competitions({
             const selectionPool = eligibleForBand.length >= questionTotal ? eligibleForBand : baseQuestions;
 
             const shuffledQuestions = shuffleArray(selectionPool, rng);
-            const recentImageSet = getRecentImageSet();
-            const freshnessSorted = [...shuffledQuestions].sort((a, b) => {
-                const aHasRecent = getQuestionImageKeys(a).some((img) => recentImageSet.has(img));
-                const bHasRecent = getQuestionImageKeys(b).some((img) => recentImageSet.has(img));
-                if (aHasRecent === bHasRecent) return 0;
-                return aHasRecent ? 1 : -1; // non-recent visuals first
+            const usedIds = usedHourlyQuestionIdsRef.current;
+            const unusedFirst = [...shuffledQuestions].sort((a, b) => {
+                const aUsed = usedIds.has(String(a?.id || ''));
+                const bUsed = usedIds.has(String(b?.id || ''));
+                if (aUsed === bUsed) return 0;
+                return aUsed ? 1 : -1;
             });
-            const picked = pickQuestionsByDifficultyMix(freshnessSorted, lifetimePoints, questionTotal);
+            const picked = pickQuestionsByDifficultyMix(unusedFirst, lifetimePoints, questionTotal);
 
-            // Ensure at least 1 visual question when available in the pool.
-            const hasVisualInPool = freshnessSorted.some((q) => isVisualQuestion(q));
+            const hasVisualInPool = unusedFirst.some((q) => isVisualQuestion(q));
             const hasVisualInPicked = picked.some((q) => isVisualQuestion(q));
             if (hasVisualInPool && !hasVisualInPicked) {
-                const fallbackVisual = freshnessSorted.slice(questionTotal).find((q) => isVisualQuestion(q));
+                const fallbackVisual = unusedFirst.slice(questionTotal).find((q) => isVisualQuestion(q));
                 if (fallbackVisual) {
                     picked[picked.length - 1] = fallbackVisual;
                 }
             }
 
-            // Cap visual questions to max 2 when possible (or packs, whichever is higher up to 4).
-            const maxVisual = Math.min(4, Math.max(2, makeup.packs));
+            const maxVisual = 2;
             const getVisualCount = (arr) => arr.filter((q) => isVisualQuestion(q)).length;
             let visualCount = getVisualCount(picked);
             if (visualCount > maxVisual) {
-                const remainingPool = freshnessSorted.slice(questionTotal);
+                const remainingPool = unusedFirst.slice(questionTotal);
                 const pickedIds = () => new Set(picked.map((q) => String(q?.id || '')));
                 for (let i = 0; i < picked.length && visualCount > maxVisual; i++) {
                     if (!isVisualQuestion(picked[i])) continue;
@@ -1928,6 +1943,9 @@ export default function Competitions({
                 };
             });
             setQuizQuestions(selectedQuestions);
+            selectedQuestions.forEach((q) => {
+                if (q?.id) usedHourlyQuestionIdsRef.current.add(String(q.id));
+            });
             storeSelectedQuestionImages(selectedQuestions);
         } else {
             setQuizQuestions([]);
@@ -1978,7 +1996,7 @@ export default function Competitions({
             setShowAbortWarningModal(false);
             return;
         }
-        // Submit with 0 score — locks this live hour (makeup packs included).
+        // Submit with 0 score — locks this hour only.
         submitHourlyQuiz(0, 0, activeQuiz?.id || null);
         setActiveQuiz(null);
         storageUtils.removeItem('slm_hourly_active_quiz_state');
@@ -2106,8 +2124,7 @@ export default function Competitions({
             pointsEarned: calculatedScore,
             fullRaw: timed.fullRaw,
             latePacks: timed.latePacks,
-            makeupMissed: activeQuiz?.makeupMissed || 0,
-            makeupPacks: activeQuiz?.makeupPacks || 1,
+            nextSlot: nextPlayableSlotAfter(playedHourlyIdSet(), activeQuiz?.id, getSyncedTime().getTime()),
             quizId: activeQuiz?.id || null,
         });
         setQuizSubmitted(true);
@@ -2123,8 +2140,6 @@ export default function Competitions({
             answers: userAnswers,
             score: netScore, // User sees net score in review
             penalty: penalty,
-            makeupMissed: activeQuiz?.makeupMissed || 0,
-            makeupPacks: activeQuiz?.makeupPacks || 1,
             latePacks: timed.latePacks,
         };
         storageUtils.setItem(`review_${activeQuiz.id}`, JSON.stringify(attemptData));
@@ -3048,7 +3063,7 @@ export default function Competitions({
                         timeLeft={timeLeft}
                         loading={false}
                         hourlyQuizRefreshBusy={hourlyQuizRefreshBusy}
-                        makeupPreview={getLiveMakeupPreview()}
+                        lastNightSlot={getLastNightOpenSlot()}
                         labels={{
                             liveNow: t.liveNow,
                             nextChallengeLabel: t.nextChallengeLabel,
@@ -3059,7 +3074,7 @@ export default function Competitions({
                             reviewHour: t.reviewHour,
                             reviewLast: t.reviewLast,
                         }}
-                        onPlayLive={beginHourlyQuiz}
+                        onPlaySlot={(slot) => { void beginHourlyQuiz({ slot }); }}
                         onReview={startReview}
                     />
                 )}
@@ -3095,11 +3110,6 @@ export default function Competitions({
                                 <p className={`text-sm sm:text-base font-semibold text-slate-800 leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {t.antiCheatExitDesc}
                                 </p>
-                                {(activeQuiz?.makeupMissed || 0) > 0 && (
-                                    <p className={`text-xs sm:text-sm text-orange-700 font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {t.antiCheatExitMakeup}
-                                    </p>
-                                )}
                                 <p className={`text-xs sm:text-sm text-red-600 font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {t.antiCheatExitPenalty}
                                 </p>
@@ -3141,13 +3151,6 @@ export default function Competitions({
                                         </h3>
                                         <div className={`mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             <span>{currentQuestionIndex + 1}/{quizQuestions.length}</span>
-                                            {(activeQuiz?.makeupPacks || 1) > 1 && (
-                                                <span className="text-orange-600">
-                                                    · {language === 'en'
-                                                        ? `Set ${Math.min(activeQuiz.makeupPacks, Math.floor(currentQuestionIndex / 5) + 1)}/${activeQuiz.makeupPacks}`
-                                                        : `সেট ${Math.min(activeQuiz.makeupPacks, Math.floor(currentQuestionIndex / 5) + 1)}/${activeQuiz.makeupPacks}`}
-                                                </span>
-                                            )}
                                             {hourlyStakesUi.quizHint && (
                                                 <span className="text-slate-400">· {hourlyStakesUi.quizHint}</span>
                                             )}
@@ -3420,6 +3423,13 @@ export default function Competitions({
                                 <p className={`mx-auto mb-6 max-w-md text-sm leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {submitRejected.message}
                                 </p>
+                                {submitRejected.type === 'window' && (
+                                    <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en'
+                                            ? 'That hour is no longer open. You can still play any hour that is still orange or amber on the ring.'
+                                            : 'সেই ঘণ্টা আর খোলা নেই। রিং-এ যে ঘণ্টা কমলা বা অ্যাম্বার আছে সেগুলো খেলতে পারবেন।'}
+                                    </div>
+                                )}
                                 {submitRejected.type === 'time' && (
                                     <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
@@ -3461,14 +3471,11 @@ export default function Competitions({
                                     </div>
                                 )}
 
-                                {(quizResults?.makeupMissed || 0) > 0 && (
+                                {quizResults?.nextSlot && (
                                     <p className={`mx-auto mb-4 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {getMakeupCopy(
-                                            language,
-                                            quizResults.makeupMissed,
-                                            quizResults.makeupPacks,
-                                            (quizResults.makeupPacks || 1) * 50
-                                        ).resultsNote}
+                                        {language === 'en'
+                                            ? `Another hour is still open: ${quizResults.nextSlot.hour % 12 || 12}${quizResults.nextSlot.hour < 12 ? 'AM' : 'PM'}. 5 questions.`
+                                            : `আরেকটি ঘণ্টা এখনও খোলা: ${quizResults.nextSlot.hour % 12 || 12}${quizResults.nextSlot.hour < 12 ? 'AM' : 'PM'}। ৫টি প্রশ্ন।`}
                                     </p>
                                 )}
                                 {(quizResults?.latePacks || 0) > 0 && (
@@ -3540,9 +3547,35 @@ export default function Competitions({
                                     </div>
                                 )}
 
+                                {quizResults?.nextSlot ? (
+                                    <div className="flex w-full flex-col gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const slot = quizResults.nextSlot;
+                                                setQuizSubmitted(false);
+                                                setQuizResults(null);
+                                                setActiveQuiz(null);
+                                                storageUtils.removeItem('slm_hourly_active_quiz_state');
+                                                void beginHourlyQuiz({ slot });
+                                            }}
+                                            className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]"
+                                        >
+                                            {language === 'en' ? 'Play next hour' : 'পরের ঘণ্টা খেলুন'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }}
+                                            className={`w-full py-3 rounded-full border border-slate-200 bg-white font-bold text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                        >
+                                            {language === 'en' ? 'Stop' : 'থামুন'}
+                                        </button>
+                                    </div>
+                                ) : (
                                 <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]">
                                     {isGuestUser(userProfile) ? guestPreviewText(language, 'hourlyCloseGuest') : t.close}
                                 </button>
+                                )}
                             </div>
                         )}
                         </div>
