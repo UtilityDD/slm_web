@@ -373,8 +373,9 @@ export default function SmartLinemanUI() {
                   version_name: CURRENT_APP_VERSION,
                   update_url: '#',
                   release_notes: CURRENT_APP_RELEASE_NOTES,
+                  channel: 'pwa',
                 });
-                setIsForceUpdate(false);
+                setIsForceUpdate(true);
                 setShowUpdateModal(true);
               }
             });

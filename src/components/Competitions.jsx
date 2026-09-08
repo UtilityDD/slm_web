@@ -32,7 +32,6 @@ import {
     isHourlyQuizIdOpen,
     listPlayableHourlySlots,
     minutesUntilHourlySlotCloses,
-    nextPlayableSlotAfter,
     parseHourlyQuizId,
     HOURLY_POINTS_PER_SET,
     HOURLY_QUESTIONS_PER_SET,
@@ -365,6 +364,15 @@ const getIstDate = (date) => {
     const d = date instanceof Date ? date : new Date(date);
     return new Date(d.getTime() + (5.5 * 60 * 60 * 1000));
 };
+
+/** Clock label for a frozen hourly quiz id, e.g. "6 PM". */
+function hourlyClockLabel(quizId) {
+    const slot = parseHourlyQuizId(quizId);
+    if (!slot) return null;
+    const hour12 = slot.hour % 12 || 12;
+    const ampm = slot.hour < 12 ? 'AM' : 'PM';
+    return `${hour12} ${ampm}`;
+}
 
 export default function Competitions({
     language = 'bn',
@@ -2124,8 +2132,19 @@ export default function Competitions({
             pointsEarned: calculatedScore,
             fullRaw: timed.fullRaw,
             latePacks: timed.latePacks,
-            nextSlot: nextPlayableSlotAfter(playedHourlyIdSet(), activeQuiz?.id, getSyncedTime().getTime()),
             quizId: activeQuiz?.id || null,
+            savedHourLabel: hourlyClockLabel(activeQuiz?.id),
+            clockMoved: (() => {
+                const saved = parseHourlyQuizId(activeQuiz?.id);
+                const live = getLiveHourlySlot(getSyncedTime().getTime());
+                if (!saved) return false;
+                return saved.year !== live.year || saved.month !== live.month || saved.day !== live.day || saved.hour !== live.hour;
+            })(),
+            liveHourLabel: hourlyClockLabel(getLiveHourlySlot(getSyncedTime().getTime()).quizId),
+            openCount: listPlayableHourlySlots(
+                new Set([...playedHourlyIdSet(), String(activeQuiz?.id || '')]),
+                getSyncedTime().getTime()
+            ).length,
         });
         setQuizSubmitted(true);
 
@@ -2160,6 +2179,7 @@ export default function Competitions({
         activeQuiz && Array.isArray(quizQuestions) && quizQuestions.length > 0
             ? quizQuestions[currentQuestionIndex]
             : null;
+    const activeHourLabel = hourlyClockLabel(activeQuiz?.id);
     const hourlyCurrentAnswered =
         reviewMode ||
         !!(hourlyCurrentQuestion && userAnswers[String(hourlyCurrentQuestion.id)] !== undefined);
@@ -3150,6 +3170,18 @@ export default function Competitions({
                                             {language === 'bn' ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
                                         </h3>
                                         <div className={`mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {activeHourLabel && (
+                                                <span>
+                                                    {reviewMode
+                                                        ? (language === 'en'
+                                                            ? `Review · ${activeHourLabel}`
+                                                            : `রিভিউ · ${activeHourLabel}`)
+                                                        : (language === 'en'
+                                                            ? `This set is ${activeHourLabel}`
+                                                            : `এই সেট ${activeHourLabel}`)}
+                                                </span>
+                                            )}
+                                            {activeHourLabel && <span className="text-slate-300">·</span>}
                                             <span>{currentQuestionIndex + 1}/{quizQuestions.length}</span>
                                             {hourlyStakesUi.quizHint && (
                                                 <span className="text-slate-400">· {hourlyStakesUi.quizHint}</span>
@@ -3471,11 +3503,25 @@ export default function Competitions({
                                     </div>
                                 )}
 
-                                {quizResults?.nextSlot && (
+                                {quizResults?.savedHourLabel && (
+                                    <p className={`mx-auto mb-2 max-w-md text-center text-xs font-bold leading-relaxed text-slate-700 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en'
+                                            ? `Saved for ${quizResults.savedHourLabel}.`
+                                            : `স্কোর যোগ হয়েছে ${quizResults.savedHourLabel}-এর জন্য।`}
+                                    </p>
+                                )}
+                                {quizResults?.clockMoved && quizResults?.liveHourLabel && (
+                                    <p className={`mx-auto mb-2 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {language === 'en'
+                                            ? `${quizResults.liveHourLabel} is a new quiz. This score is not for that hour.`
+                                            : `${quizResults.liveHourLabel} আলাদা কুইজ। এই স্কোর সেই ঘণ্টার নয়।`}
+                                    </p>
+                                )}
+                                {(quizResults?.openCount || 0) > 0 && (
                                     <p className={`mx-auto mb-4 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
-                                            ? `Another hour is still open: ${quizResults.nextSlot.hour % 12 || 12}${quizResults.nextSlot.hour < 12 ? 'AM' : 'PM'}. 5 questions.`
-                                            : `আরেকটি ঘণ্টা এখনও খোলা: ${quizResults.nextSlot.hour % 12 || 12}${quizResults.nextSlot.hour < 12 ? 'AM' : 'PM'}। ৫টি প্রশ্ন।`}
+                                            ? 'More hours are still open. Close and tap the clock to play them.'
+                                            : 'আরও ঘণ্টা খোলা আছে। বন্ধ করে ঘড়িতে ট্যাপ করে খেলুন।'}
                                     </p>
                                 )}
                                 {(quizResults?.latePacks || 0) > 0 && (
@@ -3547,35 +3593,9 @@ export default function Competitions({
                                     </div>
                                 )}
 
-                                {quizResults?.nextSlot ? (
-                                    <div className="flex w-full flex-col gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const slot = quizResults.nextSlot;
-                                                setQuizSubmitted(false);
-                                                setQuizResults(null);
-                                                setActiveQuiz(null);
-                                                storageUtils.removeItem('slm_hourly_active_quiz_state');
-                                                void beginHourlyQuiz({ slot });
-                                            }}
-                                            className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]"
-                                        >
-                                            {language === 'en' ? 'Play next hour' : 'পরের ঘণ্টা খেলুন'}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }}
-                                            className={`w-full py-3 rounded-full border border-slate-200 bg-white font-bold text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                        >
-                                            {language === 'en' ? 'Stop' : 'থামুন'}
-                                        </button>
-                                    </div>
-                                ) : (
                                 <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]">
                                     {isGuestUser(userProfile) ? guestPreviewText(language, 'hourlyCloseGuest') : t.close}
                                 </button>
-                                )}
                             </div>
                         )}
                         </div>
