@@ -31,7 +31,7 @@ export default function AnnualGrandTrophyLeaderboard({
     if (loading && annualLeaderboard.length === 0) {
         return (
             <div className="flex min-h-[300px] flex-col items-center justify-center py-12" role="status">
-                <BrutalLoaderContent compact message={bn ? 'বার্ষিক ট্রফি তালিকা তৈরি হচ্ছে…' : 'Loading Annual Trophy…'} />
+                <BrutalLoaderContent compact message={bn ? 'লাইনম্যান দিবস ট্রফি তালিকা তৈরি হচ্ছে…' : 'Loading Lineman Day Trophy…'} />
             </div>
         );
     }
@@ -63,30 +63,37 @@ export default function AnnualGrandTrophyLeaderboard({
 
     return (
         <div className="space-y-4 animate-fade-in pb-24 md:pb-28">
-            {/* Header Banner - Compact & Clean */}
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-50/60 px-4 py-3 shadow-xs">
-                <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-xl sm:text-2xl shrink-0" aria-hidden="true">🏆</span>
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <h2 className={`text-sm sm:text-base font-black text-slate-900 leading-tight truncate ${bn ? 'font-bengali' : ''}`}>
-                                {bn ? '৭ই মার্চ বার্ষিক ট্রফি' : '7th March Annual Trophy'}
-                            </h2>
-                            <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-amber-800 leading-none">
-                                2026-27
-                            </span>
+            {/* Header Banner — Lineman Day identity + clear rules */}
+            <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-50/60 px-4 py-3 shadow-xs">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2.5 min-w-0">
+                        <span className="text-xl sm:text-2xl shrink-0" aria-hidden="true">🏆</span>
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                <h2 className={`text-sm sm:text-base font-black text-slate-900 leading-tight ${bn ? 'font-bengali' : ''}`}>
+                                    {bn ? 'লাইনম্যান দিবস ট্রফি' : 'Lineman Day Trophy'}
+                                </h2>
+                                <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-amber-800 leading-none">
+                                    2026-27
+                                </span>
+                            </div>
+                            <p className={`mt-0.5 text-[11px] font-semibold text-amber-900/80 ${bn ? 'font-bengali' : ''}`}>
+                                {bn ? '৭ মার্চ · লাইনম্যান দিবসে সম্মান' : 'Honoured on 7 March · Lineman Day'}
+                            </p>
                         </div>
-                        <p className={`mt-0.5 text-[11px] font-semibold text-amber-900/80 truncate ${bn ? 'font-bengali' : ''}`}>
-                            {bn ? 'স্কোর × (১ + ধারাবাহিকতা)' : 'Score × (1 + Consistency)'}
-                        </p>
+                    </div>
+
+                    <div className="shrink-0 pt-0.5">
+                        <span className="inline-flex items-center rounded-full bg-white/90 border border-amber-200/90 px-2.5 py-1 text-[10px] font-bold text-slate-600 shadow-xs">
+                            {bn ? 'ন্যূনতম ৩০ দিন' : 'Min 30 days'}
+                        </span>
                     </div>
                 </div>
-
-                <div className="shrink-0">
-                    <span className="inline-flex items-center rounded-full bg-white/90 border border-amber-200/90 px-2.5 py-1 text-[10px] font-bold text-slate-600 shadow-xs">
-                        {bn ? 'ন্যূনতম ৩০ দিন' : 'Min 30 days'}
-                    </span>
-                </div>
+                <p className={`mt-2.5 text-[11px] leading-snug text-slate-700 sm:text-xs ${bn ? 'font-bengali' : ''}`}>
+                    {bn
+                        ? 'প্রতি বছর ৭ মার্চ লাইনম্যান দিবসে সেরাদের সম্মান। স্কোর = নেট পয়েন্ট × (১ + ধারাবাহিকতা)। যোগ্যতা: কমপক্ষে ৩০ সক্রিয় দিন।'
+                        : 'Each year on 7 March — Lineman Day — we honour the best. Score = net points × (1 + consistency). Qualify with 30+ active days.'}
+                </p>
             </div>
 
             {/* Top 3 Podium */}

@@ -888,18 +888,18 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
                                 2
                               </span>
                               <span className="flex-1 rounded-lg bg-white py-1 text-center text-orange-950 shadow-xs">মাসিক র‍্যাঙ্ক</span>
-                              <span className="flex-1 py-1 text-center text-slate-500">বার্ষিক ট্রফি</span>
+                              <span className="flex-1 py-1 text-center text-slate-500">{bn ? 'লাইনম্যান দিবস' : 'Lineman Day'}</span>
                             </div>
 
-                            {/* ITEM 3: Annual Grand Trophy Card */}
+                            {/* ITEM 3: Lineman Day Trophy Card */}
                             <div className="relative flex items-center gap-2.5 rounded-2xl border border-amber-300/80 bg-gradient-to-r from-amber-500/20 to-orange-500/20 p-2.5">
                               <span className="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 text-xs font-black text-white shadow-md ring-2 ring-white">
                                 3
                               </span>
                               <span className="text-2xl">🏆</span>
                               <div>
-                                <p className="text-[11px] font-black text-amber-950">বার্ষিক গ্র্যান্ড ট্রফি কোয়ালিফায়ার</p>
-                                <p className="text-[9px] text-slate-600">নিয়মিত কুইজ খেলে ট্রফি অর্জন নিশ্চিত করুন</p>
+                                <p className="text-[11px] font-black text-amber-950">লাইনম্যান দিবস ট্রফি</p>
+                                <p className="text-[9px] text-slate-600">৭ মার্চ সম্মান · নিয়মিত খেলে যোগ্যতা অর্জন করুন</p>
                               </div>
                             </div>
 
@@ -940,8 +940,8 @@ export default function AppUserGuideShorts({ open, language = 'bn', onClose }) {
                             <li className="flex items-start gap-2.5">
                               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-600 text-[11px] font-black text-white">3</span>
                               <div>
-                                <span className="font-bold text-slate-900">{bn ? 'বার্ষিক গ্র্যান্ড ট্রফি স্ট্যাটাস' : 'Annual Grand Trophy'} — </span>
-                                <span className="text-slate-600">{bn ? 'বছরের শেষে সেরা লাইনম্যানদের জন্য নির্ধারিত ট্রফির মাপকাঠি।' : 'Eligibility tracker for the grand championship trophy at year end.'}</span>
+                                <span className="font-bold text-slate-900">{bn ? 'লাইনম্যান দিবস ট্রফি' : 'Lineman Day Trophy'} — </span>
+                                <span className="text-slate-600">{bn ? 'প্রতি বছর ৭ মার্চ লাইনম্যান দিবসে সেরাদের সম্মান; স্কোর ও ৩০ দিনের যোগ্যতা এখানে দেখা যায়।' : 'Honour for the best each 7 March — Lineman Day; track score and 30-day qualification here.'}</span>
                               </div>
                             </li>
                             <li className="flex items-start gap-2.5">

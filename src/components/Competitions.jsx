@@ -2232,7 +2232,7 @@ export default function Competitions({
                                         } ${language === 'bn' ? 'font-bengali' : ''}`}
                                     >
                                         <span>🏆</span>
-                                        <span>{language === 'en' ? '7th March Trophy' : '৭ই মার্চ ট্রফি'}</span>
+                                        <span>{language === 'en' ? 'Lineman Day' : 'লাইনম্যান দিবস'}</span>
                                     </button>
                                 </div>
 
