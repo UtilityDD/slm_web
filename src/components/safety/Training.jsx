@@ -4,7 +4,7 @@ import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL, CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
-import { calculateLevelFromProgress, firstTimeReadingPointsFromLessons, getBadgeByLevel, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
+import { calculateLevelFromProgress, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
@@ -88,7 +88,6 @@ const LESSON_COVER_IMAGE_SRC = '/assets/covers/lesson-cover-smartlineman.webp';
 
 const ONBOARDING_COMPLETE_KEY = 'hasSeenOnboarding';
 const ONBOARDING_LEGACY_DATE_KEY = 'lastOnboardingDate';
-const DAILY_BRIEF_DISMISS_KEY = 'slm_daily_brief_dismissed';
 
 function hasCompletedOnboarding() {
     if (typeof window === 'undefined') return true;
@@ -98,11 +97,6 @@ function hasCompletedOnboarding() {
         return true;
     }
     return false;
-}
-
-function isDailyBriefDismissedToday() {
-    if (typeof window === 'undefined') return true;
-    return localStorage.getItem(DAILY_BRIEF_DISMISS_KEY) === new Date().toDateString();
 }
 
 /** Home / deep links use `#/training?tab=supplementary` (aliases: life-skill, lifeskill). */
@@ -183,98 +177,6 @@ const toBengaliNumber = (num, lang) => {
     const bnNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num.toString().split('').map(digit => bnNumbers[digit] || digit).join('');
 };
-
-/** Chapters 1–9 = main reading program (matches manifest core path). */
-const CORE_PROGRAM_LAST_CHAPTER = 9;
-const DEFAULT_CORE_CHAPTER_COUNTS = { 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10 };
-
-function getCoreChapterLessonCount(chapterNum, trainingChapters) {
-    const chap = Array.isArray(trainingChapters) ? trainingChapters.find((c) => c.number === chapterNum) : null;
-    if (chap && Number(chap.count) > 0) return Number(chap.count);
-    return DEFAULT_CORE_CHAPTER_COUNTS[chapterNum] || 0;
-}
-
-function sumCoreProgramLessonTotal(trainingChapters) {
-    let sum = 0;
-    for (let n = 1; n <= CORE_PROGRAM_LAST_CHAPTER; n++) {
-        sum += getCoreChapterLessonCount(n, trainingChapters);
-    }
-    return sum;
-}
-
-function countCoreProgramLessonsCompleted(completedLessons) {
-    const core = filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []);
-    return core.filter((id) => {
-        const m = String(id).match(/^(\d+)\.(\d+)$/);
-        if (!m) return false;
-        const ch = parseInt(m[1], 10);
-        return ch >= 1 && ch <= CORE_PROGRAM_LAST_CHAPTER;
-    }).length;
-}
-
-/** First chapter in 1..9 with an incomplete lesson; null if all core lessons done. */
-function getActiveCoreChapterNumber(completedLessons, trainingChapters) {
-    const core = new Set(filterCoreCompletedLessonIds(Array.isArray(completedLessons) ? completedLessons : []));
-    for (let n = 1; n <= CORE_PROGRAM_LAST_CHAPTER; n++) {
-        const lessonCount = getCoreChapterLessonCount(n, trainingChapters);
-        for (let i = 1; i <= lessonCount; i++) {
-            if (!core.has(`${n}.${i}`)) return n;
-        }
-    }
-    return null;
-}
-
-/**
- * Welcome-card copy from reading lesson ids only (chapters 1–9 vs manifest counts).
- * @returns {{ primary: string, secondary: string | null } | null}
- */
-function buildLessonProgressWelcomeCopy({ completedLessons, trainingChapters, language }) {
-    const total = sumCoreProgramLessonTotal(trainingChapters);
-    const done = countCoreProgramLessonsCompleted(completedLessons);
-    const activeChapter = getActiveCoreChapterNumber(completedLessons, trainingChapters);
-    const levelNum = calculateLevelFromProgress(completedLessons, trainingChapters);
-    const badge = getBadgeByLevel(levelNum, firstTimeReadingPointsFromLessons(completedLessons));
-
-    if (language === 'bn') {
-        const d = toBengaliNumber(done, 'bn');
-        const t = toBengaliNumber(total, 'bn');
-        const chBn = activeChapter != null ? toBengaliNumber(activeChapter, 'bn') : null;
-        if (done === 0) {
-            return {
-                primary: 'এখনো কোনো পড়ার পাঠ শেষ করেননি। সময় হলে প্রথম পাঠটি খুলে নিন।',
-                secondary: null,
-            };
-        }
-        if (activeChapter === null) {
-            return {
-                primary: `মূল পাঠ ${t}টাই শেষ। অসাধারণ!`,
-                secondary: `ধাপ: ${badge.bn}`,
-            };
-        }
-        const primary = `পড়ার পাঠ ${d}টা শেষ, মোট ${t}টার মধ্যে। এখন ${chBn} নম্বর অধ্যায় চলছে।`;
-        return {
-            primary,
-            secondary: `ধাপ: ${badge.bn}`,
-        };
-    }
-
-    if (done === 0) {
-        return {
-            primary: "You haven't finished a reading lesson yet. Open the first lesson when you're ready.",
-            secondary: null,
-        };
-    }
-    if (activeChapter === null) {
-        return {
-            primary: `You've completed all ${total} core reading lessons. Excellent work!`,
-            secondary: `Badge: ${badge.en}`,
-        };
-    }
-    return {
-        primary: `You've completed ${done} of ${total} reading lessons. You're in Chapter ${activeChapter}.`,
-        secondary: `Badge: ${badge.en}`,
-    };
-}
 
 /** Map internal id (e.g. supp_10_3) to LS03 when catalogue `lesson_code` is missing (cache / old data). */
 const deriveLifeSkillCodeFromLevelId = (levelId) => {
@@ -1102,7 +1004,6 @@ export default function Training({
     shellInterruptBusy = false,
 }) {
     const [showOnboarding, setShowOnboarding] = useState(() => !hasCompletedOnboarding());
-    const [showDailyBrief, setShowDailyBrief] = useState(() => !isDailyBriefDismissedToday());
     const [trainingChapters, setTrainingChapters] = useState([]);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [selectedLesson, setSelectedLesson] = useState(null);
@@ -1256,15 +1157,6 @@ export default function Training({
         () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     );
     const [loadingTipIndex, setLoadingTipIndex] = useState(0);
-
-    const lessonProgressWelcome = useMemo(() => {
-        if (!user?.id) return null;
-        return buildLessonProgressWelcomeCopy({
-            completedLessons,
-            trainingChapters,
-            language,
-        });
-    }, [user?.id, completedLessons, trainingChapters, language]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
@@ -1474,21 +1366,6 @@ export default function Training({
         },
         [user, language, profile, showNotification]
     );
-
-    const dismissDailyBrief = useCallback(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem(DAILY_BRIEF_DISMISS_KEY, new Date().toDateString());
-        }
-        setShowDailyBrief(false);
-    }, []);
-
-    const dailyBriefGreeting = useMemo(() => {
-        const firstName = profile?.full_name?.trim().split(/\s+/)[0];
-        if (language === 'bn') {
-            return firstName ? `স্বাগতম, ${firstName}` : 'স্বাগতম';
-        }
-        return firstName ? `Welcome, ${firstName}` : 'Welcome';
-    }, [profile?.full_name, language]);
 
     const handleHourlyChallengeClick = useCallback(() => {
         // Navigate first (same as Home). Reading-gate / lock modal is shown
@@ -4639,61 +4516,6 @@ export default function Training({
                 </div>
             ) : null
             }
-
-            {showDailyBrief && !shellInterruptBusy && trainingTab === 'core' && !trainingLoading && !showOnboarding && !selectedChapter && !trainingContent && createPortal(
-                <div
-                    className="fixed inset-0 z-[118] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px] animate-fade-in"
-                    onClick={dismissDailyBrief}
-                >
-                    <div
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="training-welcome-title"
-                        className="relative w-full max-w-sm animate-scale-in"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] p-0 shadow-sm">
-                            <div className="relative px-5 pb-5 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={dismissDailyBrief}
-                                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white text-sm font-black text-slate-700 shadow-sm hover:bg-slate-50"
-                                    aria-label={language === 'en' ? 'Dismiss greeting' : 'অভিবাদন বন্ধ করুন'}
-                                >
-                                    ×
-                                </button>
-                                <p className="mb-1 text-[10px] font-black uppercase tracking-wider text-orange-600 nb-mono">
-                                    {language === 'en' ? 'Your reading journey' : 'আপনার পড়ার যাত্রা'}
-                                </p>
-                                <h2
-                                    id="training-welcome-title"
-                                    className={`pr-8 text-lg font-black leading-tight text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {dailyBriefGreeting}
-                                </h2>
-                                {lessonProgressWelcome?.primary && (
-                                    <p className={`mt-2 text-sm font-semibold leading-snug text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {lessonProgressWelcome.primary}
-                                    </p>
-                                )}
-                                {lessonProgressWelcome?.secondary && (
-                                    <p className={`mt-2 inline-flex rounded-full border border-orange-200/80 bg-orange-50 px-2 py-0.5 text-[11px] font-bold text-orange-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {lessonProgressWelcome.secondary}
-                                    </p>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={dismissDailyBrief}
-                                    className={`mt-4 w-full rounded-full bg-orange-500 py-2.5 text-sm font-black text-white shadow-md shadow-orange-500/30 ${language === 'bn' ? 'font-bengali' : ''}`}
-                                >
-                                    {language === 'en' ? 'Continue' : 'চলুন'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
 
             {lockedLessonModal && createPortal(
                 <div className="fixed inset-0 z-[210] flex animate-fade-in items-center justify-center bg-slate-900/55 p-4">

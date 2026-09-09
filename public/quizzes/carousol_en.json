@@ -31,7 +31,17 @@
         "Wearing a helmet is mandatory when working in high-voltage areas; it protects the head from wire contact.",
         "If a colleague is electrocuted, separate them using an insulated rod instead of touching them directly.",
         "Clean used tools after every shift and check for cracks in the insulation.",
-        "Remember, following correct technical data and protocols is the mark of a skilled and safe lineman."
+        "Remember, following correct technical data and protocols is the mark of a skilled and safe lineman.",
+        "Beware of Snakes in Boxes: Tap old pillar or DB boxes with a stick before opening. Snakes or insects often take shelter in these dark spots during rain or winter.",
+        "Keep Mobile Phones Away: Do not answer calls while working on a pole. A split-second distraction can be the difference between life and death.",
+        "Need Help for Ladders: Never climb a ladder alone. At least one person must hold the base firmly to prevent it from slipping due to imbalance.",
+        "Avoid Poles in Rain: Do not climb wet poles unless absolutely necessary during heavy rain. Wet poles increase the risk of insulation failure and slipping.",
+        "Beware of Sweat: Do not work on lines shirtless or in thin vests. A sweat-soaked body is a highly conductive path for electricity. Always wear full-sleeved clothes or an apron.",
+        "Old Service Wires: Be cautious before touching very old service wires at a customer's house. Sun and rain often make the insulation brittle, exposing the copper.",
+        "Keep Transformer Fuses with You: While working on a transformer, don't just hang the DO fuse down; keep it with you. Someone might accidentally plug it back in.",
+        "See it to Believe it: Even if you hear 'line off' from the substation, treat the line as 'live' until you've shorted it with a discharge rod yourself.",
+        "Beware of the Public: Keep people away when working at road crossings. Curious pedestrians often come too close to ladders or wires, creating a major hazard.",
+        "Listen to Your Body: Don't force yourself to climb if you're exhausted or feeling dizzy. Remember, your life comes first, then your duty."
     ],
     "conclusion": "Correct measurement and caution—these two are the foundation of a lineman's work. Stay safe, work according to the rules."
 }
