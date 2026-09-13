@@ -426,25 +426,34 @@ function LadderGroundBase() {
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom,0px))] z-10 h-28 select-none sm:h-32 md:bottom-0"
         >
-            <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMax slice" className="h-full w-full">
+            {/* Layer 1 — full-width ground + wires. Stretches to any width (bands/wires tolerate it);
+                shares the same vertical scale as layer 2 so the two stay aligned. */}
+            <svg viewBox="0 0 400 120" preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-hidden bg-transparent">
                 <defs>
                     <linearGradient id="ladderGroundEarth" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0" stopColor="#b98a5c" />
                         <stop offset="1" stopColor="#8f6842" />
                     </linearGradient>
-                    <linearGradient id="ladderGroundTopFade" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stopColor="#fffdf7" stopOpacity="0.85" />
-                        <stop offset="0.16" stopColor="#fffdf7" stopOpacity="0" />
-                    </linearGradient>
                 </defs>
 
-                {/* Power wires sagging across the span */}
-                <g stroke="#6b7280" strokeWidth="1.4" fill="none" opacity="0.5" strokeLinecap="round">
+                {/* Power wires sagging across the full span */}
+                <g stroke="#6b7280" strokeWidth="1.4" fill="none" opacity="0.5" strokeLinecap="round" vectorEffect="non-scaling-stroke">
                     <path d="M0 28 Q200 12 400 28" />
                     <path d="M0 34 Q200 18 400 34" />
                     <path d="M0 40 Q200 24 400 40" />
                 </g>
 
+                {/* Far pale ground for depth */}
+                <path d="M0 66 Q200 60 400 66 L400 120 L0 120 Z" fill="#dbe4c2" />
+                {/* Near soil + grass crown */}
+                <path d="M0 74 Q200 68 400 74 L400 120 L0 120 Z" fill="url(#ladderGroundEarth)" />
+                <path d="M0 74 Q200 68 400 74" stroke="#6f9e3a" strokeWidth="3" fill="none" vectorEffect="non-scaling-stroke" />
+            </svg>
+
+            {/* Layer 2 — pole, insulators, tufts and plant. Keeps true proportions (never distorts
+                or crops on wide screens); sits centered on the ground band above.
+                Transparent — no fill/fade so nothing paints a white band at the top. */}
+            <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMax meet" className="absolute inset-0 h-full w-full overflow-hidden bg-transparent">
                 {/* Distribution pole with crossarm + insulators */}
                 <g opacity="0.62">
                     <path d="M106 16 L114 16 L116 86 L104 86 Z" fill="#7c6a54" />
@@ -458,12 +467,6 @@ function LadderGroundBase() {
                         <circle cx="110" cy="13" r="2.4" />
                     </g>
                 </g>
-
-                {/* Far pale ground for depth */}
-                <path d="M0 66 Q200 60 400 66 L400 120 L0 120 Z" fill="#dbe4c2" />
-                {/* Near soil + grass crown */}
-                <path d="M0 74 Q200 68 400 74 L400 120 L0 120 Z" fill="url(#ladderGroundEarth)" />
-                <path d="M0 74 Q200 68 400 74" stroke="#6f9e3a" strokeWidth="3" fill="none" />
 
                 {/* Grass tufts */}
                 <g fill="#6f9e3a">
@@ -479,9 +482,6 @@ function LadderGroundBase() {
                     <path d="M338 63 c -10 -1 -15 -8 -15 -15 c 9 0 15 6 15 15 z" fill="#22c55e" />
                     <path d="M338 59 c 8 -3 12 -11 11 -18 c -8 3 -12 9 -11 18 z" fill="#16a34a" />
                 </g>
-
-                {/* Soft blend of the very top edge into the page */}
-                <rect x="0" y="0" width="400" height="120" fill="url(#ladderGroundTopFade)" />
             </svg>
         </div>
     );
