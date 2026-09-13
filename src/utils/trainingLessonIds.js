@@ -8,13 +8,11 @@ export function isSupplementaryProgressLessonId(id) {
     return typeof id === 'string' && id.trim().toLowerCase().startsWith('supp_');
 }
 
-/** Last numbered core Training chapter. FAQ uses serial Q, not a number.
- *  NOTE: kept at 9 while chapter 10 (WBSEDCL Safety Manual) is still incomplete.
- *  Bump back to 10 when chapter 10 is re-added to the manifest with its quiz files. */
-export const CORE_PROGRAM_LAST_CHAPTER = 9;
+/** Last numbered core Training chapter. FAQ uses serial Q, not a number. */
+export const CORE_PROGRAM_LAST_CHAPTER = 10;
 
 export const DEFAULT_CORE_CHAPTER_COUNTS = {
-    1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10,
+    1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10, 10: 10,
 };
 
 /** Non-numeric FAQ serial in training_manifest.json */
