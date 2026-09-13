@@ -1,17 +1,13 @@
 import { PRACTICAL_FIELD_CHAPTERS } from '../data/practicalFieldChapters';
 import { findNextSequentialLessonId } from './readingHabitGate';
-
-/** Match training / reading-gate chapter sizes when manifest is unavailable. */
-const DEFAULT_CORE_CHAPTER_COUNTS = {
-  1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10,
-};
+import { CORE_PROGRAM_LAST_CHAPTER, DEFAULT_CORE_CHAPTER_COUNTS } from './trainingLessonIds';
 
 const coreTitleCache = new Map();
 let lifeSkillModulesPromise = null;
 
 function listCoreLessonIds(trainingChapters) {
   const ids = [];
-  for (let ch = 1; ch <= 9; ch += 1) {
+  for (let ch = 1; ch <= CORE_PROGRAM_LAST_CHAPTER; ch += 1) {
     const chap = Array.isArray(trainingChapters)
       ? trainingChapters.find((c) => c.number === ch)
       : null;

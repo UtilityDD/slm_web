@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
-import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel, getBadgeTopic } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
@@ -34,7 +34,7 @@ const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
-const APPROX_CORE_LESSON_TOTAL = 91;
+const APPROX_CORE_LESSON_TOTAL = 101;
 const LAST_TIP_INDEX_KEY = 'slm_home_tip_last_index';
 /** Current IST hourly quiz start hour, e.g. "2PM" (English digits always). */
 function formatIstHourLabel() {
@@ -418,6 +418,7 @@ export default function Home({
   const trainingLevel = userProfile?.training_level || 1;
   const badge = getBadgeByLevel(trainingLevel, firstTimeReadingPointsFromLessons(coreLessons));
   const badgeName = bn ? badge.bn : badge.en;
+  const badgeTopic = getBadgeTopic(badge, bn ? 'bn' : 'en');
   const displayName =
     userProfile?.full_name && !userProfile.full_name.includes('@')
       ? userProfile.full_name.split(' ')[0]
@@ -746,9 +747,12 @@ export default function Home({
                 {displayName}
               </h1>
               <span
-                className={`home-level-badge inline-flex shrink-0 items-center justify-center rounded-full px-2 font-black ${badge.color} ${bn ? 'home-level-badge--bn font-bengali' : 'py-0.5 text-[10px] uppercase leading-none tracking-wide sm:text-[11px]'}`}
+                className={`home-level-badge inline-flex shrink-0 items-center justify-center font-black ${badgeTopic ? 'home-level-badge--stacked' : 'rounded-full px-2'} ${badge.color} ${bn ? 'home-level-badge--bn font-bengali' : badgeTopic ? 'text-[10px] leading-none sm:text-[11px]' : 'py-0.5 text-[10px] uppercase leading-none tracking-wide sm:text-[11px]'}`}
               >
                 <span className={bn ? 'home-level-badge__label' : undefined}>{badgeName}</span>
+                {badgeTopic ? (
+                  <span className="home-level-badge__topic">{badgeTopic}</span>
+                ) : null}
               </span>
             </div>
             <div className={`mt-2.5 flex min-w-0 flex-wrap items-center gap-2 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>

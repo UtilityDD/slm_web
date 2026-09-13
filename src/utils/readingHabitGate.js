@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import { filterCoreCompletedLessonIds } from './trainingLessonIds';
+import { filterCoreCompletedLessonIds, CORE_PROGRAM_LAST_CHAPTER, DEFAULT_CORE_CHAPTER_COUNTS } from './trainingLessonIds';
 import {
     readLocalGateState,
     isWithinReadingGateWindow,
@@ -7,9 +7,6 @@ import {
     READING_GATE_MS,
 } from './readingGateStorage';
 import { getReviewAssignment } from './readingReviewCycle';
-
-const CORE_PROGRAM_LAST_CHAPTER = 9;
-const DEFAULT_CORE_CHAPTER_COUNTS = { 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10 };
 
 function getChapterLessonCount(chapterNum, trainingChapters) {
     const chap = Array.isArray(trainingChapters)

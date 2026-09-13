@@ -4,7 +4,7 @@ import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL, CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
-import { calculateLevelFromProgress, getRoadmapBadgeByLevel } from '../../utils/badgeUtils';
+import { calculateLevelFromProgress, getBadgeTopic, getRoadmapBadgeByLevel, withChapterTopic } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { storageUtils } from '../../utils/storageUtils';
@@ -43,6 +43,10 @@ import {
     getCoreLessonScoreCooldownDaysLeft,
     lessonIdFromCoreLessonBonusQuizId,
     CORE_LESSON_MONTHLY_BONUS_POINTS,
+    isFaqChapter,
+    findFaqChapter,
+    isOrgChapter,
+    getChapterOrgLabel,
 } from '../../utils/trainingLessonIds';
 import { logReadingHabitCompletion, logReadingHabitReview } from '../../utils/readingHabitLog';
 import { getAssignedGateLesson } from '../../utils/readingHabitGate';
@@ -221,20 +225,23 @@ const TrainingSkeleton = () => (
 );
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
-    const isFAQ = chapter.number === 10;
+    const isFAQ = isFaqChapter(chapter);
+    const isOrg = isOrgChapter(chapter);
     const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
     const progress = chapter.count > 0 ? Math.min(100, Math.round((completedCount / chapter.count) * 100)) : 0;
 
     return (
         <div
             onClick={() => onClick(chapter)}
-            className={`flex cursor-pointer items-start gap-4 border-b-2 border-slate-900/10 px-1 py-5 transition-colors hover:bg-orange-50/40 active:bg-orange-50/60 sm:gap-5 sm:py-6 ${isFAQ ? 'hover:bg-violet-50/40' : ''}`}
+            className={`flex cursor-pointer items-start gap-4 border-b-2 border-slate-900/10 px-1 py-5 transition-colors hover:bg-orange-50/40 active:bg-orange-50/60 sm:gap-5 sm:py-6 ${isFAQ ? 'hover:bg-violet-50/40' : isOrg ? 'hover:bg-indigo-50/40' : ''}`}
         >
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-black border-2 transition-colors ${isFAQ
-                ? 'bg-violet-100 text-violet-600 border-violet-200'
-                : 'bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500'
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center text-xl font-black border-2 transition-colors ${isFAQ
+                ? 'rounded-xl bg-violet-100 text-violet-600 border-violet-200'
+                : isOrg
+                    ? 'rounded-lg bg-gradient-to-br from-indigo-500 to-teal-600 text-white border-indigo-400'
+                    : 'rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-500'
                 }`}>
-                {isFAQ ? '?' : chapter.number}
+                {isFAQ ? 'Q' : chapter.number}
             </div>
 
             <div className="min-w-0 flex-1">
@@ -247,6 +254,10 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                 <p className="mt-1 text-xs font-semibold text-token-text-muted sm:text-sm">
                     {isFAQ ? (
                         language === 'en' ? 'Reference Guide' : 'রেফারেন্স গাইড'
+                    ) : isOrg ? (
+                        language === 'en'
+                            ? `${getChapterOrgLabel(chapter) || 'Special'} · ${chapter.count} lessons`
+                            : `${getChapterOrgLabel(chapter) || 'বিশেষ'} · ${toBengaliNumber(chapter.count, 'bn')}টি পাঠ`
                     ) : (
                         language === 'en' ? (
                             `${chapter.count} lessons`
@@ -260,13 +271,13 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                     <div className="mt-3 space-y-1.5">
                         <div className="h-1.5 w-full max-w-md overflow-hidden rounded-full bg-token-bg-page">
                             <div
-                                className={`h-full rounded-full transition-all duration-700 ${progress === 100 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                className={`h-full rounded-full transition-all duration-700 ${progress === 100 ? 'bg-emerald-500' : isOrg ? 'bg-indigo-500' : 'bg-orange-500'}`}
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
                         <div className="flex items-center gap-3 text-xs font-semibold text-token-text-muted">
                             <span>{completedCount}/{chapter.count} {language === 'en' ? 'complete' : 'সম্পন্ন'}</span>
-                            <span className={progress === 100 ? 'text-emerald-600' : 'text-orange-600'}>{progress}%</span>
+                            <span className={progress === 100 ? 'text-emerald-600' : isOrg ? 'text-indigo-600' : 'text-orange-600'}>{progress}%</span>
                         </div>
                     </div>
                 )}
@@ -352,42 +363,41 @@ const TrainingSubChapterCard = React.memo(({ subchapter, isUnlocked, isCompleted
     );
 });
 
-/** Rank milestone — wide career plaque (clearly distinct from circular lesson nodes). */
-function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedMotion }) {
+/** Rank gate — a ladder landing / platform sign between climbs. */
+function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedMotion, isOrg = false, orgLabel = '' }) {
     const name = language === 'en' ? badge.en : badge.bn;
+    const topic = getBadgeTopic(badge, language);
     const tier = badge.level;
     const animateIn = isUnlocked && !prefersReducedMotion;
     const isActiveRank = isCurrent && isUnlocked;
+    const orgChip = orgLabel || (language === 'en' ? 'Special' : 'বিশেষ');
+    const unitLabel = isOrg
+        ? orgChip
+        : (language === 'en' ? `Rank ${tier}` : `ধাপ ${toBengaliNumber(tier, 'bn')}`);
+    // Compact second line: rank, current state, and topic folded into one consistent line.
+    const secondaryParts = [unitLabel];
+    if (isActiveRank) secondaryParts.push(language === 'en' ? 'Now' : 'এখন');
+    if (topic) secondaryParts.push(topic);
+    const secondary = secondaryParts.join(' · ');
 
-    const shellClass = isActiveRank
-        ? 'border-orange-400 bg-white shadow-lg shadow-orange-500/20 ring-2 ring-orange-400/35'
-        : isUnlocked
-            ? 'border-slate-200/80 bg-white shadow-md'
-            : 'border-slate-200 bg-slate-50 shadow-sm opacity-90';
-    const iconShell = isUnlocked
-        ? `${badge.color} ${badge.medalText} shadow-sm`
-        : 'bg-slate-200 text-slate-500 grayscale';
-    const nameClass = isUnlocked ? 'text-slate-900' : 'text-slate-500';
-    const nameSize = language === 'bn'
-        ? 'font-bengali text-base sm:text-lg leading-snug'
-        : 'text-[0.95rem] sm:text-base leading-snug tracking-tight';
+    const shellClass = !isUnlocked
+        ? 'bg-slate-200 text-slate-500 shadow-sm'
+        : isOrg
+            ? `bg-indigo-500 text-white shadow-sm ${isActiveRank ? 'ring-2 ring-indigo-200' : ''}`
+            : `bg-orange-500 text-white shadow-sm ${isActiveRank ? 'ring-2 ring-orange-200' : ''}`;
 
     return (
         <div
-            className={`training-rank-badge relative ${animateIn ? 'animate-rank-badge-in' : ''}`}
+            className={`training-rank-badge training-unit-banner relative mx-auto w-full max-w-[15.5rem] sm:max-w-[17rem] ${animateIn ? 'animate-rank-badge-in' : ''}`}
             role="img"
-            aria-label={name}
+            aria-label={topic ? `${name}. ${topic}` : name}
         >
-            <div
-                className={[
-                    'flex min-w-[11rem] max-w-[14rem] items-center gap-2.5 rounded-2xl border px-2.5 py-2.5 sm:min-w-[12rem] sm:max-w-[15rem] sm:gap-3 sm:px-3 sm:py-3',
-                    shellClass,
-                ].join(' ')}
-            >
+            <div className={`flex w-full items-center gap-2.5 rounded-2xl px-3 py-2.5 sm:gap-3 sm:px-3.5 sm:py-3 ${isOrg ? 'rounded-[1.15rem]' : ''} ${shellClass}`}>
                 <div
                     className={[
-                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg sm:h-12 sm:w-12 sm:rounded-2xl sm:text-2xl',
-                        iconShell,
+                        'flex h-10 w-10 shrink-0 items-center justify-center text-lg sm:h-11 sm:w-11 sm:text-xl',
+                        isOrg ? 'rounded-xl' : 'rounded-2xl',
+                        isUnlocked ? 'bg-white/20' : 'bg-white/50',
                         isUnlocked && tier >= 9 && !prefersReducedMotion ? 'animate-rank-medal-glow' : '',
                     ].filter(Boolean).join(' ')}
                     aria-hidden
@@ -396,10 +406,140 @@ function RankMilestone({ badge, language, isUnlocked, isCurrent, prefersReducedM
                         {isUnlocked ? badge.icon : '🔒'}
                     </span>
                 </div>
-                <p className={`mb-0 min-w-0 flex-1 text-left font-black [overflow-wrap:anywhere] ${nameSize} ${nameClass}`}>
-                    {name}
-                </p>
+                <div className="min-w-0 flex-1 text-left">
+                    <p className={`mb-0 truncate font-black leading-snug ${language === 'bn' ? 'font-bengali text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+                        {name}
+                    </p>
+                    <p className={`mb-0 mt-0.5 truncate text-[11px] font-bold leading-tight sm:text-xs ${language === 'bn' ? 'font-bengali tracking-normal' : ''} ${isUnlocked ? 'opacity-85' : 'opacity-70'}`}>
+                        {secondary}
+                    </p>
+                </div>
             </div>
+        </div>
+    );
+}
+
+/** Fixed decorative ground the ladder plants into: soft earth, a distant tower, wires and a small plant. Kept sparse on purpose. */
+function LadderGroundBase() {
+    return (
+        <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom,0px))] z-10 h-28 select-none sm:h-32 md:bottom-0"
+        >
+            <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMax slice" className="h-full w-full">
+                <defs>
+                    <linearGradient id="ladderGroundEarth" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stopColor="#b98a5c" />
+                        <stop offset="1" stopColor="#8f6842" />
+                    </linearGradient>
+                    <linearGradient id="ladderGroundTopFade" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stopColor="#fffdf7" stopOpacity="0.85" />
+                        <stop offset="0.16" stopColor="#fffdf7" stopOpacity="0" />
+                    </linearGradient>
+                </defs>
+
+                {/* Power wires sagging across the span */}
+                <g stroke="#6b7280" strokeWidth="1.4" fill="none" opacity="0.5" strokeLinecap="round">
+                    <path d="M0 28 Q200 12 400 28" />
+                    <path d="M0 34 Q200 18 400 34" />
+                    <path d="M0 40 Q200 24 400 40" />
+                </g>
+
+                {/* Distribution pole with crossarm + insulators */}
+                <g opacity="0.62">
+                    <path d="M106 16 L114 16 L116 86 L104 86 Z" fill="#7c6a54" />
+                    <path d="M111 16 L114 16 L116 86 L113 86 Z" fill="#54473a" />
+                    <rect x="88" y="27" width="44" height="5" rx="1.5" fill="#6b5b48" />
+                    <path d="M96 32 L104 40 M124 32 L116 40" stroke="#6b5b48" strokeWidth="2" fill="none" />
+                    <g fill="#d7dee8" stroke="#9aa6b5" strokeWidth="0.8">
+                        <circle cx="92" cy="26" r="2.4" />
+                        <circle cx="110" cy="26" r="2.4" />
+                        <circle cx="128" cy="26" r="2.4" />
+                        <circle cx="110" cy="13" r="2.4" />
+                    </g>
+                </g>
+
+                {/* Far pale ground for depth */}
+                <path d="M0 66 Q200 60 400 66 L400 120 L0 120 Z" fill="#dbe4c2" />
+                {/* Near soil + grass crown */}
+                <path d="M0 74 Q200 68 400 74 L400 120 L0 120 Z" fill="url(#ladderGroundEarth)" />
+                <path d="M0 74 Q200 68 400 74" stroke="#6f9e3a" strokeWidth="3" fill="none" />
+
+                {/* Grass tufts */}
+                <g fill="#6f9e3a">
+                    <path d="M24 74 l-3 -9 l2 0 l1 6 l2 -7 l2 0 l-1 8 z" />
+                    <path d="M58 74 l-2 -7 l2 0 l1 5 l2 -6 l2 0 l-2 8 z" />
+                    <path d="M300 74 l-2 -7 l2 0 l1 5 l2 -6 l2 0 l-2 8 z" />
+                    <path d="M368 74 l-3 -9 l2 0 l1 6 l2 -7 l2 0 l-1 8 z" />
+                </g>
+
+                {/* Small plant on the right */}
+                <g opacity="0.9">
+                    <path d="M332 75 C330 67 334 61 338 57" stroke="#15803d" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    <path d="M338 63 c -10 -1 -15 -8 -15 -15 c 9 0 15 6 15 15 z" fill="#22c55e" />
+                    <path d="M338 59 c 8 -3 12 -11 11 -18 c -8 3 -12 9 -11 18 z" fill="#16a34a" />
+                </g>
+
+                {/* Soft blend of the very top edge into the page */}
+                <rect x="0" y="0" width="400" height="120" fill="url(#ladderGroundTopFade)" />
+            </svg>
+        </div>
+    );
+}
+
+/* PPE gear icons used by the free-floating field (see PpeFloatingField below).
+   Decorative for now; a future quiz/competition layer can mark specific ones earned. */
+const PPE_PATH_COLLECTIBLES = [
+    { id: 'helmet', icon: '⛑️', en: 'Helmet', bn: 'হেলমেট' },
+    { id: 'gloves', icon: '🧤', en: 'Gloves', bn: 'গ্লাভস' },
+    { id: 'boots', icon: '🥾', en: 'Safety Boots', bn: 'সেফটি বুট' },
+    { id: 'goggles', icon: '🥽', en: 'Goggles', bn: 'গগলস' },
+    { id: 'vest', icon: '🦺', en: 'Safety Vest', bn: 'সেফটি ভেস্ট' },
+    { id: 'rope', icon: '🪢', en: 'Safety Rope', bn: 'সেফটি রোপ' },
+];
+
+function ppePathHash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i += 1) {
+        h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    return h;
+}
+
+/* One unified field of PPE icons that free-float across the whole training screen.
+   Positions/paths are deterministic (stable per render) but spread over the panel, and
+   every icon runs the same animation system so they ALL move. Start positions stay a
+   little in from the edges and the drift range is bounded, so none stick to a boundary. */
+const PPE_FLOAT_VARIANTS = ['a', 'b', 'c', 'd', 'e', 'f'];
+const PPE_FIELD = Array.from({ length: 11 }, (_, i) => {
+    const h = ppePathHash(`ppe-field-${i}`);
+    return {
+        key: i,
+        icon: PPE_PATH_COLLECTIBLES[h % PPE_PATH_COLLECTIBLES.length].icon,
+        left: 10 + ((h >> 4) % 62), // 10% .. 71% across the width
+        top: 5 + ((h >> 10) % 86), // 5% .. 90% down the panel
+        variant: PPE_FLOAT_VARIANTS[(h >> 16) % PPE_FLOAT_VARIANTS.length],
+        reverse: ((h >> 20) % 2) === 0,
+        dur: 6 + ((h >> 22) % 9), // 6 .. 14s
+        delay: -((h >> 26) % 14), // 0 .. -13s out of phase
+    };
+});
+
+function PpeFloatingField() {
+    return (
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-[15] overflow-hidden">
+            {PPE_FIELD.map((it) => (
+                <div key={it.key} className="absolute" style={{ top: `${it.top}%`, left: `${it.left}%` }}>
+                    <div
+                        className={`ppe-float ppe-float--${it.variant} ${it.reverse ? 'ppe-float--rev' : ''}`}
+                        style={{ '--ppe-dur': `${it.dur}s`, '--ppe-delay': `${it.delay}s` }}
+                    >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-200 bg-white text-lg shadow-md sm:h-11 sm:w-11 sm:text-xl">
+                            <span className="leading-none">{it.icon}</span>
+                        </div>
+                    </div>
+                </div>
+            ))}
         </div>
     );
 }
@@ -450,79 +590,40 @@ function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight,
 
     return (
         <div
-            className={[
-                'roadmap-next-marker pointer-events-none absolute z-50',
-                'max-[480px]:left-1/2 max-[480px]:top-[calc(100%+0.875rem)] max-[480px]:-translate-x-1/2',
-                'min-[481px]:top-1/2 min-[481px]:-translate-y-1/2',
-                anchorRight
-                    ? 'min-[481px]:right-full min-[481px]:mr-4 sm:mr-0 sm:right-[110%]'
-                    : 'min-[481px]:left-full min-[481px]:ml-4 sm:ml-0 sm:left-[110%]',
-            ].join(' ')}
+            className="roadmap-climber pointer-events-none absolute left-0 top-1/2 z-40 -translate-y-1/2 -translate-x-[126%] sm:-translate-x-[138%]"
             role="status"
             aria-label={`${formattedScore} ${pointsLabel}`}
         >
-            <div
-                className={[
-                    'animate-roadmap-marker-in flex items-center gap-2.5 px-0.5 py-1',
-                    'max-[480px]:gap-3 max-[480px]:px-1 max-[480px]:py-1.5',
-                    'sm:gap-3 sm:px-0 sm:py-0',
-                    floatClass,
-                ].join(' ')}
-            >
-                {!anchorRight && (
-                    <span className="hidden h-0 w-5 shrink-0 border-t-2 border-dashed border-orange-500/60 sm:block" aria-hidden />
-                )}
-
-                <div
-                    className={[
-                        'relative flex items-center gap-2.5',
-                        'max-[480px]:gap-3',
-                        anchorRight ? 'sm:flex-row-reverse sm:gap-3' : 'sm:gap-3',
-                    ].join(' ')}
-                >
-                    <div className="relative h-10 w-10 shrink-0 sm:h-14 sm:w-14">
-                        <div className="absolute inset-0 rounded-full bg-orange-400/15 blur-md" aria-hidden />
-                        <div className="relative h-full w-full overflow-hidden rounded-full ring-2 ring-orange-400/70 ring-offset-2 ring-offset-[#fffdf7]">
-                            {showProfilePhoto ? (
-                                <AvatarPhoto
-                                    url={resolvedAvatarUrl}
-                                    edge={AVATAR_EDGE.card}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                    loading="lazy"
-                                    onError={() => setAvatarFailed(true)}
-                                />
-                            ) : (
-                                <span
-                                    className="flex h-full w-full items-center justify-center bg-orange-50 text-xl leading-none sm:text-2xl"
-                                    aria-hidden
-                                >
-                                    {LINEMAN_EMOJI_FALLBACK}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div
-                        className={[
-                            'flex min-w-0 flex-col gap-1',
-                            anchorRight ? 'sm:items-end sm:text-right' : 'sm:items-start sm:text-left',
-                        ].join(' ')}
-                    >
-                        <span className="text-sm font-black tabular-nums leading-none text-slate-900 sm:text-xl nb-mono">
-                            {formattedScore}
-                        </span>
-                        <span
-                            className={`text-[10px] font-bold leading-none text-orange-700/90 sm:text-[11px] ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wide nb-mono'}`}
-                        >
-                            {pointsLabel}
-                        </span>
+            <div className={`animate-roadmap-marker-in flex flex-col items-center ${floatClass}`}>
+                {/* Hard hat perched on the climber */}
+                <span className="relative z-10 -mb-2 text-lg leading-none sm:-mb-2.5 sm:text-xl" aria-hidden>
+                    ⛑️
+                </span>
+                <div className="relative h-11 w-11 sm:h-[3.25rem] sm:w-[3.25rem]">
+                    <div className="absolute inset-0 rounded-full bg-amber-400/25 blur-md" aria-hidden />
+                    <div className="relative h-full w-full overflow-hidden rounded-full border-[3px] border-amber-500 bg-orange-50 shadow-md">
+                        {showProfilePhoto ? (
+                            <AvatarPhoto
+                                url={resolvedAvatarUrl}
+                                edge={AVATAR_EDGE.card}
+                                alt=""
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                                onError={() => setAvatarFailed(true)}
+                            />
+                        ) : (
+                            <span
+                                className="flex h-full w-full items-center justify-center bg-orange-50 text-xl leading-none sm:text-2xl"
+                                aria-hidden
+                            >
+                                {LINEMAN_EMOJI_FALLBACK}
+                            </span>
+                        )}
                     </div>
                 </div>
-
-                {anchorRight && (
-                    <span className="hidden h-0 w-5 shrink-0 border-t-2 border-dashed border-orange-500/60 sm:block" aria-hidden />
-                )}
+                <span className="mt-1 rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-black leading-none text-white tabular-nums shadow-sm nb-mono">
+                    {formattedScore}
+                </span>
             </div>
         </div>
     );
@@ -1150,7 +1251,7 @@ export default function Training({
     const [userRank, setUserRank] = useState(null);
     const [showLessonIndex, setShowLessonIndex] = useState(false);
     const [expandedChapterIndex, setExpandedChapterIndex] = useState(null);
-    /** lessonId → display title for Learning Index (from badge catalog B1–B9). */
+    /** lessonId → display title for Learning Index (from badge catalog B1–B10). */
     const [indexLessonTitles, setIndexLessonTitles] = useState(() => ({}));
     const indexLessonTitlesLoadedRef = useRef(false);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(
@@ -1166,7 +1267,7 @@ export default function Training({
         return () => mq.removeEventListener('change', onChange);
     }, []);
 
-    // Load lesson names for Learning Index (B1–B9 catalogs) once when opened.
+    // Load lesson names for Learning Index (B1–B10 catalogs) once when opened.
     useEffect(() => {
         if (!showLessonIndex || indexLessonTitlesLoadedRef.current) return undefined;
 
@@ -1177,7 +1278,7 @@ export default function Training({
                     'training_index_lesson_titles',
                     async () => {
                         const maps = await Promise.all(
-                            Array.from({ length: 9 }, (_, i) => {
+                            Array.from({ length: 10 }, (_, i) => {
                                 const n = i + 1;
                                 return fetch(`/quizzes/B${n}.json`)
                                     .then((r) => (r.ok ? r.json() : null))
@@ -1591,17 +1692,19 @@ export default function Training({
     const roadmapData = useMemo(() => {
         if (!trainingChapters || trainingChapters.length === 0) return { items: [], height: 0, maxPath: 0, journeyChapters: [] };
 
-        const journeyChapters = trainingChapters.filter(c => c.number !== 10);
+        const journeyChapters = trainingChapters.filter((c) => !isFaqChapter(c));
         const items = [];
 
         journeyChapters.forEach((chapter) => {
-            const badge = getRoadmapBadgeByLevel(chapter.number);
+            const isOrg = isOrgChapter(chapter);
+            const badge = withChapterTopic(getRoadmapBadgeByLevel(chapter.number), chapter);
             const isChapterUnlocked = isLessonUnlocked(chapter.number, 1);
             items.push({
                 type: 'milestone',
                 isUnlocked: isChapterUnlocked,
                 chapter: chapter,
                 badge: badge,
+                isOrg,
                 index: items.length
             });
 
@@ -1615,6 +1718,7 @@ export default function Training({
                     isCompleted: completedLessons.includes(lessonId),
                     isUnlocked: isLessonUnlocked(chapter.number, i),
                     badge: badge,
+                    isOrg,
                     title: `Lesson ${lessonId}`,
                     index: items.length
                 });
@@ -1645,7 +1749,7 @@ export default function Training({
         const done = new Set(filterCoreCompletedLessonIds(completedLessons).map(String));
 
         const items = [];
-        for (const chapter of trainingChapters.filter((c) => c.number !== 10)) {
+        for (const chapter of trainingChapters.filter((c) => !isFaqChapter(c))) {
             for (let i = 1; i <= chapter.count; i++) {
                 const id = `${chapter.number}.${i}`;
                 const isCurrent = id === currentId;
@@ -1723,8 +1827,8 @@ export default function Training({
 
             const cRect = container.getBoundingClientRect();
             const eRect = scrollTarget.getBoundingClientRect();
-            // Sit the next node in the upper third so path context stays below — not viewport-center.
-            const topPad = Math.min(120, Math.max(48, cRect.height * 0.22));
+            // Ladder climbs up: sit the current rung low so upcoming (locked) rungs stay in view above.
+            const topPad = Math.max(160, cRect.height * 0.55);
             const nextTop = container.scrollTop + (eRect.top - cRect.top) - topPad;
             const maxTop = Math.max(0, container.scrollHeight - container.clientHeight);
             container.scrollTo({ top: Math.max(0, Math.min(nextTop, maxTop)), behavior: 'smooth' });
@@ -2368,7 +2472,7 @@ export default function Training({
     const handleChapterClick = async (chapter, targetLessonNum = null, options = {}) => {
         const { autoStartReading = false, faqExitUsesHistory: faqExitFromHistory = false } = options;
 
-        if (chapter?.number === 10) {
+        if (isFaqChapter(chapter)) {
             setFaqExitUsesHistory(!!faqExitFromHistory);
         }
 
@@ -2394,7 +2498,7 @@ export default function Training({
         if (
             targetLessonNum != null &&
             chapter?.number != null &&
-            chapter.number !== 10 &&
+            !isFaqChapter(chapter) &&
             profile?.role !== 'admin'
         ) {
             const targetId = `${chapter.number}.${targetLessonNum}`;
@@ -2413,7 +2517,7 @@ export default function Training({
             }
         }
 
-        const currentBadge = getRoadmapBadgeByLevel(chapter.number);
+        const currentBadge = withChapterTopic(getRoadmapBadgeByLevel(chapter.number), chapter);
 
         const openLessonTarget = (lesson) => {
             if (!lesson) return;
@@ -2432,13 +2536,13 @@ export default function Training({
 
         setTrainingLoading(true);
 
-        // Special handling for FAQ Chapter 10
-        if (chapter.number === 10) {
+        // Special handling for FAQ (serial Q — not a numbered core chapter)
+        if (isFaqChapter(chapter)) {
             try {
                 const data = await requestManager.fetch(
-                    'chapter_10_qa_v2',
+                    'chapter_Q_qa_v1',
                     async () => {
-                        const response = await fetch('/quizzes/chapter_10_qa.json');
+                        const response = await fetch('/quizzes/chapter_Q_qa.json');
                         if (response.ok) {
                             return await response.json();
                         }
@@ -2690,7 +2794,7 @@ export default function Training({
             if (tab === 'faq') {
                 if (trainingChapters.length === 0) return;
 
-                const faq = trainingChapters.find((c) => c.number === 10);
+                const faq = findFaqChapter(trainingChapters);
                 if (!faq) return;
 
                 window.history.replaceState(null, '', '#/training');
@@ -3483,7 +3587,7 @@ export default function Training({
                     )}
                 </div>
             ) : !selectedChapter && !trainingContent ? (
-                <div className="flex min-h-0 flex-1 flex-col animate-fade-in-up text-slate-900">
+                <div className="relative flex min-h-0 flex-1 flex-col animate-fade-in-up text-slate-900">
 
                     {gateFocusPending?.lessonId && (
                         <div className={`mx-auto mb-3 w-full max-w-2xl shrink-0 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-center shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
@@ -3542,7 +3646,7 @@ export default function Training({
                                     const totalCompleted = completedLessons.filter((id) => {
                                         if (!id) return false;
                                         const chapterNum = parseInt(id.toString().split('.')[0], 10);
-                                        return chapterNum >= 1 && chapterNum < 10;
+                                        return chapterNum >= 1 && chapterNum <= 10;
                                     }).length;
                                     const doneStr =
                                         language === 'bn'
@@ -3597,110 +3701,98 @@ export default function Training({
                         ref={roadmapScrollRef}
                         className="relative z-0 -mt-14 min-h-0 flex-1 overflow-y-auto overscroll-y-contain scrollbar-hide sm:-mt-16"
                     >
+                    {/* Summit sign-off — sits above the highest rank */}
+                    <div className="relative z-10 mb-10 mt-16 animate-fade-in-up text-center sm:mt-20">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="nb-tag inline-flex items-center gap-2 bg-white px-4 py-1.5">
+                                <span className="h-2 w-2 animate-pulse bg-orange-500" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] nb-mono">Official Platform</span>
+                            </div>
+                            <a
+                                href={WEBSITE_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-2xl font-black tracking-tight text-slate-900 transition-colors hover:text-orange-600"
+                            >
+                                {WEBSITE_URL.replace('https://', '')}
+                            </a>
+                            <div className="flex flex-col items-center gap-1">
+                                <p className="text-xs font-medium text-slate-600">For support and inquiries:</p>
+                                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 transition-colors hover:text-orange-700">
+                                    {SUPPORT_EMAIL}
+                                </a>
+                            </div>
+                            <div className="mt-4 h-0.5 w-40 bg-slate-900" />
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 nb-mono">
+                                {APP_NAME} v{CURRENT_APP_VERSION}
+                            </p>
+                        </div>
+                    </div>
                     {/* Gamified Journey Map Logic */}
                     {(() => {
-                        const isMobile = window.innerWidth < 768;
-                        const { items: roadmapItems, height: roadmapHeight, maxPath: maxPathIndex, nodeVerticalGap, journeyChapters } = roadmapData;
+                        const { items: roadmapItems, journeyChapters } = roadmapData;
                         const currentTrainingLevel = calculateLevelFromProgress(completedLessons, trainingChapters);
 
-                        // Main Journey View
                         return (
-                            <div className="relative mx-auto max-w-2xl px-4 pb-8 pt-6 sm:px-2 sm:pt-8">
-                                {/* Journey Container */}
-                                <div className="relative" style={{ height: roadmapHeight }}>
-
-                                    {/* SVG Path Connector */}
-                                    <svg
-                                        className="absolute top-0 left-0 w-full h-full z-0 overflow-visible pointer-events-none"
-                                        viewBox={`0 0 100 ${roadmapHeight}`}
-                                        preserveAspectRatio="none"
-                                    >
-                                        <defs>
-                                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                                            </filter>
-                                        </defs>
-
-                                        {/* Static Background Path */}
-                                        <path
-                                            d={roadmapItems.map((_, i) => {
-                                                if (i === roadmapItems.length - 1) return '';
-                                                const startY = i * nodeVerticalGap + 60;
-                                                const endY = (i + 1) * nodeVerticalGap + 60;
-                                                const amplitude = isMobile ? 25 : 18;
-                                                const x1 = 50 + Math.sin(i * 0.8) * amplitude;
-                                                const x2 = 50 + Math.sin((i + 1) * 0.8) * amplitude;
-                                                const cpY1 = startY + nodeVerticalGap / 2;
-                                                const cpY2 = endY - nodeVerticalGap / 2;
-                                                return i === 0
-                                                    ? `M ${x1} ${startY} C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`
-                                                    : `C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`;
-                                            }).join(" ")}
-                                            stroke="currentColor"
-                                            strokeWidth="8"
-                                            strokeLinecap="round"
-                                            fill="none"
-                                            className="text-slate-200/80"
-                                        />
-
-                                        {/* Dynamic Progress Path */}
-                                        <path
-                                            d={(() => {
-                                                if (maxPathIndex <= 0) return '';
-                                                const pathParts = [];
-                                                for (let i = 0; i < maxPathIndex; i++) {
-                                                    const startY = i * nodeVerticalGap + 60;
-                                                    const endY = (i + 1) * nodeVerticalGap + 60;
-                                                    const amplitude = isMobile ? 25 : 18;
-                                                    const x1 = 50 + Math.sin(i * 0.8) * amplitude;
-                                                    const x2 = 50 + Math.sin((i + 1) * 0.8) * amplitude;
-                                                    const cpY1 = startY + nodeVerticalGap / 2;
-                                                    const cpY2 = endY - nodeVerticalGap / 2;
-                                                    pathParts.push(i === 0
-                                                        ? `M ${x1} ${startY} C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`
-                                                        : `C ${x1} ${cpY1}, ${x2} ${cpY2}, ${x2} ${endY}`);
-                                                }
-                                                return pathParts.join(" ");
-                                            })()}
-                                            stroke="#fb923c"
-                                            strokeWidth="8"
-                                            strokeLinecap="round"
-                                            fill="none"
-                                            filter="url(#glow)"
-                                            className="opacity-50"
-                                        />
-                                    </svg>
-
-                                    {/* Nodes */}
-                                    <div className="relative z-10">
+                            <div className="relative mx-auto max-w-md px-2 pb-0 pt-8 sm:max-w-lg sm:px-4 sm:pt-10">
+                                <div className="relative flex flex-col-reverse">
+                                        {/* Ladder continues down below rank 1 and disappears behind the fixed ground */}
+                                        <div aria-hidden className="relative z-0 flex h-36 justify-center sm:h-44">
+                                            <div className="relative h-full w-[5.5rem] sm:w-[6rem]">
+                                                <span className="absolute inset-y-0 left-0 w-3 -translate-x-1/2 rounded-md bg-gradient-to-b from-amber-500 to-amber-600 shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)]" />
+                                                <span className="absolute inset-y-0 right-0 w-3 translate-x-1/2 rounded-md bg-gradient-to-b from-amber-500 to-amber-600 shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)]" />
+                                                <span className="absolute inset-x-0 top-[16%] h-[0.6rem] -translate-y-1/2 rounded-full bg-amber-400" />
+                                                <span className="absolute inset-x-0 top-[40%] h-[0.6rem] -translate-y-1/2 rounded-full bg-amber-400" />
+                                                <span className="absolute inset-x-0 top-[64%] h-[0.6rem] -translate-y-1/2 rounded-full bg-amber-400" />
+                                            </div>
+                                        </div>
                                         {roadmapItems.map((item, index) => {
-                                            const amplitude = isMobile ? 25 : 18;
-                                            const xPos = 50 + Math.sin(index * 0.8) * amplitude;
-                                            const yPos = index * nodeVerticalGap + 60;
-
                                             if (item.type === 'milestone') {
                                                 const firstLesson = roadmapItems[index + 1];
                                                 const milestoneUnlocked = firstLesson ? firstLesson.isUnlocked : true;
                                                 const isCurrentRank = currentTrainingLevel === item.chapter.number;
+                                                const milestoneRailClass = !milestoneUnlocked
+                                                    ? 'bg-slate-300'
+                                                    : item.isOrg
+                                                        ? 'bg-gradient-to-b from-indigo-400 to-indigo-500'
+                                                        : 'bg-gradient-to-b from-amber-500 to-amber-600';
                                                 return (
                                                     <div
                                                         key={`milestone-${item.chapter.number}`}
-                                                        className="absolute z-10 transition-all duration-700"
-                                                        style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
+                                                        className={`relative z-10 ${index === 0 ? 'mb-2 mt-4' : 'mb-7 mt-3'}`}
                                                     >
+                                                        {/* The ladder runs continuously behind the badge (same rails as the path) */}
+                                                        <div aria-hidden className="pointer-events-none absolute -top-4 -bottom-8 inset-x-0 z-0 flex justify-center">
+                                                            <div className="relative h-full w-[5.5rem] sm:w-[6rem]">
+                                                                <span className={`absolute inset-y-0 left-0 w-3 -translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${milestoneRailClass}`} />
+                                                                <span className={`absolute inset-y-0 right-0 w-3 translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${milestoneRailClass}`} />
+                                                            </div>
+                                                        </div>
                                                         <RankMilestone
                                                             badge={item.badge}
                                                             language={language}
                                                             isUnlocked={milestoneUnlocked}
                                                             isCurrent={isCurrentRank}
                                                             prefersReducedMotion={prefersReducedMotion}
+                                                            isOrg={item.isOrg}
+                                                            orgLabel={getChapterOrgLabel(item.chapter)}
                                                         />
                                                     </div>
                                                 );
                                             }
 
                                             const isNext = !item.isCompleted && item.isUnlocked;
+                                            const reached = item.isCompleted || item.isUnlocked;
+                                            const railClass = !reached
+                                                ? 'bg-slate-300'
+                                                : item.isOrg
+                                                    ? 'bg-gradient-to-b from-indigo-400 to-indigo-500'
+                                                    : 'bg-gradient-to-b from-amber-500 to-amber-600';
+                                            const rungClass = !reached
+                                                ? 'bg-slate-300'
+                                                : item.isOrg
+                                                    ? 'bg-indigo-300'
+                                                    : 'bg-amber-400';
                                             const scoreDaysLeft =
                                                 CORE_LESSON_MONTHLY_BONUS_ENABLED && item.isCompleted
                                                     ? getCoreLessonScoreCooldownDaysLeft(
@@ -3730,49 +3822,62 @@ export default function Training({
                                                   : language === 'en'
                                                     ? 'Locked'
                                                     : 'লক করা';
+                                            const orbState = scoreClaimReady
+                                                ? 'training-path-orb--ready bg-amber-400 text-slate-900'
+                                                : item.isCompleted
+                                                  ? 'training-path-orb--done bg-emerald-400 text-slate-900'
+                                                  : item.isUnlocked
+                                                    ? (item.isOrg ? 'bg-indigo-400 text-slate-900' : `${item.badge.color} text-slate-900`)
+                                                    : 'training-path-orb--locked bg-slate-200 text-slate-500';
                                             return (
                                                 <div
                                                     key={`lesson-${item.id}`}
-                                                    id={`roadmap-node-${item.id}`}
-                                                    role="button"
-                                                    tabIndex={item.isUnlocked ? 0 : -1}
-                                                    title={roadmapStatusLabel}
-                                                    aria-label={`Lesson ${item.id}. ${roadmapStatusLabel}`}
-                                                    onClick={() => {
-                                                        if (item.isUnlocked) {
-                                                            handleChapterClick(journeyChapters.find(c => c.number === item.chapterNumber), item.lessonNumber);
-                                                        } else {
-                                                            const chapterInfo = journeyChapters.find(c => c.number === item.chapterNumber);
-                                                            setLockedLessonModal({
-                                                                lessonId: item.id,
-                                                                lessonNumber: item.lessonNumber,
-                                                                chapterNumber: item.chapterNumber,
-                                                                chapterTitle: chapterInfo?.title || '',
-                                                                chapterLabel: language === 'en' ? `Chapter ${item.chapterNumber}` : `অধ্যায় ${toBengaliNumber(item.chapterNumber, language)}`
-                                                            });
-                                                        }
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (!item.isUnlocked) return;
-                                                        if (e.key === 'Enter' || e.key === ' ') {
-                                                            e.preventDefault();
-                                                            handleChapterClick(
-                                                                journeyChapters.find((c) => c.number === item.chapterNumber),
-                                                                item.lessonNumber
-                                                            );
-                                                        }
-                                                    }}
-                                                    className={`group absolute z-20 flex h-16 w-16 cursor-pointer flex-col items-center justify-center rounded-full border-2 transition-all duration-300 active:scale-95 sm:h-20 sm:w-20 ${
-                                                        scoreClaimReady
-                                                            ? 'border-amber-500/80 bg-amber-400 text-slate-900 shadow-md hover:shadow-lg'
-                                                            : item.isCompleted
-                                                              ? 'border-emerald-700/25 bg-emerald-400 text-slate-900 shadow-md hover:shadow-lg'
-                                                              : item.isUnlocked
-                                                                ? `border-slate-900/10 ${item.badge.color} text-slate-900 shadow-md hover:shadow-lg`
-                                                                : 'cursor-not-allowed border-slate-300 bg-slate-200 text-slate-500 opacity-80 shadow-sm grayscale'
-                                                    } ${isNext ? 'animate-float-y border-orange-500 shadow-lg shadow-orange-500/30 ring-4 ring-orange-400/40' : ''}`}
-                                                    style={{ left: `${xPos}%`, top: yPos, transform: 'translate(-50%, -50%)' }}
+                                                    className="relative z-10 flex h-[5.75rem] items-center justify-center sm:h-[6.25rem]"
                                                 >
+                                                    {/* Ladder rails + rungs for this step */}
+                                                    <div aria-hidden className="pointer-events-none absolute inset-0 flex justify-center">
+                                                        <div className="relative h-full w-[5.5rem] sm:w-[6rem]">
+                                                            <span className={`absolute inset-y-0 left-0 w-3 -translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${railClass}`} />
+                                                            <span className={`absolute inset-y-0 right-0 w-3 translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${railClass}`} />
+                                                            {/* rung between steps */}
+                                                            <span className={`absolute inset-x-0 top-0 h-2 -translate-y-1/2 rounded-full ${rungClass}`} />
+                                                            {/* rung the step stands on */}
+                                                            <span className={`absolute inset-x-0 top-1/2 h-[0.6rem] -translate-y-1/2 rounded-full ${rungClass}`} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative z-10">
+                                                        <div
+                                                            id={`roadmap-node-${item.id}`}
+                                                            role="button"
+                                                            tabIndex={item.isUnlocked ? 0 : -1}
+                                                            title={roadmapStatusLabel}
+                                                            aria-label={`Lesson ${item.id}. ${roadmapStatusLabel}`}
+                                                            onClick={() => {
+                                                                if (item.isUnlocked) {
+                                                                    handleChapterClick(journeyChapters.find(c => c.number === item.chapterNumber), item.lessonNumber);
+                                                                } else {
+                                                                    const chapterInfo = journeyChapters.find(c => c.number === item.chapterNumber);
+                                                                    setLockedLessonModal({
+                                                                        lessonId: item.id,
+                                                                        lessonNumber: item.lessonNumber,
+                                                                        chapterNumber: item.chapterNumber,
+                                                                        chapterTitle: chapterInfo?.title || '',
+                                                                        chapterLabel: language === 'en' ? `Chapter ${item.chapterNumber}` : `অধ্যায় ${toBengaliNumber(item.chapterNumber, language)}`
+                                                                    });
+                                                                }
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (!item.isUnlocked) return;
+                                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                                    e.preventDefault();
+                                                                    handleChapterClick(
+                                                                        journeyChapters.find((c) => c.number === item.chapterNumber),
+                                                                        item.lessonNumber
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className={`training-path-orb group ${item.isOrg ? 'training-path-orb--org' : 'training-path-orb--round'} ${orbState} ${isNext ? (item.isOrg ? 'training-path-orb--next-org' : 'training-path-orb--next') : ''}`}
+                                                        >
                                                     {scoreClaimReady ? (
                                                         <span className="relative flex h-7 w-full items-center justify-center sm:h-8">
                                                             <span
@@ -3789,7 +3894,6 @@ export default function Training({
                                                     ) : (
                                                         <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
                                                     )}
-                                                    {/* Desktop-only hover chip — mobile has no hover; status is on the lesson screen + amber check. */}
                                                     <div className={`pointer-events-none absolute top-full z-50 mt-3 hidden w-max max-w-[11rem] rounded-full bg-slate-900/90 px-3 py-1.5 text-center text-[10px] font-bold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {item.isCompleted ? (
                                                             !CORE_LESSON_MONTHLY_BONUS_ENABLED
@@ -3809,7 +3913,7 @@ export default function Training({
                                                     </div>
                                                     {item.isCompleted && !scoreClaimReady && (
                                                         <div
-                                                            className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border border-slate-900/20 bg-white text-emerald-600 shadow-sm sm:h-6 sm:w-6"
+                                                            className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-emerald-500 text-white shadow-sm sm:h-6 sm:w-6"
                                                             aria-hidden
                                                         >
                                                             <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3823,130 +3927,27 @@ export default function Training({
                                                             language={language}
                                                             score={userRank?.score || profile?.points || 0}
                                                             prefersReducedMotion={prefersReducedMotion}
-                                                            anchorRight={xPos > 50}
+                                                            anchorRight={item.lessonNumber % 2 === 0}
                                                             avatarUrl={profile?.avatar_url}
                                                             userId={user?.id}
                                                         />
                                                     )}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
-                                    </div>
                                 </div>
                             </div>
                         );
                     })()}
-
-                    {/* Aro Janun — entry card */}
-                    <div className="group mt-12">
-                        <button
-                            type="button"
-                            onClick={() => setCurrentView('aro-janun')}
-                            className="w-full rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99] sm:p-5 lg:p-6"
-                        >
-                            <div className="flex items-center gap-4 sm:gap-5">
-                                <div className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-2xl border border-slate-200/60 bg-teal-100 text-4xl text-teal-800 shadow-sm sm:h-20 sm:w-20 sm:text-5xl">
-                                    🧰
-                                </div>
-                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                                    <h2 className={`text-lg font-black leading-tight tracking-tight text-slate-900 sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Know More' : 'আরো জানুন'}
-                                    </h2>
-                                    <span className="inline-flex w-fit shrink-0 items-center gap-2 self-start rounded-full border border-slate-200/80 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-wider shadow-sm nb-mono sm:self-center">
-                                        <span>{language === 'en' ? 'Browse Chapters' : 'অধ্যায় দেখুন'}</span>
-                                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-                        </button>
                     </div>
 
-                    {/* Video Library CTA */}
-                    <div className="group mt-8">
-                        <button
-                            type="button"
-                            onClick={() => setCurrentView('video-guide')}
-                            className="w-full rounded-2xl bg-orange-500 p-4 text-left text-white shadow-md shadow-orange-500/30 transition-all hover:shadow-lg hover:shadow-orange-500/35 active:scale-[0.99] sm:p-5 lg:p-6"
-                        >
-                            <div className="flex items-center gap-4 sm:gap-5">
-                                <div className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-2xl border border-white/30 bg-white/25 text-4xl shadow-sm sm:h-20 sm:w-20 sm:text-5xl">
-                                    📺
-                                </div>
-                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                                    <h2 className={`text-lg font-black leading-tight tracking-tight sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Video Learning Library' : 'ভিডিও লার্নিং লাইব্রেরি'}
-                                    </h2>
-                                    <span className="inline-flex w-fit shrink-0 items-center gap-2 self-start rounded-full border border-slate-200/80 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-wider shadow-sm nb-mono sm:self-center">
-                                        <span>{language === 'en' ? 'Watch Now' : 'এখনই দেখুন'}</span>
-                                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-                        </button>
-                    </div>
+                    {/* PPE gear floating freely across the whole training screen */}
+                    <PpeFloatingField />
 
-                    {/* FAQ CTA Card */}
-                    <div className="group mt-8">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const faq = trainingChapters.find(c => c.number === 10);
-                                if (faq) handleChapterClick(faq);
-                            }}
-                            className="w-full rounded-2xl bg-indigo-600 p-4 text-left text-white shadow-md shadow-indigo-600/25 transition-all hover:shadow-lg active:scale-[0.99] sm:p-5 lg:p-6"
-                        >
-                            <div className="flex items-center gap-4 sm:gap-5">
-                                <div className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-2xl border border-white/30 bg-white/25 text-4xl shadow-sm sm:h-20 sm:w-20 sm:text-5xl">
-                                    💡
-                                </div>
-                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                                    <h2 className={`text-lg font-black leading-tight tracking-tight sm:text-xl lg:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? FAQ_PAGE_TITLE.en : FAQ_PAGE_TITLE.bn}
-                                    </h2>
-                                    <span className="inline-flex w-fit shrink-0 items-center gap-2 self-start rounded-full border border-slate-200/80 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-wider shadow-sm nb-mono sm:self-center">
-                                        <span>{language === 'en' ? 'Search Answers' : 'উত্তর খুঁজুন'}</span>
-                                        <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </div>
-                        </button>
-                    </div>
-
-
-                        {/* Professional Branding Footer */}
-                        <div className="relative z-10 mb-24 mt-20 animate-fade-in-up text-center md:mb-12">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="nb-tag inline-flex items-center gap-2 bg-white px-4 py-1.5">
-                                    <span className="h-2 w-2 animate-pulse bg-orange-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] nb-mono">Official Platform</span>
-                                </div>
-                                <a
-                                    href={WEBSITE_URL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-2xl font-black tracking-tight text-slate-900 transition-colors hover:text-orange-600"
-                                >
-                                    {WEBSITE_URL.replace('https://', '')}
-                                </a>
-                                <div className="flex flex-col items-center gap-1">
-                                    <p className="text-xs font-medium text-slate-600">For support and inquiries:</p>
-                                    <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 transition-colors hover:text-orange-700">
-                                        {SUPPORT_EMAIL}
-                                    </a>
-                                </div>
-                                <div className="mt-4 h-0.5 w-40 bg-slate-900" />
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 nb-mono">
-                                    {APP_NAME} v{CURRENT_APP_VERSION}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Fixed ground — the ladder scrolls up behind this */}
+                    <LadderGroundBase />
                     </>
                     ) : (
                         <>
@@ -4188,6 +4189,11 @@ export default function Training({
                                                                         ? (selectedLesson.badge?.en || 'Trainee')
                                                                         : (selectedLesson.badge?.bn || 'ট্রেইনি')}
                                                                 </p>
+                                                                {getBadgeTopic(selectedLesson.badge, language) ? (
+                                                                    <p className={`mt-1.5 text-[11px] font-bold leading-snug text-white/80 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                                        {getBadgeTopic(selectedLesson.badge, language)}
+                                                                    </p>
+                                                                ) : null}
                                                             </div>
                                                         </div>
 
@@ -5588,8 +5594,10 @@ export default function Training({
                     {/* Scrollable chapter list */}
                     <div className="flex-1 overflow-y-auto scrollbar-hide pb-24">
                         <div className="mx-auto max-w-3xl space-y-1 px-4 py-4 md:px-6 md:py-6">
-                        {trainingChapters.filter(ch => ch.number !== 10).map((chapter, idx) => {
+                        {trainingChapters.filter((ch) => !isFaqChapter(ch)).map((chapter, idx) => {
                             const isExpanded = expandedChapterIndex === idx;
+                            const isOrg = isOrgChapter(chapter);
+                            const orgLabel = getChapterOrgLabel(chapter);
                             const totalLessonsInChapter = chapter.count;
                             const completedInChapter = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
                             const isUnlocked = isLessonUnlocked(chapter.number, 1);
@@ -5609,17 +5617,23 @@ export default function Training({
                             };
 
                             return (
-                                <div key={chapter.number} className="animate-entrance-pop overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300">
+                                <div key={chapter.number} className={`animate-entrance-pop overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 ${isOrg ? 'border-indigo-200/90' : 'border-slate-200/80'}`}>
                                     {/* Chapter Row */}
                                     <button 
                                         type="button"
                                         onClick={() => setExpandedChapterIndex(isExpanded ? null : idx)}
                                         className={`flex w-full items-start gap-3 p-4 text-left transition-colors sm:gap-4 sm:p-5 ${
-                                            isExpanded ? 'bg-orange-50/80' : 'bg-white hover:bg-orange-50/40'
+                                            isExpanded
+                                                ? (isOrg ? 'bg-indigo-50/80' : 'bg-orange-50/80')
+                                                : (isOrg ? 'bg-white hover:bg-indigo-50/40' : 'bg-white hover:bg-orange-50/40')
                                         }`}
                                     >
-                                        <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200/80 text-[11px] font-black ${
-                                            isUnlocked ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-400'
+                                        <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border text-[11px] font-black ${
+                                            isOrg ? 'rounded-lg' : 'rounded-full'
+                                        } ${
+                                            isUnlocked
+                                                ? (isOrg ? 'border-indigo-300 bg-indigo-500 text-white' : 'border-slate-200/80 bg-orange-500 text-white')
+                                                : 'border-slate-200/80 bg-slate-100 text-slate-400'
                                         }`}>
                                             {getOrdinal(chapter.number)}
                                         </div>
@@ -5628,6 +5642,11 @@ export default function Training({
                                                 {chapter.title}
                                             </h3>
                                             <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                {isOrg ? (
+                                                    <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-indigo-800">
+                                                        {orgLabel || (language === 'en' ? 'Special' : 'বিশেষ')}
+                                                    </span>
+                                                ) : null}
                                                 <span className="text-[11px] font-semibold text-slate-500">
                                                     {totalLessonsInChapter} {language === 'en' ? 'lessons' : 'টি পাঠ'}
                                                 </span>

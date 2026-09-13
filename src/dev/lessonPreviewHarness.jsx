@@ -69,7 +69,7 @@ function renderInteractiveText(text, onOpenModal, language = 'bn') {
 }
 
 export default function LessonPreviewHarness() {
-  const [chapterNum, setChapterNum] = useState(2);
+  const [chapterNum, setChapterNum] = useState(10);
   const [lessonNum, setLessonNum] = useState(1);
   const [viewportWidth, setViewportWidth] = useState('390px');
   const [language, setLanguage] = useState('bn');
@@ -180,6 +180,18 @@ export default function LessonPreviewHarness() {
                 }}
                 className="bg-slate-800 text-amber-300 font-bold text-sm px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
+                <optgroup label="অধ্যায় ১০ — কোম্পানির সেফটি ম্যানুয়াল (WBSEDCL 2025)">
+                  <option value="10.1">১০.১ সেফটি প্লেজ ও নীতি</option>
+                  <option value="10.2">১০.২ মাঠের Do's & Don'ts</option>
+                  <option value="10.3">১০.৩ CEA 2023 ক্লিয়ারেন্স</option>
+                  <option value="10.4">১০.৪ PTW, LOTO ও শাটডাউন</option>
+                  <option value="10.5">১০.৫ প্রুভ ডেড ও টেম্পোরারি আর্থিং</option>
+                  <option value="10.6">১০.৬ HT/LT সেফ জোন ও ব্যাকফিড</option>
+                  <option value="10.7">১০.৭ সুইচইয়ার্ড ও সুইচিং</option>
+                  <option value="10.8">১০.৮ পাবলিক সেফটি: ব্যারিকেড</option>
+                  <option value="10.9">১০.৯ কনস্ট্রাকশন ও কন্ট্রাক্টর সাইট</option>
+                  <option value="10.10">১০.১০ স্ট্যান্ডার্ড চেকলিস্ট</option>
+                </optgroup>
                 <optgroup label="অধ্যায় ২ — হাতিয়ারের ওস্তাদ (Toolbox & Practical Tools)">
                   <option value="2.1">২.১ লাইনম্যানের টুলবক্স ও ভোল্টেজ টেস্টার</option>
                   <option value="2.2">২.২ ডিজিটাল ক্ল্যাম্প মিটার ও মাল্টিমিটার</option>

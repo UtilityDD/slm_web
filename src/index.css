@@ -4380,11 +4380,58 @@ body,
     transform: translateY(0.08em);
   }
 
+  .home-level-badge--stacked {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.85rem;
+    min-height: 0;
+    padding: 0.28rem 0.55rem 0.34rem;
+    line-height: 1.1;
+  }
+
+  .home-level-badge__topic {
+    display: block;
+    margin-top: 0.12rem;
+    max-width: 7.75rem;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: 0;
+    text-align: center;
+    text-transform: none;
+    opacity: 0.78;
+  }
+
+  .home-level-badge--bn.home-level-badge--stacked {
+    min-height: 0;
+    padding: 0.28rem 0.55rem 0.34rem;
+  }
+
+  .home-level-badge--bn.home-level-badge--stacked .home-level-badge__label {
+    padding-top: 0.06em;
+    transform: none;
+  }
+
+  .home-level-badge--bn .home-level-badge__topic {
+    font-size: 0.6rem;
+  }
+
   @media (min-width: 640px) {
     .home-level-badge--bn {
       font-size: 0.75rem;
       min-height: 1.5rem;
       padding: 0 0.65rem;
+    }
+
+    .home-level-badge--bn.home-level-badge--stacked {
+      min-height: 0;
+      padding: 0.3rem 0.65rem 0.36rem;
+    }
+
+    .home-level-badge__topic {
+      font-size: 0.625rem;
+      max-width: 8.5rem;
     }
   }
 
@@ -6076,6 +6123,240 @@ body,
   overflow: visible;
 }
 
+.training-path-orb {
+  position: relative;
+  display: flex;
+  height: 4.35rem;
+  width: 4.35rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  font-weight: 900;
+  box-shadow: none;
+  transition: transform 80ms ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.training-path-orb--round {
+  border-radius: 9999px;
+}
+
+.training-path-orb--org {
+  border-radius: 1.15rem;
+}
+
+.training-path-orb:not(.training-path-orb--locked):active {
+  transform: scale(0.94);
+}
+
+@keyframes orb-highlight {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+  }
+}
+
+@keyframes orb-highlight-org {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+}
+
+.training-path-orb--next {
+  animation: orb-highlight 1.8s ease-out infinite;
+}
+
+.training-path-orb--next-org {
+  animation: orb-highlight-org 1.8s ease-out infinite;
+}
+
+.training-path-orb--locked {
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: grayscale(0.25);
+}
+
+.training-path-orb--ready {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-path-orb--next {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.4);
+  }
+  .training-path-orb--next-org {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4);
+  }
+}
+
+@keyframes path-orb-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.training-path-orb-bob {
+  animation: path-orb-bob 2.4s ease-in-out infinite;
+}
+
+/* Several distinct wandering paths so no two PPE icons move alike. Multi-directional,
+   bounded to ~±30px so they roam freely but always loop back to their anchor. */
+@keyframes ppe-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate3d(28px, -28px, 0) rotate(10deg);
+  }
+  50% {
+    transform: translate3d(-18px, -8px, 0) rotate(-8deg);
+  }
+  75% {
+    transform: translate3d(14px, 26px, 0) rotate(12deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+@keyframes ppe-drift-b {
+  0% {
+    transform: translate3d(-24px, 10px, 0) rotate(-6deg);
+  }
+  25% {
+    transform: translate3d(10px, -26px, 0) rotate(8deg);
+  }
+  50% {
+    transform: translate3d(28px, 6px, 0) rotate(-6deg);
+  }
+  75% {
+    transform: translate3d(-6px, 24px, 0) rotate(8deg);
+  }
+  100% {
+    transform: translate3d(-24px, 10px, 0) rotate(-6deg);
+  }
+}
+@keyframes ppe-drift-c {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-8deg);
+  }
+  33% {
+    transform: translate3d(-28px, -18px, 0) rotate(9deg);
+  }
+  66% {
+    transform: translate3d(24px, -26px, 0) rotate(-6deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-8deg);
+  }
+}
+@keyframes ppe-drift-d {
+  0% {
+    transform: translate3d(18px, -16px, 0) rotate(-10deg);
+  }
+  50% {
+    transform: translate3d(-28px, 22px, 0) rotate(10deg);
+  }
+  100% {
+    transform: translate3d(18px, -16px, 0) rotate(-10deg);
+  }
+}
+@keyframes ppe-drift-e {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate3d(-16px, -20px, 0) rotate(-8deg);
+  }
+  40% {
+    transform: translate3d(22px, -28px, 0) rotate(8deg);
+  }
+  60% {
+    transform: translate3d(-22px, -6px, 0) rotate(-5deg);
+  }
+  80% {
+    transform: translate3d(20px, 22px, 0) rotate(9deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+@keyframes ppe-drift-f {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(6deg);
+  }
+  30% {
+    transform: translate3d(26px, 20px, 0) rotate(-10deg);
+  }
+  55% {
+    transform: translate3d(-20px, -26px, 0) rotate(8deg);
+  }
+  80% {
+    transform: translate3d(-28px, 10px, 0) rotate(-6deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(6deg);
+  }
+}
+
+.ppe-float {
+  animation-duration: var(--ppe-dur, 12s);
+  animation-delay: var(--ppe-delay, 0s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+.ppe-float--a {
+  animation-name: ppe-drift-a;
+}
+.ppe-float--b {
+  animation-name: ppe-drift-b;
+}
+.ppe-float--c {
+  animation-name: ppe-drift-c;
+}
+.ppe-float--d {
+  animation-name: ppe-drift-d;
+}
+.ppe-float--e {
+  animation-name: ppe-drift-e;
+}
+.ppe-float--f {
+  animation-name: ppe-drift-f;
+}
+.ppe-float--rev {
+  animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppe-float {
+    animation: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .training-path-orb {
+    height: 4.75rem;
+    width: 4.75rem;
+  }
+}
+
 @keyframes roadmap-marker-in {
   0% {
     opacity: 0;
@@ -6117,7 +6398,8 @@ body,
   .animate-rank-badge-in,
   .animate-rank-medal-glow,
   .animate-roadmap-marker-in,
-  .animate-roadmap-marker-float {
+  .animate-roadmap-marker-float,
+  .training-path-orb-bob {
     animation: none;
   }
 }

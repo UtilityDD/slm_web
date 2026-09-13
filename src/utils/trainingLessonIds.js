@@ -8,6 +8,53 @@ export function isSupplementaryProgressLessonId(id) {
     return typeof id === 'string' && id.trim().toLowerCase().startsWith('supp_');
 }
 
+/** Last numbered core Training chapter. FAQ uses serial Q, not a number.
+ *  NOTE: kept at 9 while chapter 10 (WBSEDCL Safety Manual) is still incomplete.
+ *  Bump back to 10 when chapter 10 is re-added to the manifest with its quiz files. */
+export const CORE_PROGRAM_LAST_CHAPTER = 9;
+
+export const DEFAULT_CORE_CHAPTER_COUNTS = {
+    1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 11, 7: 10, 8: 10, 9: 10,
+};
+
+/** Non-numeric FAQ serial in training_manifest.json */
+export const FAQ_CHAPTER_SERIAL = 'Q';
+export const FAQ_CHAPTER_ID = 'faq';
+
+export function isFaqChapter(chapter) {
+    if (!chapter || typeof chapter !== 'object') return false;
+    if (chapter.isFAQ === true || chapter.kind === 'faq') return true;
+    if (chapter.id === FAQ_CHAPTER_ID) return true;
+    const n = chapter.number;
+    return n === FAQ_CHAPTER_SERIAL || n === 'FAQ' || n === 'faq' || n === '?';
+}
+
+export function findFaqChapter(chapters) {
+    if (!Array.isArray(chapters)) return null;
+    return chapters.find(isFaqChapter) || null;
+}
+
+/** Org / special series (WBSEDCL manual, future company packs). Never FAQ. */
+export function isOrgChapter(chapter) {
+    if (!chapter || typeof chapter !== 'object') return false;
+    if (isFaqChapter(chapter)) return false;
+    const kind = String(chapter.kind || '').toLowerCase().trim();
+    return kind === 'org' || kind === 'special';
+}
+
+export function getChapterTopic(chapter, language = 'bn') {
+    if (!chapter || typeof chapter !== 'object') return '';
+    if (language === 'en') {
+        return String(chapter.topic_en || chapter.badge || chapter.title || '').trim();
+    }
+    return String(chapter.topic_bn || chapter.badge || chapter.title || '').trim();
+}
+
+export function getChapterOrgLabel(chapter) {
+    if (!chapter || typeof chapter !== 'object') return '';
+    return String(chapter.org || '').trim();
+}
+
 /** Rolling cooldown between Life Skill point awards for the same module. */
 export const LIFE_SKILL_SCORE_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 

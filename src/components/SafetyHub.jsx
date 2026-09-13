@@ -8,7 +8,7 @@ import { invalidateLeaderboardCaches } from '../utils/leaderboardCacheKeys';
 import secureStorage from '../utils/secureStorage';
 import ChapterQuizModal from './ChapterQuizModal';
 import { getBadgeByLevel } from '../utils/badgeUtils';
-import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId } from '../utils/trainingLessonIds';
+import { filterCoreCompletedLessonIds, isSupplementaryProgressLessonId, isFaqChapter, isOrgChapter, getChapterOrgLabel } from '../utils/trainingLessonIds';
 import { logReadingHabitCompletion } from '../utils/readingHabitLog';
 import { blockGuestWrite, isGuestUser, guestPreviewText } from '../utils/guestPreview';
 import LinemanPPEView from './safety/ppe/LinemanPPEView';
@@ -233,7 +233,9 @@ const IncidentReportForm = ({ user, language, t }) => {
 };
 
 const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, onClick }) => {
-    const isFAQ = chapter.number === 10;
+    const isFAQ = isFaqChapter(chapter);
+    const isOrg = isOrgChapter(chapter);
+    const orgLabel = getChapterOrgLabel(chapter);
     const completedCount = completedLessons.filter(id => id && id.toString().startsWith(`${chapter.number}.`)).length;
     const progress = chapter.count > 0 ? Math.min(100, Math.round((completedCount / chapter.count) * 100)) : 0;
 
@@ -242,33 +244,43 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
             onClick={() => onClick(chapter)}
             className={`p-6 rounded-[2.5rem] border transition-all duration-500 cursor-pointer group relative overflow-hidden active:scale-[0.98] ${isFAQ
                 ? 'bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 dark:from-violet-900/20 dark:to-fuchsia-900/30 border-violet-200 dark:border-violet-700 hover:border-violet-400 dark:hover:border-violet-500 shadow-sm hover:shadow-2xl'
+                : isOrg
+                    ? 'bg-gradient-to-br from-indigo-600/10 to-teal-600/10 dark:from-indigo-900/20 dark:to-teal-900/30 border-indigo-200 dark:border-indigo-700 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm hover:shadow-2xl'
                 : 'bg-token-bg-surface border-token-border hover:border-orange-300 dark:hover:border-orange-600 hover:shadow-2xl'
                 } animate-slide-up shadow-sm`}
         >
             {/* Background floating glass elements */}
-            <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none ${isFAQ ? 'bg-violet-400/20' : 'bg-orange-400/20'}`}></div>
+            <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none ${isFAQ ? 'bg-violet-400/20' : isOrg ? 'bg-indigo-400/20' : 'bg-orange-400/20'}`}></div>
 
             <div className="relative z-10">
                 <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center gap-4">
-                        <div className={`w-16 h-16 rounded-[1.25rem] flex items-center justify-center text-2xl font-black border-2 shadow-xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110 ${isFAQ
-                            ? 'bg-violet-600 text-white border-violet-400 dark:border-violet-800 shadow-violet-500/30'
-                            : 'bg-gradient-to-br from-orange-600 to-orange-500 text-white border-orange-400 dark:border-orange-900/50 shadow-orange-500/30'
+                        <div className={`w-16 h-16 flex items-center justify-center text-2xl font-black border-2 shadow-xl transition-all duration-500 group-hover:rotate-6 group-hover:scale-110 ${isFAQ
+                            ? 'rounded-[1.25rem] bg-violet-600 text-white border-violet-400 dark:border-violet-800 shadow-violet-500/30'
+                            : isOrg
+                                ? 'rounded-xl bg-gradient-to-br from-indigo-600 to-teal-500 text-white border-indigo-400 dark:border-indigo-800 shadow-indigo-500/30'
+                            : 'rounded-[1.25rem] bg-gradient-to-br from-orange-600 to-orange-500 text-white border-orange-400 dark:border-orange-900/50 shadow-orange-500/30'
                             }`}>
-                            {isFAQ ? '?' : chapter.number}
+                            {isFAQ ? 'Q' : chapter.number}
                         </div>
                         <div>
                             <h3 className={`font-black text-xl leading-tight transition-colors ${isFAQ
                                 ? 'text-violet-900 dark:text-violet-100 group-hover:text-violet-600 dark:group-hover:text-violet-400'
+                                : isOrg
+                                    ? 'text-indigo-950 dark:text-indigo-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
                                 : 'text-token-text-primary group-hover:text-orange-600 dark:group-hover:text-orange-400'
                                 }`}>
                                 {chapter.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-2">
-                                <span className={`w-2 h-2 rounded-full ${isFAQ ? 'bg-violet-400' : 'bg-orange-400'}`}></span>
+                                <span className={`w-2 h-2 rounded-full ${isFAQ ? 'bg-violet-400' : isOrg ? 'bg-indigo-400' : 'bg-orange-400'}`}></span>
                                 <p className="text-[10px] font-black text-token-text-muted uppercase tracking-[0.2em]">
                                     {isFAQ ? (
                                         language === 'en' ? 'Reference' : 'রেফারেন্স'
+                                    ) : isOrg ? (
+                                        language === 'en'
+                                            ? `${orgLabel || 'Special'} · ${chapter.count} Lessons`
+                                            : `${orgLabel || 'বিশেষ'} · ${chapter.count}টি পাঠ`
                                     ) : (
                                         language === 'en' ? `${chapter.count} Lessons` : `${chapter.count}টি পাঠ`
                                     )}
@@ -282,13 +294,13 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
                     <div className="mt-8">
                         <div className="flex justify-between items-end mb-3">
                             <span className="text-[10px] font-black text-token-text-muted uppercase tracking-widest">Mastery</span>
-                            <span className={`text-sm font-black ${progress === 100 ? 'text-emerald-500' : 'text-orange-600'}`}>
+                            <span className={`text-sm font-black ${progress === 100 ? 'text-emerald-500' : isOrg ? 'text-indigo-600' : 'text-orange-600'}`}>
                                 {progress}%
                             </span>
                         </div>
                         <div className="w-full h-3 bg-token-bg-page shadow-inner rounded-full overflow-hidden border border-token-border">
                             <div
-                                className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
+                                className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-emerald-500' : isOrg ? 'bg-gradient-to-r from-indigo-400 to-teal-500' : 'bg-gradient-to-r from-orange-400 to-orange-600'}`}
                                 style={{ width: `${progress}%` }}
                             >
                                 <div className="absolute inset-0 shimmer opacity-30"></div>
@@ -310,7 +322,7 @@ const TrainingChapterCard = React.memo(({ chapter, completedLessons, language, o
 
 const SafetyDashboard = ({ user, userProfile, language, setActiveTab, completedLessons, t, setCurrentView }) => {
     // Calculate overall training progress
-    const totalChapters = 9; // Excluding FAQ
+    const totalChapters = 10; // Excluding FAQ (serial Q)
     const completedLessonsCount = completedLessons.length;
     const progressPercentage = Math.round((completedLessonsCount / 91) * 100);
 
@@ -955,6 +967,28 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
     const handleChapterClick = async (chapter) => {
         setTrainingLoading(true);
         setUsingOfflineLesson(false);
+
+        if (isFaqChapter(chapter)) {
+            try {
+                const response = await fetch('/quizzes/chapter_Q_qa.json');
+                const data = response.ok ? await response.json() : null;
+                if (data) {
+                    setSelectedChapter({
+                        ...chapter,
+                        isFAQ: true,
+                        content: data,
+                    });
+                } else {
+                    setFetchError(true);
+                }
+            } catch (err) {
+                console.error('Error loading FAQ chapter:', err);
+                setFetchError(true);
+            } finally {
+                setTrainingLoading(false);
+            }
+            return;
+        }
 
         // Lazy load subchapters with version sync (same pattern as Training.jsx)
         try {

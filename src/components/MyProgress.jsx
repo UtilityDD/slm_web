@@ -3,14 +3,14 @@ import html2canvas from 'html2canvas';
 import { QRCodeCanvas } from 'qrcode.react';
 import CryptoJS from 'crypto-js';
 import { supabase } from '../supabaseClient';
-import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel, getBadgeTopic } from '../utils/badgeUtils';
 import { requestManager } from '../utils/requestManager';
 import { WEBSITE_URL } from '../config';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import UserProfilePrizeList from './UserProfilePrizeList';
 
 /** Approximate core lesson count from training chapter defaults (display only). */
-const APPROX_CORE_LESSON_TOTAL = 91;
+const APPROX_CORE_LESSON_TOTAL = 101;
 
 const formatDate = (value, language = 'bn') => {
     if (!value) return language === 'en' ? 'Not available' : 'পাওয়া যায়নি';
@@ -232,6 +232,7 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
     const progressPct = Math.min(100, Math.round((stats.completedLessons / APPROX_CORE_LESSON_TOTAL) * 100));
     const hasStarted = stats.completedLessons > 0;
     const badgeLabel = badge ? (bn ? badge.bn : badge.en) : (bn ? 'ট্রেইনি' : 'Trainee');
+    const badgeTopic = getBadgeTopic(badge, bn ? 'bn' : 'en');
 
     const labels = {
         title: bn ? 'আমার অগ্রগতি' : 'My Progress',
@@ -310,8 +311,11 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                 {profile.full_name || (bn ? 'শিক্ষার্থী' : 'Learner')}
                             </p>
                             <p className={`mt-0.5 text-xs font-semibold text-slate-600 ${bn ? 'font-bengali' : ''}`}>
-                                <span className={`mr-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-black leading-none ${badge.color}`}>
-                                    {badgeLabel}
+                                <span className={`mr-1.5 inline-flex flex-col items-center rounded-xl px-2 py-0.5 leading-none ${badge.color}`}>
+                                    <span className="text-[10px] font-black">{badgeLabel}</span>
+                                    {badgeTopic ? (
+                                        <span className="mt-0.5 text-[8px] font-bold opacity-80">{badgeTopic}</span>
+                                    ) : null}
                                 </span>
                                 Lv {trainingLevel}
                             </p>
@@ -426,9 +430,15 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                         <span className="text-4xl">🏅</span>
                                     </div>
                                     <p className={`rounded-full px-3 py-1 text-sm font-black uppercase tracking-wide ${badge.color}`}>{badgeLabel}</p>
-                                    <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
-                                        {bn ? 'পড়ার ধাপ' : 'Reading Stage'}
-                                    </p>
+                                    {badgeTopic ? (
+                                        <p className={`mt-1 text-[10px] font-bold ${bn ? 'font-bengali text-slate-500' : 'uppercase text-slate-400'}`}>
+                                            {badgeTopic}
+                                        </p>
+                                    ) : (
+                                        <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
+                                            {bn ? 'পড়ার ধাপ' : 'Reading Stage'}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col items-center">
@@ -709,7 +719,11 @@ export default function MyProgress({ language = 'bn', user, targetUserId, setCur
                                     <span className="text-5xl">🏅</span>
                                 </div>
                                 <p className={`rounded-full px-3 py-1 text-lg font-black uppercase tracking-wide ${badge.color}`}>{badgeLabel}</p>
-                                <p className="mt-1 text-xs font-bold uppercase text-slate-400">{bn ? 'পড়ার ধাপ' : 'Reading Stage'}</p>
+                                {badgeTopic ? (
+                                    <p className={`mt-1 text-xs font-bold ${bn ? 'font-bengali text-slate-500' : 'uppercase text-slate-400'}`}>{badgeTopic}</p>
+                                ) : (
+                                    <p className="mt-1 text-xs font-bold uppercase text-slate-400">{bn ? 'পড়ার ধাপ' : 'Reading Stage'}</p>
+                                )}
                             </div>
 
                             <div className="flex flex-col items-center">

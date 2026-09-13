@@ -13,6 +13,7 @@ export default function LessonCompleteHero({
 }) {
     const icon = badge?.icon || '🏆';
     const badgeName = language === 'bn' ? (badge?.bn || 'ট্রেইনি') : (badge?.en || 'Trainee');
+    const badgeTopic = language === 'bn' ? (badge?.topic_bn || '') : (badge?.topic_en || '');
     const confettiColors = useMemo(
         () => ['#fb923c', '#f59e0b', '#34d399', '#60a5fa', '#f472b6', '#a78bfa'],
         []
@@ -76,6 +77,11 @@ export default function LessonCompleteHero({
                 <span className={`mt-0.5 rounded-full bg-white/20 px-1.5 py-0.5 font-black tracking-wide text-white/95 ${fitViewport ? 'text-[8px] sm:text-[10px]' : 'text-[9px] sm:text-[10px]'}`}>
                     {badgeName}
                 </span>
+                {badgeTopic && !fitViewport ? (
+                    <span className="mt-0.5 max-w-[5.5rem] truncate px-1 text-center text-[8px] font-bold leading-tight text-white/80 sm:text-[9px]">
+                        {badgeTopic}
+                    </span>
+                ) : null}
             </div>
 
             <div
