@@ -138,7 +138,9 @@ function PublicPrideCard({
     const rankRing = rank === 1 || rank === 2 || rank === 3 ? ` lb-pride-avatar__ring--${rank}` : '';
     const scoreUnit = tab === 'monthly'
         ? (bn ? 'এই মাস' : 'this month')
-        : (bn ? 'পয়েন্ট' : 'pts');
+        : tab === 'annual'
+            ? (bn ? 'লাইনম্যান দিবস' : 'Lineman Day')
+            : (bn ? 'পয়েন্ট' : 'pts');
 
     return (
         <div
@@ -184,7 +186,7 @@ function PublicPrideCard({
                 <div className="lb-pride-score">
                     <span className="lb-pride-score__value">{displayScore}</span>
                     <span className={`lb-pride-score__unit ${bn ? 'font-bengali' : ''}`}>{scoreUnit}</span>
-                    {tab !== 'monthly' && (
+                    {tab !== 'monthly' && tab !== 'annual' && (
                         <span className="lb-pride-score__meta">
                             📖 {formatLeaderboardNumber(merged.reading_points || 0)}
                         </span>
@@ -346,7 +348,20 @@ export default function LeaderboardUserSheet({
 
     const displayScore = tab === 'monthly'
         ? formatMonthlyPlayerScore(merged, monthlyBoardTab)
-        : formatLeaderboardNumber(merged.points || merged.score || 0);
+        : tab === 'annual'
+            ? formatLeaderboardNumber(
+                merged.yearly_score
+                || merged.net_points
+                || merged.points
+                || merged.score
+                || 0
+            )
+            : formatLeaderboardNumber(
+                merged.points
+                || merged.score
+                || merged.lifetime_score
+                || 0
+            );
 
     const phone = canSeePrivate ? (merged.phone_number || merged.phone || '') : '';
     const lastActiveLabel = formatLastActive(merged.last_active || merged.last_login_at, language);
@@ -510,7 +525,16 @@ export default function LeaderboardUserSheet({
                             <KV label={labels.monthly} value={displayScore} valueClass="text-orange-600" />
                         ) : (
                             <>
-                                <KV label={labels.total} value={formatLeaderboardNumber(merged.points || merged.score || 0)} />
+                                <KV
+                                    label={labels.total}
+                                    value={formatLeaderboardNumber(
+                                        merged.points
+                                        || merged.score
+                                        || merged.lifetime_score
+                                        || merged.yearly_score
+                                        || 0
+                                    )}
+                                />
                                 <KV label={labels.readingPts} value={formatLeaderboardNumber(merged.reading_points || 0)} />
                             </>
                         )}
