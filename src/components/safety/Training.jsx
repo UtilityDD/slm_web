@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
-import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL, CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
+import { CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
 import HomeSkeleton from '../loaders/HomeSkeleton';
 import { calculateLevelFromProgress, getBadgeTopic, getRoadmapBadgeByLevel, withChapterTopic } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
@@ -590,18 +590,18 @@ function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight,
 
     return (
         <div
-            className="roadmap-climber pointer-events-none absolute left-0 top-1/2 z-40 -translate-y-1/2 -translate-x-[126%] sm:-translate-x-[138%]"
+            className={`roadmap-climber pointer-events-none absolute top-1/2 z-40 -translate-y-1/2 ${
+                anchorRight
+                    ? 'left-full ml-9 sm:ml-11'
+                    : 'right-full mr-9 sm:mr-11'
+            }`}
             role="status"
             aria-label={`${formattedScore} ${pointsLabel}`}
         >
             <div className={`animate-roadmap-marker-in flex flex-col items-center ${floatClass}`}>
-                {/* Hard hat perched on the climber */}
-                <span className="relative z-10 -mb-2 text-lg leading-none sm:-mb-2.5 sm:text-xl" aria-hidden>
-                    ⛑️
-                </span>
-                <div className="relative h-11 w-11 sm:h-[3.25rem] sm:w-[3.25rem]">
+                <div className="relative h-9 w-9 sm:h-10 sm:w-10">
                     <div className="absolute inset-0 rounded-full bg-amber-400/25 blur-md" aria-hidden />
-                    <div className="relative h-full w-full overflow-hidden rounded-full border-[3px] border-amber-500 bg-orange-50 shadow-md">
+                    <div className="relative h-full w-full overflow-hidden rounded-full border-[2.5px] border-amber-500 bg-orange-50 shadow-md">
                         {showProfilePhoto ? (
                             <AvatarPhoto
                                 url={resolvedAvatarUrl}
@@ -613,7 +613,7 @@ function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight,
                             />
                         ) : (
                             <span
-                                className="flex h-full w-full items-center justify-center bg-orange-50 text-xl leading-none sm:text-2xl"
+                                className="flex h-full w-full items-center justify-center bg-orange-50 text-lg leading-none sm:text-xl"
                                 aria-hidden
                             >
                                 {LINEMAN_EMOJI_FALLBACK}
@@ -632,60 +632,40 @@ function RoadmapNextMarker({ language, score, prefersReducedMotion, anchorRight,
 /** Inline ((media|label)) chip — compact in prose; thumbnail or icon only unless author set a label. */
 function TrainingInlineMediaChip({ isImage, resolvedMedia, labelText, authorLabel, tapHint, language, onClick }) {
     const ariaLabel = `${labelText} — ${tapHint}`;
-    const showLabel = Boolean(authorLabel);
-
-    if (isImage) {
-        return (
-            <button
-                type="button"
-                aria-label={ariaLabel}
-                title={ariaLabel}
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onClick();
-                }}
-                className={`group mx-0.5 inline-flex max-w-[9rem] cursor-pointer items-center gap-1 align-middle transition-transform duration-150 hover:-translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${language === 'bn' ? 'font-bengali' : ''}`}
-            >
-                <span className="relative inline-flex h-7 w-7 shrink-0 overflow-hidden rounded-lg border border-slate-200/80 bg-white shadow-sm ring-2 ring-orange-400 ring-offset-1">
-                    <img src={resolvedMedia} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/0 transition-colors group-hover:bg-slate-900/15" aria-hidden>
-                        <svg className="h-3 w-3 text-white opacity-0 drop-shadow transition-opacity group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </span>
-                </span>
-                {showLabel && (
-                    <span className="min-w-0 truncate border-b border-dashed border-orange-400 text-[0.82em] font-semibold leading-tight text-orange-700">
-                        {labelText}
-                    </span>
-                )}
-            </button>
-        );
-    }
+    
+    // Design: "Smart UI Action Capsule"
+    // Premium, distinct, and highly interactive.
+    const theme = isImage 
+        ? { accent: 'bg-orange-500', pill: 'bg-orange-50/80', text: 'text-orange-950', ring: 'ring-orange-200' }
+        : { accent: 'bg-indigo-600', pill: 'bg-indigo-50/80', text: 'text-indigo-950', ring: 'ring-indigo-200' };
 
     return (
         <button
             type="button"
             aria-label={ariaLabel}
-            title={ariaLabel}
             onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onClick();
             }}
-            className={`group mx-0.5 inline-flex cursor-pointer items-center gap-1 align-middle transition-transform duration-150 hover:-translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${showLabel ? 'max-w-[9rem]' : ''} ${language === 'bn' ? 'font-bengali' : ''}`}
+            className={`group relative mx-1 -my-1 inline-flex cursor-pointer items-center rounded-xl border border-white bg-white/40 p-0.5 pr-3 align-middle shadow-sm ring-1 ring-slate-200/60 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-md hover:ring-2 hover:${theme.ring} active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
         >
-            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-orange-100 text-orange-800 shadow-sm ring-2 ring-orange-300 ring-offset-1 group-hover:bg-orange-200">
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className={`mr-2 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-slate-50 shadow-inner ring-1 ring-black/5 transition-all duration-300 group-hover:scale-105 group-hover:rotate-2`}>
+                {isImage ? (
+                    <img src={resolvedMedia} alt="" className="h-full w-full object-cover opacity-90 group-hover:opacity-100" loading="lazy" />
+                ) : (
+                    <div className={`flex h-full w-full items-center justify-center ${theme.accent} text-white`}>
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
+                )}
+            </div>
+            <span className={`text-[0.82rem] font-black tracking-tight ${theme.text} transition-colors group-hover:text-black sm:text-[0.88rem]`}>
+                {labelText}
             </span>
-            {showLabel && (
-                <span className="min-w-0 truncate border-b border-dashed border-orange-400 text-[0.82em] font-semibold leading-tight text-orange-700">
-                    {labelText}
-                </span>
-            )}
+            {/* Interactive indicator dot */}
+            <div className={`absolute right-1 top-1 h-1.5 w-1.5 scale-0 rounded-full ${theme.accent} opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100`} />
         </button>
     );
 }
@@ -914,14 +894,14 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
             onClick={openNow}
             title={enlargeLabel}
             aria-label={caption ? `${caption} — ${enlargeLabel}` : enlargeLabel}
-            className={buttonClass}
+            className={`${buttonClass} group transition-transform active:scale-[0.99]`}
         >
             {caption && (
                 <p className={captionClass}>
                     {caption}
                 </p>
             )}
-            <div className="relative mx-auto flex w-full justify-center overflow-hidden rounded-sm">
+            <div className="relative mx-auto flex w-full justify-center overflow-hidden rounded-xl border border-slate-200/50 shadow-md ring-4 ring-slate-100/50 transition-all duration-300 group-hover:shadow-xl group-hover:ring-orange-100/50">
                 {!imgReady && (
                     <TrainingImageLoadPlaceholder
                         language={language}
@@ -935,12 +915,20 @@ function TrainingLessonFigure({ src, alt, caption, onClick, language, className 
                     loading="lazy"
                     onLoad={() => setImgReady(true)}
                     onError={() => setImgReady(true)}
-                    className={`mx-auto h-auto max-h-[min(70vh,36rem)] w-full max-w-full rounded-sm object-contain object-center transition-opacity duration-300 ${
+                    className={`mx-auto h-auto max-h-[min(70vh,36rem)] w-full max-w-full object-contain object-center transition-opacity duration-300 ${
                         imgReady ? 'relative opacity-100' : 'absolute inset-0 h-full w-full opacity-0'
                     }`}
                 />
+                {/* Smart UI Overlay Hint */}
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/0 opacity-0 transition-all duration-300 group-hover:bg-slate-900/10 group-hover:opacity-100">
+                    <div className="rounded-full bg-white/90 p-2 shadow-lg backdrop-blur-sm">
+                        <svg className="h-6 w-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
             </div>
-            <p className={hintClass}>
+            <p className={`${hintClass} transition-colors group-hover:text-orange-600`}>
                 {isInline ? inlineHint : enlargeLabel}
             </p>
         </button>
@@ -2440,17 +2428,15 @@ export default function Training({
                 setTrainingHomeReady(false);
                 setFetchError(false); // Clear previous error on retry
                 const data = await requestManager.fetch(
-                    'training_manifest',
+                    `training_manifest_${Date.now()}`, // Force fresh fetch once per mount to ensure Ch 10 visibility
                     async () => {
-                        const response = await fetch('/quizzes/training_manifest.json');
+                        const response = await fetch(`/quizzes/training_manifest.json?v=${Date.now()}`);
                         if (response.ok) {
                             return await response.json();
                         }
                         throw new Error('Manifest not found');
                     },
-                    // Cache-first + SWR: do not force a network hit on every mount.
-                    // Lesson bodies still sync from Supabase on chapter open.
-                    { ttl: 60, swr: true, forceRefresh: false }
+                    { ttl: 0, swr: false, forceRefresh: true }
                 );
 
                 if (data) {
@@ -3701,49 +3687,22 @@ export default function Training({
                         ref={roadmapScrollRef}
                         className="relative z-0 -mt-14 min-h-0 flex-1 overflow-y-auto overscroll-y-contain scrollbar-hide sm:-mt-16"
                     >
-                    {/* Summit sign-off — sits above the highest rank */}
-                    <div className="relative z-10 mb-10 mt-16 animate-fade-in-up text-center sm:mt-20">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="nb-tag inline-flex items-center gap-2 bg-white px-4 py-1.5">
-                                <span className="h-2 w-2 animate-pulse bg-orange-500" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] nb-mono">Official Platform</span>
-                            </div>
-                            <a
-                                href={WEBSITE_URL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-2xl font-black tracking-tight text-slate-900 transition-colors hover:text-orange-600"
-                            >
-                                {WEBSITE_URL.replace('https://', '')}
-                            </a>
-                            <div className="flex flex-col items-center gap-1">
-                                <p className="text-xs font-medium text-slate-600">For support and inquiries:</p>
-                                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-sm font-bold text-orange-600 transition-colors hover:text-orange-700">
-                                    {SUPPORT_EMAIL}
-                                </a>
-                            </div>
-                            <div className="mt-4 h-0.5 w-40 bg-slate-900" />
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 nb-mono">
-                                {APP_NAME} v{CURRENT_APP_VERSION}
-                            </p>
-                        </div>
-                    </div>
                     {/* Gamified Journey Map Logic */}
                     {(() => {
                         const { items: roadmapItems, journeyChapters } = roadmapData;
                         const currentTrainingLevel = calculateLevelFromProgress(completedLessons, trainingChapters);
 
                         return (
-                            <div className="relative mx-auto max-w-md px-2 pb-0 pt-8 sm:max-w-lg sm:px-4 sm:pt-10">
+                            <div className="relative mx-auto max-w-md px-2 pb-0 pt-6 sm:max-w-lg sm:px-4 sm:pt-8">
                                 <div className="relative flex flex-col-reverse">
                                         {/* Ladder continues down below rank 1 and disappears behind the fixed ground */}
                                         <div aria-hidden className="relative z-0 flex h-36 justify-center sm:h-44">
-                                            <div className="relative h-full w-[5.5rem] sm:w-[6rem]">
-                                                <span className="absolute inset-y-0 left-0 w-3 -translate-x-1/2 rounded-md bg-gradient-to-b from-amber-500 to-amber-600 shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)]" />
-                                                <span className="absolute inset-y-0 right-0 w-3 translate-x-1/2 rounded-md bg-gradient-to-b from-amber-500 to-amber-600 shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)]" />
-                                                <span className="absolute inset-x-0 top-[16%] h-[0.6rem] -translate-y-1/2 rounded-full bg-amber-400" />
-                                                <span className="absolute inset-x-0 top-[40%] h-[0.6rem] -translate-y-1/2 rounded-full bg-amber-400" />
-                                                <span className="absolute inset-x-0 top-[64%] h-[0.6rem] -translate-y-1/2 rounded-full bg-amber-400" />
+                                            <div className="relative h-full w-[4.75rem] sm:w-[5.25rem]">
+                                                <span className="training-ladder-rail training-ladder-rail--wood absolute inset-y-0 left-0 w-3 -translate-x-1/2" />
+                                                <span className="training-ladder-rail training-ladder-rail--wood absolute inset-y-0 right-0 w-3 translate-x-1/2" />
+                                                <span className="training-ladder-rung training-ladder-rung--wood absolute inset-x-0 top-[16%] h-2.5 -translate-y-1/2" />
+                                                <span className="training-ladder-rung training-ladder-rung--wood absolute inset-x-0 top-[40%] h-2.5 -translate-y-1/2" />
+                                                <span className="training-ladder-rung training-ladder-rung--wood absolute inset-x-0 top-[64%] h-2.5 -translate-y-1/2" />
                                             </div>
                                         </div>
                                         {roadmapItems.map((item, index) => {
@@ -3752,10 +3711,10 @@ export default function Training({
                                                 const milestoneUnlocked = firstLesson ? firstLesson.isUnlocked : true;
                                                 const isCurrentRank = currentTrainingLevel === item.chapter.number;
                                                 const milestoneRailClass = !milestoneUnlocked
-                                                    ? 'bg-slate-300'
+                                                    ? 'training-ladder-rail--locked'
                                                     : item.isOrg
-                                                        ? 'bg-gradient-to-b from-indigo-400 to-indigo-500'
-                                                        : 'bg-gradient-to-b from-amber-500 to-amber-600';
+                                                        ? 'training-ladder-rail--org'
+                                                        : 'training-ladder-rail--wood';
                                                 return (
                                                     <div
                                                         key={`milestone-${item.chapter.number}`}
@@ -3763,9 +3722,9 @@ export default function Training({
                                                     >
                                                         {/* The ladder runs continuously behind the badge (same rails as the path) */}
                                                         <div aria-hidden className="pointer-events-none absolute -top-4 -bottom-8 inset-x-0 z-0 flex justify-center">
-                                                            <div className="relative h-full w-[5.5rem] sm:w-[6rem]">
-                                                                <span className={`absolute inset-y-0 left-0 w-3 -translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${milestoneRailClass}`} />
-                                                                <span className={`absolute inset-y-0 right-0 w-3 translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${milestoneRailClass}`} />
+                                                            <div className="relative h-full w-[4.75rem] sm:w-[5.25rem]">
+                                                                <span className={`training-ladder-rail absolute inset-y-0 left-0 w-3 -translate-x-1/2 ${milestoneRailClass}`} />
+                                                                <span className={`training-ladder-rail absolute inset-y-0 right-0 w-3 translate-x-1/2 ${milestoneRailClass}`} />
                                                             </div>
                                                         </div>
                                                         <RankMilestone
@@ -3784,15 +3743,15 @@ export default function Training({
                                             const isNext = !item.isCompleted && item.isUnlocked;
                                             const reached = item.isCompleted || item.isUnlocked;
                                             const railClass = !reached
-                                                ? 'bg-slate-300'
+                                                ? 'training-ladder-rail--locked'
                                                 : item.isOrg
-                                                    ? 'bg-gradient-to-b from-indigo-400 to-indigo-500'
-                                                    : 'bg-gradient-to-b from-amber-500 to-amber-600';
+                                                    ? 'training-ladder-rail--org'
+                                                    : 'training-ladder-rail--wood';
                                             const rungClass = !reached
-                                                ? 'bg-slate-300'
+                                                ? 'training-ladder-rung--locked'
                                                 : item.isOrg
-                                                    ? 'bg-indigo-300'
-                                                    : 'bg-amber-400';
+                                                    ? 'training-ladder-rung--org'
+                                                    : 'training-ladder-rung--wood';
                                             const scoreDaysLeft =
                                                 CORE_LESSON_MONTHLY_BONUS_ENABLED && item.isCompleted
                                                     ? getCoreLessonScoreCooldownDaysLeft(
@@ -3832,17 +3791,17 @@ export default function Training({
                                             return (
                                                 <div
                                                     key={`lesson-${item.id}`}
-                                                    className="relative z-10 flex h-[5.75rem] items-center justify-center sm:h-[6.25rem]"
+                                                    className="relative z-10 flex h-[4.5rem] items-center justify-center sm:h-[5rem]"
                                                 >
                                                     {/* Ladder rails + rungs for this step */}
                                                     <div aria-hidden className="pointer-events-none absolute inset-0 flex justify-center">
-                                                        <div className="relative h-full w-[5.5rem] sm:w-[6rem]">
-                                                            <span className={`absolute inset-y-0 left-0 w-3 -translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${railClass}`} />
-                                                            <span className={`absolute inset-y-0 right-0 w-3 translate-x-1/2 rounded-md shadow-[inset_-2px_0_0_rgba(0,0,0,0.14),inset_2px_0_0_rgba(255,255,255,0.4)] ${railClass}`} />
+                                                        <div className="relative h-full w-[4.75rem] sm:w-[5.25rem]">
+                                                            <span className={`training-ladder-rail absolute inset-y-0 left-0 w-3 -translate-x-1/2 ${railClass}`} />
+                                                            <span className={`training-ladder-rail absolute inset-y-0 right-0 w-3 translate-x-1/2 ${railClass}`} />
                                                             {/* rung between steps */}
-                                                            <span className={`absolute inset-x-0 top-0 h-2 -translate-y-1/2 rounded-full ${rungClass}`} />
+                                                            <span className={`training-ladder-rung absolute inset-x-0 top-0 h-2 -translate-y-1/2 ${rungClass}`} />
                                                             {/* rung the step stands on */}
-                                                            <span className={`absolute inset-x-0 top-1/2 h-[0.6rem] -translate-y-1/2 rounded-full ${rungClass}`} />
+                                                            <span className={`training-ladder-rung absolute inset-x-0 top-1/2 h-2.5 -translate-y-1/2 ${rungClass}`} />
                                                         </div>
                                                     </div>
                                                     <div className="relative z-10">
@@ -3879,20 +3838,20 @@ export default function Training({
                                                             className={`training-path-orb group ${item.isOrg ? 'training-path-orb--org' : 'training-path-orb--round'} ${orbState} ${isNext ? (item.isOrg ? 'training-path-orb--next-org' : 'training-path-orb--next') : ''}`}
                                                         >
                                                     {scoreClaimReady ? (
-                                                        <span className="relative flex h-7 w-full items-center justify-center sm:h-8">
+                                                        <span className="relative flex h-5 w-full items-center justify-center sm:h-6">
                                                             <span
-                                                                className={`animate-lesson-score-ready-a absolute text-base font-black sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                className={`animate-lesson-score-ready-a absolute text-sm font-black sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}
                                                             >
                                                                 {toBengaliNumber(item.id, language)}
                                                             </span>
                                                             <span
-                                                                className={`animate-lesson-score-ready-b absolute text-base font-black tabular-nums sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                                className={`animate-lesson-score-ready-b absolute text-sm font-black tabular-nums sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}
                                                             >
                                                                 +{language === 'bn' ? toBengaliNumber(CORE_LESSON_MONTHLY_BONUS_POINTS, 'bn') : CORE_LESSON_MONTHLY_BONUS_POINTS}
                                                             </span>
                                                         </span>
                                                     ) : (
-                                                        <span className={`text-base sm:text-lg font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
+                                                        <span className={`text-sm sm:text-base font-black ${language === 'bn' ? 'font-bengali' : ''}`}>{toBengaliNumber(item.id, language)}</span>
                                                     )}
                                                     <div className={`pointer-events-none absolute top-full z-50 mt-3 hidden w-max max-w-[11rem] rounded-full bg-slate-900/90 px-3 py-1.5 text-center text-[10px] font-bold text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                         {item.isCompleted ? (
@@ -3913,10 +3872,10 @@ export default function Training({
                                                     </div>
                                                     {item.isCompleted && !scoreClaimReady && (
                                                         <div
-                                                            className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-emerald-500 text-white shadow-sm sm:h-6 sm:w-6"
+                                                            className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-emerald-500 text-white shadow-sm sm:h-5 sm:w-5"
                                                             aria-hidden
                                                         >
-                                                            <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                                             </svg>
                                                         </div>
@@ -5535,18 +5494,34 @@ export default function Training({
                                     />
                                 </div>
                             ) : (
-                                <div className="min-h-0 flex-1 overflow-y-auto bg-white p-5 pt-14 sm:p-8 sm:pt-16">
-                                    <div className="mb-3 flex items-center gap-2 text-orange-600">
-                                        <svg className="h-7 w-7 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span className={`text-xs font-bold uppercase tracking-wider text-slate-500 nb-mono ${language === 'bn' ? 'font-bengali tracking-normal' : ''}`}>
-                                            {language === 'en' ? 'Details' : 'বিস্তারিত'}
-                                        </span>
+                                <div className="min-h-0 flex-1 overflow-y-auto bg-white p-6 pt-16 sm:p-10 sm:pt-20">
+                                    <div className="mb-5 flex flex-col items-center text-center">
+                                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm ring-1 ring-indigo-100">
+                                            <svg className="h-8 w-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <h3 className={`text-xl font-black text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {language === 'en' ? 'Quick Guide' : 'জরুরি নির্দেশিকা'}
+                                        </h3>
+                                        <div className="mt-2 h-1 w-10 rounded-full bg-indigo-500/20" />
                                     </div>
-                                    <p className={`text-left text-base font-medium leading-relaxed text-slate-800 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''} whitespace-pre-line`}>
-                                        {activeImageModal.value}
-                                    </p>
+                                    <div className="relative">
+                                        {/* Decorative quotes */}
+                                        <span className="absolute -left-2 -top-4 select-none text-4xl font-serif text-indigo-100/60" aria-hidden>“</span>
+                                        <p className={`relative z-10 text-left text-[1.05rem] font-medium leading-[1.8] text-slate-700 sm:text-[1.15rem] sm:leading-[1.9] ${language === 'bn' ? 'font-bengali text-[1.15rem] leading-[2] sm:text-[1.25rem]' : ''} whitespace-pre-line`}>
+                                            {activeImageModal.value}
+                                        </p>
+                                    </div>
+                                    <div className="mt-8 border-t border-slate-100 pt-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveImageModal(null)}
+                                            className={`w-full rounded-2xl bg-slate-900 py-4 text-center font-black text-white shadow-lg transition-all active:scale-[0.98] hover:bg-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                        >
+                                            {language === 'en' ? 'Got it' : 'বুঝেছি'}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                             </div>

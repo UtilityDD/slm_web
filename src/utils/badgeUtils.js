@@ -30,7 +30,7 @@ export const roadmapBadgeLevels = [
     { level: 7, en: 'Supervisor', bn: 'সুপারভাইজার', icon: '👑', color: 'bg-fuchsia-300', medalText: 'text-slate-900', topic_en: 'The law', topic_bn: 'আইন কি বলে' },
     { level: 8, en: 'Specialist', bn: 'স্পেশালিস্ট', icon: '💎', color: 'bg-rose-300', medalText: 'text-slate-900', topic_en: 'WBERC rules', topic_bn: 'WBERC রেগুলেশন' },
     { level: 9, en: 'Expert', bn: 'এক্সপার্ট', icon: '🏆', color: 'bg-orange-400', medalText: 'text-slate-900', topic_en: 'Testing', topic_bn: 'টেস্টিং' },
-    { level: 10, en: 'Safety Pro', bn: 'সেফটি প্রো', icon: '🛡️', color: 'bg-indigo-300', medalText: 'text-slate-900', topic_en: 'WBSEDCL Manual', topic_bn: 'WBSEDCL ম্যানুয়াল' },
+    { level: 10, en: 'Safety Pro', bn: 'সেফটি প্রো', icon: '🛡️', color: 'bg-indigo-300', medalText: 'text-slate-900', topic_en: 'Safety Manual 2025', topic_bn: 'সেফটি ম্যানুয়াল ২০২৫' },
 ];
 
 export const getRoadmapBadgeByLevel = (level) =>

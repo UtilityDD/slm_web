@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.163";
+export const CURRENT_APP_VERSION = "1.3.164";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update. Your safety training path is redesigned as a lineman climbing a ladder — with floating safety gear (PPE) along the climb and clearer rank badges that show each chapter's topic.",
-  bn: "নতুন ভার্সন আপডেট করুন। আপনার সেফটি ট্রেনিং পথ এখন মই বেয়ে ওঠা একজন লাইনম্যানের মতো সাজানো — পথ জুড়ে ভাসমান সুরক্ষা সরঞ্জাম (পিপিই) এবং প্রতিটি অধ্যায়ের টপিক দেখানো আরও পরিষ্কার র‍্যাঙ্ক ব্যাজ সহ।",
+  en: "Added Chapter 10: WBSEDCL Safety Manual 2025. This specialized chapter covers the latest official safety guidelines in field-friendly Bangla.",
+  bn: "১০ম অধ্যায় যুক্ত করা হয়েছে: WBSEDCL সেফটি ম্যানুয়াল ২০২৫। এই বিশেষ অধ্যায়টি লেটেস্ট অফিসিয়াল সেফটি নির্দেশাবলী সহজ বাংলা ভাষায় কভার করে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */

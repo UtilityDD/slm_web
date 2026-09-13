@@ -943,7 +943,8 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
         const fetchTrainingChapters = async () => {
             try {
                 setTrainingLoading(true);
-                const response = await fetch('/quizzes/training_manifest.json');
+                // Cache-bust to ensure new organization chapters (like Chapter 10) appear immediately.
+                const response = await fetch(`/quizzes/training_manifest.json?v=${Date.now()}`);
                 if (response.ok) {
                     const data = await response.json();
                     setTrainingChapters(data);
@@ -1650,25 +1651,42 @@ export default function SafetyHub({ language = 'en', user, userProfile: initialU
                                             <h2 className="text-2xl font-black text-token-text-primary tracking-tight mb-2">
                                                 {language === 'en' ? 'Training Progress' : 'প্রশিক্ষণ অগ্রগতি'}
                                             </h2>
-                                            <p className="text-sm font-medium text-token-text-secondary">
-                                                {language === 'en'
-                                                    ? `You have mastered ${completedLessons.length} out of 91 daily safety lessons.`
-                                                    : `আপনি ৯১টি দৈনিক সেফটি পাঠের মধ্যে ${completedLessons.length}টি সম্পন্ন করেছেন।`}
-                                            </p>
+                                            {(() => {
+                                                const coreChapters = (trainingChapters || []).filter(c => !isFaqChapter(c));
+                                                const totalCoreCount = coreChapters.reduce((acc, c) => acc + (c.count || 0), 0) || 101;
+                                                const completedCount = completedLessons.length;
+                                                return (
+                                                    <p className="text-sm font-medium text-token-text-secondary">
+                                                        {language === 'en'
+                                                            ? `You have mastered ${completedCount} out of ${totalCoreCount} daily safety lessons.`
+                                                            : `আপনি ${totalCoreCount}টি দৈনিক সেফটি পাঠের মধ্যে ${completedCount}টি সম্পন্ন করেছেন।`}
+                                                    </p>
+                                                );
+                                            })()}
                                         </div>
                                         <div className="relative z-10 w-full sm:w-64">
-                                            <div className="flex justify-between items-end mb-2">
-                                                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Completion</span>
-                                                <span className="text-sm font-black text-orange-600">{Math.round((completedLessons.length / 91) * 100)}%</span>
-                                            </div>
-                                            <div className="w-full h-4 bg-token-bg-surface shadow-inner rounded-full overflow-hidden border border-token-border">
-                                                <div
-                                                    className="h-full bg-gradient-to-r from-orange-400 via-orange-600 to-orange-700 rounded-full transition-all duration-1000 ease-out relative"
-                                                    style={{ width: `${Math.round((completedLessons.length / 91) * 100)}%` }}
-                                                >
-                                                    <div className="absolute inset-0 shimmer opacity-30"></div>
-                                                </div>
-                                            </div>
+                                            {(() => {
+                                                const coreChapters = (trainingChapters || []).filter(c => !isFaqChapter(c));
+                                                const totalCoreCount = coreChapters.reduce((acc, c) => acc + (c.count || 0), 0) || 101;
+                                                const completedCount = completedLessons.length;
+                                                const pct = Math.round((completedCount / totalCoreCount) * 100);
+                                                return (
+                                                    <>
+                                                        <div className="flex justify-between items-end mb-2">
+                                                            <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Completion</span>
+                                                            <span className="text-sm font-black text-orange-600">{pct}%</span>
+                                                        </div>
+                                                        <div className="w-full h-4 bg-token-bg-surface shadow-inner rounded-full overflow-hidden border border-token-border">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-orange-400 via-orange-600 to-orange-700 rounded-full transition-all duration-1000 ease-out relative"
+                                                                style={{ width: `${pct}%` }}
+                                                            >
+                                                                <div className="absolute inset-0 shimmer opacity-30"></div>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
 
