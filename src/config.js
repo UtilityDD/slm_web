@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.162";
+export const CURRENT_APP_VERSION = "1.3.163";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Please update. Each hour is its own 5-question quiz. After a set, close and tap the hour you want — the app will not start the next hour for you.",
-  bn: "নতুন ভার্সন আপডেট করুন। প্রতি ঘণ্টা আলাদা ৫টি প্রশ্নের কুইজ। শেষ হলে বন্ধ করে ঘড়িতে যে ঘণ্টা চান সেখানে ট্যাপ করুন—অ্যাপ নিজে পরের ঘণ্টা খুলবে না।",
+  en: "Please update. Your safety training path is redesigned as a lineman climbing a ladder — with floating safety gear (PPE) along the climb and clearer rank badges that show each chapter's topic.",
+  bn: "নতুন ভার্সন আপডেট করুন। আপনার সেফটি ট্রেনিং পথ এখন মই বেয়ে ওঠা একজন লাইনম্যানের মতো সাজানো — পথ জুড়ে ভাসমান সুরক্ষা সরঞ্জাম (পিপিই) এবং প্রতিটি অধ্যায়ের টপিক দেখানো আরও পরিষ্কার র‍্যাঙ্ক ব্যাজ সহ।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
