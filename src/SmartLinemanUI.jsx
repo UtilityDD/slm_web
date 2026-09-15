@@ -2457,7 +2457,7 @@ export default function SmartLinemanUI() {
               />
             )}
 
-            {user && !['login', 'verify', 'sops', 'safety-culture-survey'].includes(currentView) && (
+            {user && !['login', 'verify', 'safety-culture-survey'].includes(currentView) && (
               <BottomNavigation
                 currentView={currentView} 
                 setCurrentView={navigateWithCultureGate} 

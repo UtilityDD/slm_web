@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
-import { firstTimeReadingPointsFromLessons, getBadgeByLevel, getBadgeTopic } from '../utils/badgeUtils';
+import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
@@ -418,7 +418,6 @@ export default function Home({
   const trainingLevel = userProfile?.training_level || 1;
   const badge = getBadgeByLevel(trainingLevel, firstTimeReadingPointsFromLessons(coreLessons));
   const badgeName = bn ? badge.bn : badge.en;
-  const badgeTopic = getBadgeTopic(badge, bn ? 'bn' : 'en');
   const displayName =
     userProfile?.full_name && !userProfile.full_name.includes('@')
       ? userProfile.full_name.split(' ')[0]
@@ -585,6 +584,22 @@ export default function Home({
       ),
     },
     {
+      id: 'sobai-firo',
+      label: 'SAFE HOME',
+      value: 'সবাই ফিরো',
+      onClick: () => go('sops'),
+      accent: 'border-orange-200 bg-orange-50/80 text-orange-950',
+      iconWrap: 'bg-white/80 text-orange-600 border-orange-200/70',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
+          <path d="M3 10.5 12 3l9 7.5" />
+          <path d="M5 10v10h14V10" />
+          <path d="M9 20v-6h6v6" />
+        </svg>
+      ),
+      ariaLabel: bn ? 'সবাই ফিরো — কাজের আগে আট কথা' : 'SAFE HOME — eight beats before work',
+    },
+    {
       id: 'my-ppe',
       label: bn ? 'আমার পিপিই' : 'My PPE',
       value: null,
@@ -747,12 +762,9 @@ export default function Home({
                 {displayName}
               </h1>
               <span
-                className={`home-level-badge inline-flex shrink-0 items-center justify-center font-black ${badgeTopic ? 'home-level-badge--stacked' : 'rounded-full px-2'} ${badge.color} ${bn ? 'home-level-badge--bn font-bengali' : badgeTopic ? 'text-[10px] leading-none sm:text-[11px]' : 'py-0.5 text-[10px] uppercase leading-none tracking-wide sm:text-[11px]'}`}
+                className={`home-level-badge inline-flex shrink-0 items-center justify-center rounded-full px-2 font-black ${badge.color} ${bn ? 'home-level-badge--bn font-bengali' : 'py-0.5 text-[10px] uppercase leading-none tracking-wide sm:text-[11px]'}`}
               >
                 <span className={bn ? 'home-level-badge__label' : undefined}>{badgeName}</span>
-                {badgeTopic ? (
-                  <span className="home-level-badge__topic">{badgeTopic}</span>
-                ) : null}
               </span>
             </div>
             <div className={`mt-2.5 flex min-w-0 flex-wrap items-center gap-2 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
@@ -848,6 +860,25 @@ export default function Home({
             setSleepNudgeTick((n) => n + 1);
           }}
         />
+
+        <button
+          type="button"
+          onClick={() => go('sops')}
+          className="home-sobai-strip mb-4 w-full text-left sm:mb-5"
+          aria-label={bn ? 'সবাই ফিরো' : 'SAFE HOME'}
+        >
+          <div className="home-sobai-strip__content">
+            <p className={`home-sobai-strip__kicker ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'SAFE HOME (সবাই ফিরো)' : 'SAFE HOME (সবাই ফিরো)'}
+            </p>
+            <p className={`home-sobai-strip__line ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'থামো রে ভাই, কবচ পরো।' : 'Stop now brother, wear your armour.'}
+            </p>
+          </div>
+          <svg className="home-sobai-strip__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden>
+            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
 
         {(isSafetyMitra || isAdmin) && user?.id ? (
           <HomeTeamReminderCard userId={user.id} role={userProfile.role} language={language} />

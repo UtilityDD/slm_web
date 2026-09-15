@@ -43,6 +43,7 @@
     { "id": "transformer", "label": { "en": "Transformer maintenance", "bn": "ট্রান্সফরমার রক্ষণাবেক্ষণ" } },
     { "id": "ltline", "label": { "en": "LT line repair", "bn": "এলটি লাইন মেরামত" } },
     { "id": "treecut", "label": { "en": "Tree cutting near line", "bn": "লাইনের কাছে গাছ কাটা" } },
-    { "id": "fuse", "label": { "en": "Fuse / DO replacement", "bn": "ফিউজ / ডিও বদলানো" } }
+    { "id": "ht_fuse", "label": { "en": "HT horn-gap fuse replacement", "bn": "এইচটি হর্নগ্যাপ ফিউজ বদলানো" } },
+    { "id": "lt_fuse", "label": { "en": "LT fuse replacement", "bn": "এলটি ফিউজ বদলানো" } }
   ]
 }

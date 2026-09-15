@@ -1,0 +1,278 @@
+{
+  "id": "envelope",
+  "version": 8,
+  "title_bn": "সবাই ফিরো",
+  "title_en": "SAFE HOME",
+  "subtitle_bn": "কাজের আগে এই আট কথা",
+  "subtitle_en": "Eight beats before every job",
+  "chorus_bn": "সবাই ফিরো, সবাই ফিরো।",
+  "chorus_en": "Everyone comes home. Everyone comes home.",
+  "intro_title_bn": "৮টি জরুরি ধাপ — তাড়াহুড়োয় ভুল এড়াতে",
+  "intro_title_en": "8 Essential Steps — To Avoid Mistakes in a Hurry",
+  "intro": {
+    "bn": [
+      "লাইনম্যান ভাইরা, দুর্ঘটনা নিয়ম না জানার জন্য নয়, তাড়াহুড়োয় ৮টি জরুরি ধাপের কোনো একটি বাদ দেওয়ার জন্য ঘটে। যেকোনো কাজ শুরুর আগে এই ৮টি ধাপ মাথায় গেঁথে নেওয়াই হলো আসল টুলবক্স টক (TBT)। নিচে দেওয়া ৩টি উপায়ের যেকোনো একটি বেছে নিয়ে ৮টি ধাপ মুখস্থ করে নিন এবং প্রতিটি কাজে প্র্যাকটিস করুন।"
+    ],
+    "en": [
+      "Accidents don't happen due to lack of knowledge, but because we skip one of the 8 essential steps in a hurry. Before any job, wiring these 8 steps into your mind is your true Toolbox Talk (TBT). Choose any of the 3 simple methods below to memorise the 8 steps and practice them on every job."
+    ]
+  },
+  "ask_bn": "বিশেষ অনুরোধ: যেকোনো একটি উপায় মুখস্থ করে নিন। প্রতিটি কাজে ওস্তাদ-হেল্পার মিলে কাজের আগে একবার আওড়ে নিন ও প্র্যাকটিস করুন (TBT)।",
+  "ask_en": "Special request: Please memorise any one option. For every job, senior and helper should say it once and practice it before starting (TBT).",
+  "disclaimer_bn": "স্মার্টলাইনম্যান ফিল্ড গাইড। নিজের ডিসকম পারমিট মেনে চলুন — এই কার্ড পারমিটের বদলি নয়।",
+  "disclaimer_en": "SmartLineman field guide. Follow your DISCOM PTW — this card does not replace the issued permit.",
+  "options": [
+    {
+      "id": "option_1",
+      "number": 1,
+      "title_bn": "৮-ধাপের সুরের ছড়া",
+      "title_en": "8-Beat Chant",
+      "desc_bn": "কাজের সাইটে যাওয়ার পথে বা পোলে ওঠার আগে ওস্তাদ ও হেল্পার মিলে এই সুরের ছড়াটি গান বা ছন্দের মতো আওড়ে নিতে পারেন। এটি মনে রাখা সবচেয়ে সহজ! ছড়ার ৮টি মূল শব্দের অর্থ নিচে দেওয়া হলো:",
+      "desc_en": "On the way to the site or before climbing the pole, the senior and helper can sing or chant this together. This is the easiest to remember! The meanings of the 8 key words in the chant are described below:"
+    },
+    {
+      "id": "option_2",
+      "number": 2,
+      "title_bn": "৮-ধাপের SAFE HOME",
+      "title_en": "8-Letter SAFE HOME",
+      "desc_bn": "যারা ইংরেজি অক্ষর দিয়ে মনে রাখতে ভালোবাসেন, তাদের জন্য 'SAFE HOME' (নিরাপদ বাড়ি) শব্দটিই হলো আসল চাবিকাঠি। এর ৮টি অক্ষর দিয়ে ৮টি কাজের ধাপ মনে রাখুন:",
+      "desc_en": "For those who like to remember using English letters, the word 'SAFE HOME' is your key. Use its 8 letters to remember the 8 work steps:"
+    },
+    {
+      "id": "option_3",
+      "number": 3,
+      "title_bn": "৮-ধাপের সবাই ফিরো",
+      "title_en": "8-Letter সবাই ফিরো",
+      "desc_bn": "বাংলা অক্ষরের মাধ্যমে মনে রাখতে চাইলে 'সবাই ফিরো' (স-ব-আ-ই-ফ-ই-র-ও) বাক্যটি মনে রাখুন। এর ৮টি বর্ণ দিয়ে ৮টি কাজের ধাপ সাজানো হয়েছে:",
+      "desc_en": "If you prefer remembering through Bangla letters, keep the sentence 'সবাই ফিরো' (spelled as স-ব-আ-ই-ফ-ই-র-ও) in mind. Its 8 letters represent the 8 steps:"
+    }
+  ],
+  "poem": {
+    "bn": [
+      "থামো রে ভাই, কবচ পরো।",
+      "পারমিট নাও, দুদিক কাটো।",
+      "আর্থ বাঁধো, ফিতে ঘেরো।",
+      "কাজ সেরে, গুনে ফিরো।",
+      "সবাই ফিরো, সবাই ফিরো।"
+    ],
+    "en": [
+      "Stop now brother, wear your armour.",
+      "Take the permit, cut both sides.",
+      "Bind the earth, tape the ground.",
+      "Finish the job, count and go.",
+      "Everyone comes home. Everyone comes home."
+    ]
+  },
+  "rules": {
+    "bn": [
+      "পারমিট ছাড়া কাজ না।",
+      "আর্থ ছাড়া হাত না।",
+      "সবাই না এলে সুইচ না।"
+    ],
+    "en": [
+      "No permit, no work.",
+      "No earth, no hand.",
+      "No switch until everyone is back."
+    ]
+  },
+  "beats": [
+    {
+      "id": "stop",
+      "letter": "S",
+      "word_en": "Stop",
+      "name_bn": "থামো",
+      "do_bn": "উঠো না। আবহাওয়া ও খুঁটি পরীক্ষা এবং টিমের সাথে কাজ নিয়ে আলোচনা (TBT) করুন। একা কখনো কাজ করবেন না!",
+      "do_en": "Don’t climb yet. Check weather, pole stability, and discuss the work with your team (TBT). NEVER work alone!"
+    },
+    {
+      "id": "armour",
+      "letter": "A",
+      "word_en": "Armour",
+      "name_bn": "কবচ",
+      "do_bn": "টুপি, মোজা, জুতো, বেল্ট। ফুটো মোজা = না। মাটিতে থাকা হেল্পারও হেলমেট-জুতো-গ্লাভস পরবে।",
+      "do_en": "Helmet, gloves, shoes, harness. Pin-hole glove = no. Ground helpers must also wear helmet, shoes, gloves."
+    },
+    {
+      "id": "form",
+      "letter": "F",
+      "word_en": "Form",
+      "name_bn": "পারমিট",
+      "do_bn": "PTW হাতে। ফিডারের নাম মিলল তো?",
+      "do_en": "PTW in hand. Feeder name matches?"
+    },
+    {
+      "id": "end_power",
+      "letter": "E",
+      "word_en": "End-power",
+      "name_bn": "কাটো",
+      "do_bn": "দুদিক অফ। তালা। ডেঞ্জার বোর্ড।",
+      "do_en": "Both sides off. Lock. Danger board."
+    },
+    {
+      "id": "hold_earth",
+      "letter": "H",
+      "word_en": "Hold-earth",
+      "name_bn": "আর্থ",
+      "do_bn": "টেস্টার, তারপর রড, তারপর দুদিকে চেইন।",
+      "do_en": "Tester, then rod, then earth both ends."
+    },
+    {
+      "id": "ok_fence",
+      "letter": "O",
+      "word_en": "Ok-fence",
+      "name_bn": "ফিতে",
+      "do_bn": "লাল ফিতে, কোন, লোক সরাও।",
+      "do_en": "Red tape, cones, keep people back."
+    },
+    {
+      "id": "mend",
+      "letter": "M",
+      "word_en": "Mend",
+      "name_bn": "কাজ",
+      "do_bn": "এবার মেরামত। বেল্ট লক।",
+      "do_en": "Now the job. Harness locked."
+    },
+    {
+      "id": "exit",
+      "letter": "E",
+      "word_en": "Exit",
+      "name_bn": "গোনা",
+      "do_bn": "কাজ শেষ হলে হাতিয়ার ও লোক (টিম) গোনো। আর্থ শেষে খোলো। পারমিট ফেরত।",
+      "do_en": "When the job is done — count tools and team members. Earth last off. Return the PTW."
+    }
+  ],
+  "chant_steps": [
+    { "word_bn": "থামো", "word_en": "Stop", "desc_bn": "আগে থামুন। আবহাওয়া ও খুঁটি পরীক্ষা, টিমের সাথে আলোচনা (TBT) করুন। একা কখনো কাজ করবেন না!", "desc_en": "Stop first. Check weather, pole, and discuss work with team (TBT). NEVER work alone!" },
+    { "word_bn": "কবচ", "word_en": "Armour", "desc_bn": "হেলমেট, জুতো, গ্লাভস ও বেল্ট পরে নিন। মাটিতে থাকা হেল্পারও হেলমেট-জুতো-গ্লাভস পরবে।", "desc_en": "Wear your helmet, shoes, gloves, and safety harness. Ground helpers must also wear helmet, shoes, gloves." },
+    { "word_bn": "পারমিট", "word_en": "Permit", "desc_bn": "হাতে লিখিত পারমিট (PTW) নিয়ে ফিডার মেলান।", "desc_en": "Take the written permit (PTW) and match the feeder name." },
+    { "word_bn": "কাটো", "word_en": "Cut", "desc_bn": "দুদিকের মেইন সুইচ অফ করে তালা ও বোর্ড ঝুলিয়ে দিন।", "desc_en": "Turn off main switches on both sides, lock, and hang danger boards." },
+    { "word_bn": "আর্থ", "word_en": "Earth", "desc_bn": "টেস্টার দিয়ে চেক করে দুদিকে আর্থিং চেইন বাঁধুন।", "desc_en": "Test with voltage detector, then bind grounding chains on both ends." },
+    { "word_bn": "ফিতে", "word_en": "Tape/Fence", "desc_bn": "লাল ফিতে বা কোন দিয়ে কাজের জায়গা ঘিরে ফেলুন।", "desc_en": "Barricade the work area with red safety tape or cones." },
+    { "word_bn": "কাজ", "word_en": "Mend/Job", "desc_bn": "বেল্ট স্ট্রাকচারের সাথে লক করে মনোযোগ দিয়ে কাজ করুন।", "desc_en": "Lock your safety belt to the structure and work with focus." },
+    { "word_bn": "গোনা", "word_en": "Count/Exit", "desc_bn": "কাজ শেষ হলে সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, আর্থ খুলে পারমিট ফেরত দিন।", "desc_en": "When the job is done — count all tools and team members, remove grounding last, and return the permit." }
+  ],
+  "bangla_letters": [
+    { "letter": "স", "word": "সতর্ক", "desc_bn": "থামো, আবহাওয়া ও খুঁটি পরীক্ষা, টিমের সাথে আলোচনা (TBT) করুন। একা কখনো কাজ করবেন না।" },
+    { "letter": "ব", "word": "বডি-কবচ", "desc_bn": "হেলমেট, গ্লাভস, জুতো ও বেল্ট পরুন। মাটিতে থাকা হেল্পারও হেলমেট-জুতো-গ্লাভস পরবে।" },
+    { "letter": "আ", "word": "আদেশ", "desc_bn": "লিখিত পারমিট (PTW) হাতে নিন।" },
+    { "letter": "ই", "word": "ইন-আউট", "desc_bn": "দুদিকের পাওয়ার কেটে লক করুন।" },
+    { "letter": "ফ", "word": "ফুল-আর্থ", "desc_bn": "টেস্ট করে দুদিকে গ্রাউন্ডিং করুন।" },
+    { "letter": "ই", "word": "ইশারা", "desc_bn": "লাল ফিতে ও কোন দিয়ে এলাকা ঘেরুন।" },
+    { "letter": "র", "word": "রিপেয়ার", "desc_bn": "বেল্ট লক করে মনোযোগ দিয়ে কাজ করুন।" },
+    { "letter": "ও", "word": "ওজন", "desc_bn": "কাজ শেষ হলে হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, আর্থ খুলে পারমিট ফেরত দিন।" }
+  ],
+  "job_sops": [
+    {
+      "id": "ht_fuse",
+      "title_bn": "এইচটি হর্নগ্যাপ ফিউজ বদলানো",
+      "title_en": "HT Horn-Gap Fuse Replacement",
+      "icon": "⚡",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! আবহাওয়া ও কাঠামো/ক্রস-আর্ম ওঠার উপযোগী কিনা পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check weather and whether the structure/cross-arm is safe to climb." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "উঠবেন: ফুল-বডি হারনেস, হেলমেট, সেফটি জুতো, ১১kV গ্লাভস (টেস্টেড)। মাটিতে হেল্পার: হেলমেট, সেফটি জুতো, গ্লাভস বাধ্যতামূলক।", "do_en": "Climber: full-body harness, helmet, safety shoes, tested 11kV gloves. Ground helper: helmet, safety shoes, gloves mandatory." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "নির্দিষ্ট ট্রান্সফরমার/ফিডারের লিখিত পারমিট (PTW) হাতে নিন।", "do_en": "Get written PTW/clearance for the specific transformer/feeder." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "আইসোলেটর হ্যান্ডেল অফ করে তালা মারুন ও ডেঞ্জার বোর্ড ঝুলিয়ে দিন।", "do_en": "Open isolator handle, lock it, and hang danger board." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "ডিসচার্জ রড দিয়ে চেক করে দুদিকে আর্থিং চেইন বা শর্টিং রড বাঁধুন — তারপরই ওপরে উঠুন।", "do_en": "Discharge and earth both ends first — only then climb the structure." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "কাঠামোর নিচে লাল ফিতে দিয়ে ঘেরুন; ওপর থেকে জিনিস পড়তে পারে।", "do_en": "Barricade under the structure; objects may fall from height." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "কাঠামোতে উঠে বেল্ট লক করুন। হর্নগ্যাপ ফিউজ ইউনিট খুলে সঠিক রেটিংয়ের ফিউজ ওয়্যার বাঁধুন (মোটা জিআই তার নয়)।", "do_en": "Climb the structure and lock your harness. Open the horn-gap fuse unit and fit correct rating fuse wire (no thick GI wire!)." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে নিচে নামুন। সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, আর্থ খুলুন, আইসোলেটর অন করে পারমিট ফেরত দিন।", "do_en": "When the job is done — climb down safely. Count tools and team members, remove grounding, close isolator, and return PTW." }
+      ]
+    },
+    {
+      "id": "lt_fuse",
+      "title_bn": "এলটি ফিউজ বদলানো",
+      "title_en": "LT Fuse Replacement",
+      "icon": "🔌",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! লোড ও ট্রান্সফরমার/পিলার বক্সের অবস্থা পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check load and transformer/pillar box condition." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "সবাই: হেলমেট, সেফটি জুতো, এলটি রবার গ্লাভস। উঠলে বেল্ট। মাটিতে হেল্পারও হেলমেট-জুতো-গ্লাভস পরবে।", "do_en": "Everyone: helmet, safety shoes, LT rubber gloves. Belt if climbing. Ground helpers must also wear helmet, shoes, gloves." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "লোকাল সাবস্টেশন/ফিডার থেকে এলটি ক্লিয়ারেন্স বা পারমিট নিন।", "do_en": "Get LT clearance or permit from the local substation/feeder." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "এলটি সুইচ/MCCB অফ করুন অথবা কিতক্যাট/ফিউজ ইউনিট খুলে লক করুন ও ডেঞ্জার বোর্ড দিন।", "do_en": "Open LT switch/MCCB or pull kit-kat/fuse unit, lock out, and hang danger board." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "৩ ফেজ ও নিউট্রাল একসাথে শর্ট করে মাটির সাথে আর্থ করুন।", "do_en": "Short all 3 phases and neutral together and earth securely." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "কাজের জায়গা লাল ফিতে দিয়ে ঘেরুন যাতে সাধারণ মানুষ দূরে থাকে।", "do_en": "Barricade the work area with red tape, keep public away." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "পুড়ে যাওয়া এলটি ফিউজ (কিতক্যাট/এইচআরসি) খুলে সঠিক রেটিংয়ের ফিউজ লাগান (মোটা তার নয়)।", "do_en": "Remove blown LT fuse (kit-kat/HRC) and fit correct rating only (no thick wire)." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, শর্টিং আর্থ খুলুন, এলটি ফিউজ/সুইচ লাগিয়ে ক্লিয়ারেন্স ফেরত দিন।", "do_en": "When the job is done — count tools and team members, remove shorting/earthing, restore LT fuse/switch, and return clearance." }
+      ]
+    },
+    {
+      "id": "insulator",
+      "title_bn": "ইনসুলেটর বদলানো",
+      "title_en": "Replace Insulator",
+      "icon": "🏺",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! খুঁটির শক্তি ও আবহাওয়া পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check pole strength and weather." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "উঠবেন: হেলমেট, সেফটি জুতো, ফুল-বডি হারনেস, চামড়ার গ্লাভস। মাটিতে হেল্পার: হেলমেট, সেফটি জুতো, গ্লাভস বাধ্যতামূলক।", "do_en": "Climber: helmet, safety shoes, full-body harness, leather gloves. Ground helper: helmet, safety shoes, gloves mandatory." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "নির্দিষ্ট ১১kV বা এলটি লাইনের লিখিত পারমিট (PTW) হাতে নিন।", "do_en": "Get written PTW/clearance for the specific 11kV or LT line." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "সাবস্টেশন এবং পরবর্তী আইসোলেটর পয়েন্ট থেকে পাওয়ার অফ করে লক করুন।", "do_en": "Isolate power from substation and next isolator point, then lock." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "লাইন ডিসচার্জ করে কাজের খুঁটির দুদিকেই আর্থিং চেইন বা শর্টিং রড বাঁধুন।", "do_en": "Discharge line and securely bind grounding chains on both sides of working pole." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "ওপর থেকে জিনিসপত্র পড়ার ঝুঁকি এড়াতে খুঁটির চারপাশে লাল ফিতে দিয়ে ঘেরুন।", "do_en": "Barricade pole base with red tape to prevent injury from falling objects." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "কন্ডাক্টরের বাইন্ডিং তার খুলে ক্ষতিগ্রস্ত ইনসুলেটরটি বদলে নতুন ইনসুলেটর লাগিয়ে তার বাঁধুন।", "do_en": "Untie binding wire, replace damaged pin/disc insulator, and bind conductor tightly." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, আর্থিং চেইন খুলুন, পারমিট ফেরত দিয়ে লাইন চার্জ করুন।", "do_en": "When the job is done — count all tools and team members, remove grounding chains, return PTW, and charge line." }
+      ]
+    },
+    {
+      "id": "jumper",
+      "title_bn": "জাম্পার / কন্ডাক্টর কাজ",
+      "title_en": "Jumper / Conductor Work",
+      "icon": "🔗",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! বাতাসের গতিবেগ ও খুঁটির স্থায়িত্ব পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check wind speed and pole stability." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "উঠবেন: হেলমেট, সেফটি জুতো, ফুল-বডি হারনেস, হেভি-ডিউটি চামড়ার গ্লাভস। মাটিতে হেল্পার: হেলমেট, সেফটি জুতো, গ্লাভস বাধ্যতামূলক।", "do_en": "Climber: helmet, safety shoes, full-body harness, heavy-duty leather gloves. Ground helper: helmet, safety shoes, gloves mandatory." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "কাজের লাইনের নির্দিষ্ট সেকশনের লিখিত পারমিট (PTW) হাতে নিন।", "do_en": "Get written PTW/clearance for the specific line section." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "সাবস্টেশন বা আইসোলেটর থেকে পাওয়ার অফ করে লক করুন ও কাজের বোর্ড ঝোলান।", "do_en": "Isolate power from substation/isolator, lock, and hang danger board." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "কন্ডাক্টর ডিসচার্জ করে কাজের জায়গার দুদিকেই আর্থিং চেইন বাঁধুন।", "do_en": "Discharge conductor and securely bind grounding chains on both ends." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "কন্ডাক্টরের নিচে মাটিতে লাল ফিতে দিয়ে ব্যারিকেড করুন যাতে কেউ না ঢোকে।", "do_en": "Barricade the ground area below the conductors with red safety tape." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "কন্ডাক্টরের উপরিভাগ পরিষ্কার করে পিজি ক্ল্যাম্প (PG Clamp) দিয়ে জাম্পারটি শক্ত করে জুড়ুন।", "do_en": "Clean conductor surface, apply PG clamp, and connect jumper securely." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, আর্থ খুলুন, পারমিট ফেরত দিয়ে লাইন চার্জ করুন।", "do_en": "When the job is done — count all tools and team members, remove grounding, return PTW, and charge line." }
+      ]
+    },
+    {
+      "id": "transformer",
+      "title_bn": "ট্রান্সফরমার রক্ষণাবেক্ষণ",
+      "title_en": "Transformer Maintenance",
+      "icon": "🏢",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! তেল লিকেজ ও কাঠামোর স্থায়িত্ব পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check oil leakage and structure stability." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "ওস্তাদ: হেলমেট, সেফটি জুতো, হারনেস ও এইচটি/এলটি রবার গ্লাভস। মাটিতে হেল্পার: হেলমেট, সেফটি জুতো ও গ্লাভস অবশ্যই পরুন।", "do_en": "Climber: helmet, safety shoes, harness, HT/LT rubber gloves. Ground helper: must wear helmet, safety shoes and gloves." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "ট্রান্সফরমার এবং তার এইচটি ফিডারের লিখিত পারমিট (PTW) হাতে নিন।", "do_en": "Get written PTW/clearance for the transformer and HT feeder." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "প্রথমে এলটি সুইচ/MCCB অফ করুন, তারপর এইচটি হর্নগ্যাপ ফিউজ ও আইসোলেটর অফ করে লক করুন।", "do_en": "First open LT switch/MCCB, then open HT horn-gap fuse and isolator. Lock handles." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "ট্রান্সফরমারের এইচটি এবং এলটি বুশিং ডিসচার্জ করে দুদিকেই আর্থ করুন।", "do_en": "Discharge HT and LT bushings, then earth both HT and LT sides." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "ট্রান্সফরমার কাঠামোর সম্পূর্ণ এলাকা লাল ফিতে দিয়ে ঘিরে ফেলুন।", "do_en": "Barricade the entire transformer plinth/structure area." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "বুশিং নাট টাইট দিন, ট্রান্সফরমার অয়েল টপ-আপ করুন, নিউট্রাল ডবল আর্থিং চেক করুন।", "do_en": "Tighten loose bushing nuts, top up transformer oil, and check neutral double earthing." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, আর্থ খুলুন, হর্নগ্যাপ ফিউজ ও আইসোলেটর অন করে পারমিট ফেরত দিন।", "do_en": "When the job is done — count tools and team members, remove earthings, close horn-gap fuse, close isolator, and return PTW." }
+      ]
+    },
+    {
+      "id": "ltline",
+      "title_bn": "এলটি লাইন মেরামত",
+      "title_en": "LT Line Repair",
+      "icon": "🚏",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! ঝুলে পড়া তার ও খুঁটির অবস্থা পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check for sagged wires and pole condition." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "ওস্তাদ: হেলমেট, সেফটি জুতো, সেফটি বেল্ট ও এলটি রবার গ্লাভস। মাটিতে হেল্পার: হেলমেট, সেফটি জুতো ও গ্লাভস অবশ্যই পরুন।", "do_en": "Climber: helmet, safety shoes, safety belt, LT rubber gloves. Ground helper: must wear helmet, safety shoes and gloves." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "লোকাল সাবস্টেশন বা ফিডার থেকে লাইন ক্লিয়ারেন্স বা পারমিট নিন।", "do_en": "Get line clearance or permit from the local substation/feeders." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "ট্রান্সফরমারের এলটি সুইচ (MCCB) অফ করুন অথবা এলটি ফিউজগুলো খুলে লক করুন।", "do_en": "Switch off LT switch (MCCB) or pull out LT fuses at the transformer. LOTO." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "সবগুলো ৩টি ফেজ এবং নিউট্রাল একসাথে শর্ট করে মাটির সাথে আর্থ করুন।", "do_en": "Short all 3 phases and neutral together and connect securely to earth." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "রাস্তায় বা কাজের জায়গার নিচে লাল ফিতে দিয়ে ব্যারিকেড করুন যাতে পথচারী না ঢোকে।", "do_en": "Barricade the street/work area below the LT line with red safety tape." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "ঝুলে পড়া তারের টান ঠিক করুন, ছেঁড়া তার জোড়া দিন অথবা এলটি স্পেসার লাগান।", "do_en": "Re-tension sagged conductors, repair snapped joints, or replace LT spacers." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে সব হাতিয়ার ও লোক (টিম মেম্বার) গুনে নিন, শর্টিং আর্থ খুলুন, এলটি ফিউজ লাগিয়ে ক্লিয়ারেন্স ফেরত দিন।", "do_en": "When the job is done — count all tools and team members, remove shorting/earthing, put LT fuses back, and return clearance." }
+      ]
+    },
+    {
+      "id": "treecut",
+      "title_bn": "লাইনের কাছে গাছ কাটা",
+      "title_en": "Tree Cutting near Line",
+      "icon": "🌳",
+      "steps": [
+        { "id": "stop", "letter": "S", "letter_bn": "স", "name_bn": "থামো (সতর্ক)", "name_en": "Stop", "do_bn": "টিমের সাথে কাজ আলোচনা (TBT) করুন, একা কখনো কাজ নয়! বাতাসের দিক ও গাছের ঝোঁক পরীক্ষা করুন।", "do_en": "Discuss work with team (TBT), NEVER work alone! Check wind direction and tree lean." },
+        { "id": "armour", "letter": "A", "letter_bn": "ব", "name_bn": "কবচ (বডি-কবচ)", "name_en": "Armour", "do_bn": "ওস্তাদ: হেলমেট, সেফটি জুতো, বেল্ট, চশমা, চামড়ার গ্লাভস ও গাইড দড়ি। মাটিতে হেল্পার: হেলমেট, সেফটি জুতো ও গ্লাভস অবশ্যই পরুন (গাইড দড়ি ধরলে)।", "do_en": "Climber: helmet, shoes, belt, goggles, leather gloves, guide ropes. Ground helper: must wear helmet, shoes and gloves (especially when holding guide rope)." },
+        { "id": "form", "letter": "F", "letter_bn": "আ", "name_bn": "পারমিট (আদেশ)", "name_en": "Form", "do_bn": "গাছের ডাল ঘেঁষে যাওয়া এইচটি এবং এলটি উভয় লাইনেরই পারমিট (PTW) নিন।", "do_en": "Get written PTW/clearance for both HT and LT lines near the tree." },
+        { "id": "end_power", "letter": "E", "letter_bn": "ই", "name_bn": "কাটো (ইন-আউট)", "name_en": "End-power", "do_bn": "গাছ কাটার এলাকার সমস্ত এইচটি ও এলটি লাইনের পাওয়ার অফ করে লক করুন।", "do_en": "Isolate power to all HT and LT lines in the tree cutting zone, then lock." },
+        { "id": "hold_earth", "letter": "H", "letter_bn": "ফ", "name_bn": "আর্থ (ফুল-আর্থ)", "name_en": "Hold-earth", "do_bn": "লাইন ডিসচার্জ করে গাছ কাটার জোনের দুদিকেই লাইনে আর্থিং চেইন বাঁধুন।", "do_en": "Discharge and earth all lines on both sides of the tree cutting zone." },
+        { "id": "ok_fence", "letter": "O", "letter_bn": "ই", "name_bn": "ফিতে (ইশারা)", "name_en": "Ok-fence", "do_bn": "গাছের চারপাশে বড় এলাকা জুড়ে লাল ফিতে দিয়ে ব্যারিকেড করুন যাতে পথচারী বা গাড়ি না ঢোকে।", "do_en": "Barricade a wide area around the tree. Keep people and vehicles away." },
+        { "id": "mend", "letter": "M", "letter_bn": "র", "name_bn": "কাজ (রিপেয়ার)", "name_en": "Mend", "do_bn": "ডালগুলো গাইড দড়ি দিয়ে বেঁধে ওপর থেকে নিচে ধাপে ধাপে কাটুন যাতে লাইনের ওপর না পড়ে।", "do_en": "Tie branches with guide ropes and cut systematically from top to bottom." },
+        { "id": "exit", "letter": "E", "letter_bn": "ও", "name_bn": "গোনা (ওজন)", "name_en": "Exit", "do_bn": "কাজ শেষ হলে করাত, দড়ি ও লোক (টিম মেম্বার) গুনে নিন, আর্থ খুলুন, রাস্তা পরিষ্কার করে পারমিট ফেরত দিন।", "do_en": "When the job is done — count saws, ropes and team members, remove grounding, clear fallen branches, and return PTW." }
+      ]
+    }
+  ]
+}

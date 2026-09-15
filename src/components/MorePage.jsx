@@ -54,7 +54,7 @@ export default function MorePage({
       title: bn ? 'সুরক্ষা' : 'Safety',
       items: [
         { id: 'safety-library', label: bn ? 'পরিচিতি' : 'Identify', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
-        { id: 'sops', label: bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi', icon: '📋', tint: 'bg-indigo-100 text-indigo-700', show: true },
+        { id: 'sops', label: bn ? 'SAFE HOME (সবাই ফিরো)' : 'SAFE HOME (সবাই ফিরো)', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'my_ppe', label: bn ? 'সুরক্ষা' : 'Suraksha', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
         { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },
         { id: 'emergency', label: bn ? 'জরুরি' : 'Emergency', icon: '🚨', tint: 'bg-red-100 text-red-700', show: true, danger: true },
@@ -194,10 +194,10 @@ export default function MorePage({
           </span>
           <span className="min-w-0 flex-1">
             <span className={`block font-black leading-tight ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
-              {bn ? 'সুরক্ষা সাথী' : 'Suraksha Sathi'}
+              SAFE HOME (সবাই ফিরো)
             </span>
             <span className={`mt-0.5 block font-semibold leading-snug text-emerald-50/95 ${bn ? 'font-bengali text-sm' : 'text-[11px]'}`}>
-              {bn ? 'ফিল্ড সুরক্ষা ও SOP গাইড' : 'Field safety & SOP guide'}
+              {bn ? 'থামো রে ভাই, কবচ পরো।' : 'Stop now brother, wear your armour.'}
             </span>
           </span>
           <svg className="h-4 w-4 shrink-0 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

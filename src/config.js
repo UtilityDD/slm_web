@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.164";
+export const CURRENT_APP_VERSION = "1.3.165";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "Added Chapter 10: WBSEDCL Safety Manual 2025. This specialized chapter covers the latest official safety guidelines in field-friendly Bangla.",
-  bn: "১০ম অধ্যায় যুক্ত করা হয়েছে: WBSEDCL সেফটি ম্যানুয়াল ২০২৫। এই বিশেষ অধ্যায়টি লেটেস্ট অফিসিয়াল সেফটি নির্দেশাবলী সহজ বাংলা ভাষায় কভার করে।",
+  en: "SAFE HOME (সবাই ফিরো): memorable 8-step field safety mantra with job-specific SOPs. Bottom nav stays visible on this page; home learning badge shows the rank name only.",
+  bn: "SAFE HOME (সবাই ফিরো): মনে রাখার মতো ৮-ধাপের ফিল্ড সুরক্ষা মন্ত্র ও কাজভিত্তিক SOP। এই পাতায় নিচের নেভ বার থাকবে; হোমে লার্নিং ব্যাজে শুধু ব্যাজের নাম দেখাবে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
@@ -20,7 +20,7 @@ export const SUPPORT_EMAIL = "support@smartlineman.in";
  * Live android-latest.json stays on the last hosted APK until a signed build is copied to
  * public/downloads/smartlineman.apk (do not raise version_code without that APK).
  */
-export const ANDROID_VERSION_CODE = 156;
+export const ANDROID_VERSION_CODE = 157;
 /** Absolute URL so the APK checks the live site, not bundled localhost assets. */
 export const ANDROID_LATEST_MANIFEST_URL = `${WEBSITE_ORIGIN_WWW}/android-latest.json`;
 export const ANDROID_DOWNLOAD_PAGE_URL = `${WEBSITE_ORIGIN_WWW}/download`;
