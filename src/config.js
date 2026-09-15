@@ -5,8 +5,8 @@ export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 export const CURRENT_APP_VERSION = "1.3.165";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "SAFE HOME (সবাই ফিরো): memorable 8-step field safety mantra with job-specific SOPs. Bottom nav stays visible on this page; home learning badge shows the rank name only.",
-  bn: "SAFE HOME (সবাই ফিরো): মনে রাখার মতো ৮-ধাপের ফিল্ড সুরক্ষা মন্ত্র ও কাজভিত্তিক SOP। এই পাতায় নিচের নেভ বার থাকবে; হোমে লার্নিং ব্যাজে শুধু ব্যাজের নাম দেখাবে।",
+  en: "SAFE HOME (সবাই ফিরো): memorable 8-step field safety mantra with job-specific SOPs.",
+  bn: "SAFE HOME (সবাই ফিরো): মনে রাখার মতো ৮-ধাপের ফিল্ড সুরক্ষা মন্ত্র ও কাজভিত্তিক SOP।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
