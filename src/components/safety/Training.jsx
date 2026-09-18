@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom';
 import secureStorage from '../../utils/secureStorage';
 import { supabase } from '../../supabaseClient';
-import { CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../../config';
+import { CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO, CORE_LESSON_TOPIC_RECALL_ENABLED } from '../../config';
+import TopicRecallSheet from './TopicRecallSheet';
+import {
+    TOPIC_RECALL_DWELL_MS,
+    buildTopicRecallChoices,
+    collectLessonTopics,
+    lessonSectionIndexFromSlides,
+    topicRecallKey,
+} from '../../utils/topicRecallCheck';
 import HomeSkeleton from '../loaders/HomeSkeleton';
 import { calculateLevelFromProgress, getBadgeTopic, getRoadmapBadgeByLevel, withChapterTopic } from '../../utils/badgeUtils';
 import { cacheHelper } from '../../utils/cacheHelper';
@@ -945,6 +953,8 @@ function SectionPointFullCard({
     showDoneButton,
     onStepDone,
     readingComfort = false,
+    dwellMs = 0,
+    confirmDoneImmediately = false,
 }) {
     /* Gold-standard reading: soft Material card, ~17–19px body, generous leading (esp. Bengali). */
     const shell = readingComfort
@@ -964,17 +974,48 @@ function SectionPointFullCard({
 
     const [donePhase, setDonePhase] = useState('idle'); // idle | completing
     const doneTimerRef = useRef(null);
+    const dwellNeeded = showDoneButton && dwellMs > 0;
+    const [dwellReady, setDwellReady] = useState(!dwellNeeded);
 
     useEffect(() => () => {
         if (doneTimerRef.current) window.clearTimeout(doneTimerRef.current);
     }, []);
 
+    useEffect(() => {
+        if (!dwellNeeded) {
+            setDwellReady(true);
+            return undefined;
+        }
+        setDwellReady(false);
+        let elapsed = 0;
+        let last = typeof document !== 'undefined' && document.visibilityState === 'visible' ? Date.now() : 0;
+        const intervalId = window.setInterval(() => {
+            if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+            const now = Date.now();
+            if (last) elapsed += now - last;
+            last = now;
+            if (elapsed >= dwellMs) {
+                setDwellReady(true);
+                window.clearInterval(intervalId);
+            }
+        }, 250);
+        const onVis = () => {
+            last = document.visibilityState === 'visible' ? Date.now() : 0;
+        };
+        document.addEventListener('visibilitychange', onVis);
+        return () => {
+            window.clearInterval(intervalId);
+            document.removeEventListener('visibilitychange', onVis);
+        };
+    }, [dwellNeeded, dwellMs]);
+
     const handleStepDoneClick = () => {
         if (donePhase === 'completing') return;
+        if (dwellNeeded && !dwellReady) return;
         const reduceMotion =
             typeof window !== 'undefined' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduceMotion) {
+        if (reduceMotion || confirmDoneImmediately) {
             onStepDone?.();
             return;
         }
@@ -1062,10 +1103,10 @@ function SectionPointFullCard({
                         <button
                             type="button"
                             onClick={handleStepDoneClick}
-                            disabled={donePhase === 'completing'}
+                            disabled={donePhase === 'completing' || (dwellNeeded && !dwellReady)}
                             className={`lesson-topic-done-btn min-h-[48px] w-full rounded-full bg-orange-500 px-4 py-3.5 text-center text-[15px] font-black text-white shadow-md shadow-orange-500/30 transition-all active:scale-[0.98] disabled:cursor-wait ${
                                 donePhase === 'completing' ? 'is-completing' : ''
-                            } ${language === 'bn' ? 'font-bengali' : ''}`}
+                            } ${dwellNeeded && !dwellReady ? 'opacity-70 disabled:cursor-not-allowed' : ''} ${language === 'bn' ? 'font-bengali' : ''}`}
                         >
                             {donePhase === 'completing'
                                 ? language === 'en'
@@ -1165,6 +1206,9 @@ export default function Training({
     const [lessonPaneScrolledToEnd, setLessonPaneScrolledToEnd] = useState(false);
     /** Section slide: steps completed (0..n); when equals n, guided flow is finished */
     const [sectionGuidedStepDone, setSectionGuidedStepDone] = useState(0);
+    /** Core guided: pick this card's topic before advancing. */
+    const [topicRecall, setTopicRecall] = useState(null);
+    const [topicRecallFailNonce, setTopicRecallFailNonce] = useState(0);
     /** 'guided' = one card at a time; 'overview' = all cards open (after finishing guided) */
     const [sectionReaderMode, setSectionReaderMode] = useState('guided');
     /** When guided section is done (tick list): index of topic opened for reading, or null for list */
@@ -1212,6 +1256,31 @@ export default function Training({
         // scrolling here would run with stale step and hide the new section header. nextSlide/prevSlide
         // already reset scrollTop to 0 when changing slides.
     }, [sectionGuidedStepDone, sectionReaderMode]);
+
+    useEffect(() => {
+        if (!topicRecallFailNonce) return undefined;
+        if (sectionReaderMode !== 'guided') return undefined;
+        let cancelled = false;
+        let raf2Id = 0;
+        const raf1Id = requestAnimationFrame(() => {
+            raf2Id = requestAnimationFrame(() => {
+                if (cancelled) return;
+                const container = lessonScrollRef.current;
+                const el = document.getElementById('section-guided-active-anchor');
+                if (!container || !el) return;
+                const marginTop = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+                const cRect = container.getBoundingClientRect();
+                const eRect = el.getBoundingClientRect();
+                const nextTop = container.scrollTop + (eRect.top - cRect.top) - marginTop;
+                container.scrollTo({ top: Math.max(0, nextTop), behavior: 'instant' });
+            });
+        });
+        return () => {
+            cancelled = true;
+            cancelAnimationFrame(raf1Id);
+            cancelAnimationFrame(raf2Id);
+        };
+    }, [topicRecallFailNonce, sectionReaderMode]);
 
     const touchStartXRef = useRef(0);
     const touchStartYRef = useRef(0);
@@ -1930,9 +1999,14 @@ export default function Training({
     }, [trainingContent]);
 
     useEffect(() => {
-        if (!trainingContent) return;
+        if (!trainingContent) {
+            setTopicRecall(null);
+            return;
+        }
         setSectionReaderMode('guided');
         setSectionTickDetailIndex(null);
+        setTopicRecall(null);
+        setTopicRecallFailNonce(0);
         const sl = getSlides(trainingContent);
         const slide = sl[activeSectionIndex];
         const n = slide?.type === 'section' ? slide.points?.length ?? 0 : 0;
@@ -2008,6 +2082,40 @@ export default function Training({
     const isLastSlide = activeSectionIndex === slides.length - 1;
     const isNextDisabledByLessonRules =
         !isLastSlide && (isLessonSectionAdvanceBlocked() || !lessonPaneScrolledToEnd);
+    const topicRecallEnabled =
+        CORE_LESSON_TOPIC_RECALL_ENABLED && !!trainingContent && !trainingContent.isSupplementary;
+
+    const advanceGuidedStep = () => {
+        const slide = slides[activeSectionIndex];
+        const n = slide?.type === 'section' ? slide.points?.length ?? 0 : 0;
+        setSectionGuidedStepDone((c) => Math.min(c + 1, n));
+    };
+
+    const handleGuidedTopicDone = () => {
+        if (!topicRecallEnabled) {
+            advanceGuidedStep();
+            return;
+        }
+        const topics = collectLessonTopics(trainingContent);
+        const sectionIndex = lessonSectionIndexFromSlides(slides, activeSectionIndex);
+        const currentKey = topicRecallKey(sectionIndex, sectionGuidedStepDone);
+        const choices = buildTopicRecallChoices(topics, currentKey);
+        if (!choices) {
+            advanceGuidedStep();
+            return;
+        }
+        setTopicRecall({ choices, currentKey });
+    };
+
+    const handleTopicRecallProceed = ({ correct }) => {
+        if (!topicRecall) return;
+        setTopicRecall(null);
+        if (correct) {
+            advanceGuidedStep();
+            return;
+        }
+        setTopicRecallFailNonce((x) => x + 1);
+    };
 
     // Soft book page-turn when the slide index changes — visual only.
     useEffect(() => {
@@ -2041,6 +2149,7 @@ export default function Training({
     }, [activeSectionIndex, trainingContent, prefersReducedMotion, slides[activeSectionIndex]?.type]);
 
     const nextSlide = () => {
+        if (topicRecall) return;
         if (!isLastSlide) {
             if (isLessonSectionAdvanceBlocked()) {
                 setLessonNavBlockedReason('section');
@@ -2059,6 +2168,7 @@ export default function Training({
     };
 
     const prevSlide = () => {
+        if (topicRecall) return;
         if (!isFirstSlide) {
             setLessonPaneScrolledToEnd(false);
             setActiveSectionIndex(prev => prev - 1);
@@ -2076,6 +2186,7 @@ export default function Training({
     };
 
     const handleReaderTouchEnd = (event) => {
+        if (topicRecall) return;
         const touch = event.changedTouches?.[0];
         if (!touch) return;
 
@@ -4777,7 +4888,7 @@ export default function Training({
                                     <div
                                         ref={lessonScrollRef}
                                         className={`relative flex-1 scroll-smooth transition-colors duration-700 ${
-                                            isCompletionSlide
+                                            isCompletionSlide || topicRecall
                                                 ? 'min-h-0 overflow-x-hidden overflow-y-hidden'
                                                 : 'overflow-y-auto'
                                         }`}
@@ -4899,7 +5010,7 @@ export default function Training({
                                                                     }
                                                                     if (pIdx === sectionGuidedStepDone) {
                                                                         return (
-                                                                            <div key={pIdx} id="section-guided-active-anchor" className="scroll-mt-28">
+                                                                            <div key={`${pIdx}-r${topicRecallFailNonce}`} id="section-guided-active-anchor" className="scroll-mt-28">
                                                                                 <SectionPointFullCard
                                                                                     point={point}
                                                                                     pIdx={pIdx}
@@ -4907,11 +5018,9 @@ export default function Training({
                                                                                     renderTextWithImages={renderTextWithImages}
                                                                                     setActiveImageModal={setActiveImageModal}
                                                                                     showDoneButton
-                                                                                    onStepDone={() =>
-                                                                                        setSectionGuidedStepDone((c) =>
-                                                                                            Math.min(c + 1, sectionPoints.length)
-                                                                                        )
-                                                                                    }
+                                                                                    dwellMs={topicRecallEnabled ? TOPIC_RECALL_DWELL_MS : 0}
+                                                                                    confirmDoneImmediately={topicRecallEnabled}
+                                                                                    onStepDone={handleGuidedTopicDone}
                                                                                 />
                                                                             </div>
                                                                         );
@@ -5364,6 +5473,15 @@ export default function Training({
                                         )}
                                     </div>
                                 </div>
+                            )}
+
+                            {topicRecall && (
+                                <TopicRecallSheet
+                                    language={language}
+                                    choices={topicRecall.choices}
+                                    correctKey={topicRecall.currentKey}
+                                    onProceed={handleTopicRecallProceed}
+                                />
                             )}
 
                         </div>

@@ -8275,6 +8275,52 @@ body,
   }
 }
 
+@keyframes topic-recall-wrong-in {
+  0% {
+    transform: scale(0.88);
+    opacity: 0.35;
+  }
+  45% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.topic-recall-wrong-alert {
+  animation:
+    topic-recall-wrong-in 0.28s ease-out,
+    training-advance-block-shake 0.42s ease-in-out 0.12s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .topic-recall-wrong-alert {
+    animation: none;
+  }
+}
+
+@keyframes topic-recall-correct-in {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  55% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.topic-recall-correct-alert {
+  animation: topic-recall-correct-in 0.32s cubic-bezier(0.22, 0.82, 0.18, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .topic-recall-correct-alert {
+    animation: none;
+  }
+}
+
 @keyframes lesson-complete-pop {
   0% {
     transform: scale(0.55);

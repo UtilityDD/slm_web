@@ -58,7 +58,7 @@ Section slides expose **`points[]`** (topic cards). Two modes:
 
 **`sectionGuidedStepDone`** — count of completed guided steps in `0 .. points.length`. When it equals **`points.length`** while still in **`guided`**, the UI shows **only** compact green-tick rows for every topic (no completion banner). Each row opens **`sectionTickDetailIndex`** for that topic: **`SectionPointFullCard`** with **`readingComfort`** plus a sticky **Back to list** control. A small text link still opens **`overview`** (all topics on one page). **`sectionTickDetailIndex`** resets with slide / content / reader mode changes.
 
-**`SectionPointFullCard`** — shared body for a topic; `showDoneButton` + **`onStepDone`** in guided mode increments `sectionGuidedStepDone` (capped at `points.length`).
+**`SectionPointFullCard`** — shared body for a topic; `showDoneButton` + **`onStepDone`** in guided mode. Core lessons (`CORE_LESSON_TOPIC_RECALL_ENABLED`, not Life Skill) do **not** increment the step immediately: a ~10s visible dwell enables the button, then **`TopicRecallSheet`** asks which topic was on this card (up to 6 names from the whole lesson, shuffled, number prefixes stripped). Right/wrong stay on that sheet (`ঠিক` / `ঠিক নয়`). Wrong **ঠিক নয়** is red, shakes, and plays a short error buzz. Correct **ঠিক** plays a soft two-note tick. Wrong **আবার কার্ডটা দেখুন / পড়ুন** returns to the same card, scrolls that card to the top, remounts dwell, and reshuffles. Correct **এগিয়ে যান** increments **`sectionGuidedStepDone`**. Do not reveal the right name after a miss. Overview / tick-detail re-read / flag off: old one-tap advance. Quiz and **`lesson_bonus_`** are unchanged. Helpers: **`src/utils/topicRecallCheck.js`**. The sheet covers the lesson body so done/locked topic names cannot be peeked.
 
 ---
 
@@ -95,7 +95,7 @@ Dependencies are **`[sectionGuidedStepDone, sectionReaderMode]`** only — not *
 
 ## Extension points
 
-- **Copy / i18n:** Search `language === 'bn'` near section UI and near **`sectionAdvanceBlockedToast`**.
+- **Copy / i18n:** Search `language === 'bn'` near section UI, **`TopicRecallSheet`**, and near **`sectionAdvanceBlockedToast`**.
 - **Stricter persistence:** To remember “section completed” across sessions, persist `completedSectionSlideIndices` (e.g. keyed by `level_id`) instead of only in-memory `Set` state.
 - **New slide types:** Extend **`getSlides`** and the main render branch; reuse **`lessonScrollRef`** for any new “must read before next” rules if needed.
 

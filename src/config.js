@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.166";
+export const CURRENT_APP_VERSION = "1.3.167";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "UI made cleaner — Home and More screens are easier to tap and read.",
-  bn: "ইউআই আরও পরিষ্কার—হোম ও আরো পেজ ট্যাপ ও পড়া সহজ।",
+  en: "Lessons check you read each topic before the next. Wide-screen sidebar stays on screen.",
+  bn: "পাঠে পরের বিষয়ে যাওয়ার আগে পড়া যাচাই। বড় স্ক্রিনে সাইডবার থাকবে।",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
@@ -20,7 +20,7 @@ export const SUPPORT_EMAIL = "support@smartlineman.in";
  * Live android-latest.json stays on the last hosted APK until a signed build is copied to
  * public/downloads/smartlineman.apk (do not raise version_code without that APK).
  */
-export const ANDROID_VERSION_CODE = 158;
+export const ANDROID_VERSION_CODE = 159;
 /** Absolute URL so the APK checks the live site, not bundled localhost assets. */
 export const ANDROID_LATEST_MANIFEST_URL = `${WEBSITE_ORIGIN_WWW}/android-latest.json`;
 export const ANDROID_DOWNLOAD_PAGE_URL = `${WEBSITE_ORIGIN_WWW}/download`;
@@ -31,6 +31,12 @@ export const ANDROID_APK_URL = `${WEBSITE_ORIGIN_WWW}/downloads/smartlineman.apk
  * Rollback: set to false — first-time lesson_bonus_<id> awards keep working; no new day-stamped claims.
  */
 export const CORE_LESSON_MONTHLY_BONUS_ENABLED = true;
+
+/**
+ * Core guided lessons: after "I have read this", pick this card's topic from a shuffled list.
+ * Rollback: set to false — one-tap advance returns (quiz / lesson_bonus_ unchanged).
+ */
+export const CORE_LESSON_TOPIC_RECALL_ENABLED = true;
 
 /**
  * Soft-start for legacy lesson_bonus_<id> rows whose created_at is often join-date backfill.
