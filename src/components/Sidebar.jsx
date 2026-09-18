@@ -33,8 +33,8 @@ export default function Sidebar({
       id: 'learn',
       title: bn ? 'শেখা' : 'Learn',
       items: [
-        { id: 'home', label: bn ? 'হোম' : 'Home', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
-        { id: 'training', label: bn ? 'প্রশিক্ষণ' : 'Training', icon: '📚', tint: 'bg-orange-100 text-orange-700', show: true },
+        { id: 'life-skill', label: bn ? 'লাইফ স্কিল' : 'Life Skill', icon: '⭐', tint: 'bg-emerald-100 text-emerald-700', show: true, redirectTo: 'training', tab: 'supplementary' },
+        { id: 'community', label: bn ? 'প্রশ্নোত্তর' : 'Forum', icon: '💬', tint: 'bg-violet-100 text-violet-700', show: true },
         { id: 'video-guide', label: bn ? 'ভিডিও গাইড' : 'Video Guide', icon: '📺', tint: 'bg-sky-100 text-sky-700', show: true },
         { id: 'app-guide', label: bn ? 'অ্যাপ গাইড' : 'App guide', icon: '▶', tint: 'bg-fuchsia-100 text-fuchsia-700', show: typeof onOpenUserGuide === 'function' },
         { id: 'aro-janun', label: bn ? 'আরো জানুন' : 'Know More', icon: '🧰', tint: 'bg-violet-100 text-violet-700', show: true },
@@ -43,23 +43,17 @@ export default function Sidebar({
       ],
     },
     {
-      id: 'compete',
-      title: bn ? 'প্রতিযোগিতা' : 'Compete',
+      id: 'field',
+      title: bn ? 'মাঠ' : 'Field',
       items: [
-        { id: 'competitions', label: bn ? 'খেলুন' : 'Play', icon: '🎯', tint: 'bg-rose-100 text-rose-700', show: true },
-        { id: 'leaderboard', label: bn ? 'র‍্যাঙ্ক' : 'Rank', icon: '🏆', tint: 'bg-amber-100 text-amber-700', show: true },
-        { id: 'prizes', label: bn ? 'পুরস্কার' : 'Prizes', icon: '🎁', tint: 'bg-orange-100 text-orange-700', show: true },
-      ],
-    },
-    {
-      id: 'safety',
-      title: bn ? 'সুরক্ষা' : 'Safety',
-      items: [
-        { id: 'safety-library', label: bn ? 'পরিচিতি' : 'Identify', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
-        { id: 'sops', label: 'SAFE HOME (সবাই ফিরো)', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
-        { id: 'my_ppe', label: bn ? 'সুরক্ষা' : 'Suraksha', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
+        { id: 'my_ppe', label: bn ? 'আমার পিপিই' : 'My PPE', icon: '🦺', tint: 'bg-emerald-100 text-emerald-700', show: true },
+        { id: 'safety-library', label: bn ? 'পরিচিতি' : 'Identify', icon: '👁️', tint: 'bg-teal-100 text-teal-700', show: true },
         { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },
         { id: 'emergency', label: bn ? 'জরুরি' : 'Emergency', icon: '🚨', tint: 'bg-red-100 text-red-700', show: true, danger: true },
+        { id: 'leaderboard', label: bn ? 'র‍্যাঙ্ক' : 'Rank', icon: '🏆', tint: 'bg-amber-100 text-amber-700', show: true },
+        { id: 'prizes', label: bn ? 'পুরস্কার' : 'Prizes', icon: '🎁', tint: 'bg-orange-100 text-orange-700', show: true },
+        { id: 'amader-kotha', label: bn ? 'আমাদের কথা' : 'Our Story', icon: '📖', tint: 'bg-orange-100 text-orange-800', show: true },
+        { id: 'accident-stories', label: bn ? 'করুণ কাহিনী' : 'Tragic Stories', icon: '🕯️', tint: 'bg-rose-100 text-rose-800', show: true },
       ],
     },
     {

@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { hapticImpact } from '../utils/nativeAndroidUx';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
 
 const iconClass = 'h-[26px] w-[26px]';
+
+function isLifeSkillHash() {
+  return /[?&]tab=(supplementary|life-skill|lifeskill)/.test(window.location.hash);
+}
 
 function NavIcon({ active, fillOnActive = true, children }) {
   // Stroke-drawn icons (e.g. trophy) look broken if we zero stroke + fill on select.
@@ -27,6 +31,13 @@ function NavIcon({ active, fillOnActive = true, children }) {
 const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, userId, selectedProgressUserId }) => {
   const bnFont = language === 'bn';
   const native = isNativeCapacitorPlatform();
+  const [, setHashTick] = useState(0);
+
+  useEffect(() => {
+    const onHash = () => setHashTick((n) => n + 1);
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   const navItems = [
     {
@@ -46,21 +57,20 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
       ),
     },
     {
-      id: 'my_ppe',
-      label: language === 'en' ? 'Suraksha' : 'সুরক্ষা',
+      id: 'safety-library',
+      label: language === 'en' ? 'Identify' : 'পরিচিতি',
       paths: (active) => (
         <NavIcon active={active}>
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          {!active && <path d="m9 12 2 2 4-4" />}
-          {active && (
-            <path
-              d="m9 12 2 2 4-4"
-              fill="none"
-              stroke="#fff7ed"
-              strokeWidth="2.25"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+          {active ? (
+            <>
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5z" />
+              <circle cx="12" cy="12" r="3.2" fill="#fff7ed" />
+            </>
+          ) : (
+            <>
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </>
           )}
         </NavIcon>
       ),
@@ -80,11 +90,15 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
       ),
     },
     {
-      id: 'community',
-      label: language === 'en' ? 'Forum' : 'প্রশ্নোত্তর',
+      id: 'life-skill',
+      label: language === 'en' ? 'Life Skill' : 'লাইফ স্কিল',
       paths: (active) => (
         <NavIcon active={active}>
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          {active ? (
+            <path d="M12 2.15 14.55 9.1h7.3l-5.9 4.32 2.25 6.93L12 16.55l-6.2 3.8 2.25-6.93-5.9-4.32h7.3L12 2.15z" />
+          ) : (
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          )}
         </NavIcon>
       ),
     },
@@ -93,13 +107,14 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
   const isViewingOthersProgress = currentView === 'my-progress' && selectedProgressUserId && selectedProgressUserId !== userId;
 
   const isItemActive = (item) =>
-    (currentView === item.id && !isViewingOthersProgress) ||
-    (item.id === 'my_ppe' && ['safety-library', 'my_ppe', 'my_tools'].includes(currentView)) ||
-    (item.id === 'leaderboard' && (currentView === 'leaderboard' || currentView === 'prizes' || isViewingOthersProgress));
+    (item.id !== 'life-skill' && currentView === item.id && !isViewingOthersProgress) ||
+    (item.id === 'safety-library' && currentView === 'safety-library') ||
+    (item.id === 'leaderboard' && (currentView === 'leaderboard' || currentView === 'prizes' || isViewingOthersProgress)) ||
+    (item.id === 'life-skill' && currentView === 'training' && isLifeSkillHash());
 
   return (
     <nav
-      className={`app-bottom-nav fixed bottom-0 left-0 right-0 z-[100] md:hidden ${native ? 'app-bottom-nav--m3' : ''}`}
+      className={`app-bottom-nav fixed bottom-0 left-0 right-0 z-[100] md:hidden ${native ? 'app-bottom-nav--m3' : ''}${bnFont ? ' app-bottom-nav--bn' : ''}`}
       aria-label={language === 'en' ? 'Main navigation' : 'প্রধান নেভিগেশন'}
     >
       <div className="app-bottom-nav__inner mx-auto flex max-w-lg items-stretch justify-around px-1">
@@ -116,6 +131,10 @@ const BottomNavigation = ({ currentView, setCurrentView, language, onMenuClick, 
                 void hapticImpact('Light');
                 if (navigator.vibrate) navigator.vibrate(5);
                 if (onMenuClick) onMenuClick(false);
+                if (item.id === 'life-skill') {
+                  window.location.hash = '/training?tab=supplementary';
+                  return;
+                }
                 setCurrentView(item.id);
               }}
               className={`app-bottom-nav__item touch-manipulation ${isActive ? 'app-bottom-nav__item--active' : ''}`}

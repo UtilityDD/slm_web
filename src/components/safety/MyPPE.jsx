@@ -9,7 +9,7 @@ import PpeItemIcon from './ppe/PpeItemIcon';
 import { isFieldPpeJob } from '../../utils/ppeNudge';
 
 // Phase: 'character' | 'welcome' | 'wizard' | 'summary'
-const MyPPE = ({ user, userProfile, language = 'bn', onClose, setCurrentView, embedded = false }) => {
+const MyPPE = ({ user, userProfile, language = 'bn', onClose, embedded = false }) => {
     const [phase, setPhase] = useState('character');
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState([]); // {name, available, count, condition, age_months, usage}
@@ -269,7 +269,6 @@ const MyPPE = ({ user, userProfile, language = 'bn', onClose, setCurrentView, em
                 user={user}
                 language={language}
                 onClose={onClose}
-                setCurrentView={setCurrentView}
                 embedded={embedded}
                 readOnly={!canEditPpe}
             />

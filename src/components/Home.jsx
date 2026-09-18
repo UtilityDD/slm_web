@@ -3,9 +3,7 @@ import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
 import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
 import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
-import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { isGuestUser } from '../utils/guestPreview';
-import { openExternalUrl } from '../utils/nativeAndroidUx';
 import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
 import { requestManager } from '../utils/requestManager';
@@ -18,7 +16,6 @@ import {
   getLiveHourlySlot,
   listPlayableHourlySlots,
 } from '../utils/hourlyWindow';
-import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { resolveHomeLearningTopic } from '../utils/homeLearningTopic';
 import {
   dismissSleepNudge,
@@ -27,14 +24,14 @@ import {
 import HomePrimaryActionCards from './HomePrimaryActionCards';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
+import LanguageSwitch from './LanguageSwitch';
 import { useCachedAvatar } from '../hooks/useCachedAvatar';
 import { fetchContactPendingCount, canViewContactResponses, getCachedSheetContacts } from '../utils/landingContactAdmin';
+import { openExternalUrl } from '../utils/nativeAndroidUx';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
 
-/** Approximate core lesson count from training chapter defaults (display only). */
-const APPROX_CORE_LESSON_TOTAL = 101;
 const LAST_TIP_INDEX_KEY = 'slm_home_tip_last_index';
 /** Current IST hourly quiz start hour, e.g. "2PM" (English digits always). */
 function formatIstHourLabel() {
@@ -413,8 +410,6 @@ export default function Home({
     };
   }, [coreLessons, language, user?.id]);
 
-  const lessonCount = coreLessons.length;
-  const progressPct = Math.min(100, Math.round((lessonCount / APPROX_CORE_LESSON_TOTAL) * 100));
   const trainingLevel = userProfile?.training_level || 1;
   const badge = getBadgeByLevel(trainingLevel, firstTimeReadingPointsFromLessons(coreLessons));
   const badgeName = bn ? badge.bn : badge.en;
@@ -424,26 +419,6 @@ export default function Home({
       : bn
         ? 'বন্ধু'
         : 'Friend';
-
-  const hasStarted = lessonCount > 0;
-  const allCoreDone = learningTopic?.mode === 'daily';
-  const trainingLabel =
-    hasStarted || allCoreDone
-      ? bn
-        ? 'শিখতে থাকুন'
-        : 'Continue Training'
-      : bn
-        ? 'শিখা শুরু করুন'
-        : 'Start Training';
-  const topicTitle = String(learningTopic?.title || '').trim();
-  const topicPrefix = bn ? 'আজকের বিষয়:' : "Today's topic:";
-  const trainingHintFallback = hasStarted
-    ? bn
-      ? `${lessonCount} পাঠ · Lv ${trainingLevel}`
-      : `${lessonCount} lessons · Lv ${trainingLevel}`
-    : bn
-      ? '৯০ দিনের নিরাপত্তা পাঠ'
-      : '90-day safety path';
 
   const openLearningCard = () => {
     if (navigator.vibrate) navigator.vibrate(5);
@@ -461,7 +436,6 @@ export default function Home({
 
   const scoreValue = Math.max(0, Number(userProfile?.points ?? userRank?.score ?? 0) || 0);
   const scoreDisplay = scoreValue.toLocaleString('en-IN');
-  const rankDisplay = userRank?.rank != null ? `#${userRank.rank}` : null;
   const hourlyDone = hourlyChecked && !isHourlyPending;
   const hourlyHourLabel = useMemo(() => {
     void hourlyClockTick;
@@ -484,7 +458,7 @@ export default function Home({
 
   if (loading) {
     return (
-      <div className="min-h-full bg-[#fffdf7]">
+      <div className="home-screen min-h-full">
         <div className="mx-auto max-w-lg p-4">
           <HomeSkeleton />
         </div>
@@ -492,41 +466,43 @@ export default function Home({
     );
   }
 
-  const iconClass = 'h-5 w-5';
-  const snapshotCards = [
+  const iconClass = 'home-3d-tile__glyph';
+  const adminCards = [
     ...(isAdmin
       ? [
           {
             id: 'porichalona',
+            tone: 'manage',
             label: bn ? 'পরিচালনা' : 'Manage',
-            value: null,
             onClick: () => go('admin'),
-            accent: 'border-purple-200 bg-purple-50/80 text-purple-950',
-            iconWrap: 'bg-white/80 text-purple-700 border-purple-200/70',
+            ariaLabel: bn ? 'পরিচালনা — ব্যবহারকারী ও বিজ্ঞপ্তি' : 'Manage users and notices',
             icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              <svg className={iconClass} viewBox="0 0 24 24" aria-hidden>
+                <path
+                  fill="currentColor"
+                  d="M4 18v-1.3c0-2.02 2.68-3.2 6-3.2.63 0 1.24.05 1.82.14C11.33 14.35 11 15.2 11 16.1c0 .69.16 1.34.44 1.91H4zM10 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm6.5 2c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5zm1.04 5.21-1.75-1.75.7-.7 1.05 1.04 2.21-2.21.71.71-2.92 2.91z"
+                />
               </svg>
             ),
-            ariaLabel: bn ? 'পরিচালনা — ব্যবহারকারী ও বিজ্ঞপ্তি' : 'Manage users and notices',
           },
           {
             id: 'safety-culture',
+            tone: 'survey',
             label: bn ? 'সংস্কৃতি জরিপ' : 'Culture survey',
-            value: null,
             onClick: () => go('safety-culture-admin'),
-            accent: 'border-emerald-200 bg-emerald-50/80 text-emerald-950',
-            iconWrap: 'bg-white/80 text-emerald-700 border-emerald-200/70',
+            ariaLabel: bn ? 'নিরাপত্তা সংস্কৃতি জরিপ' : 'Safety culture survey',
             icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
-                <path d="M9 12l2 2 4-4" />
+              <svg className={iconClass} viewBox="0 0 24 24" aria-hidden>
+                <path
+                  fill="currentColor"
+                  d="M19.2 3H4.8C3.8 3 3 3.8 3 4.8v14.4c0 1 .8 1.8 1.8 1.8h14.4c1 0 1.8-.8 1.8-1.8V4.8c0-1-.8-1.8-1.8-1.8z"
+                />
+                <path
+                  fill="#fff"
+                  d="m10.4 16.1-4.15-4.15 1.25-1.25 2.9 2.9 6.1-6.1 1.25 1.25-7.35 7.35z"
+                />
               </svg>
             ),
-            ariaLabel: bn ? 'নিরাপত্তা সংস্কৃতি জরিপ' : 'Safety culture survey',
           },
         ]
       : []),
@@ -534,206 +510,61 @@ export default function Home({
       ? [
           {
             id: 'contact-responses',
+            tone: 'contact',
             label: 'Contact Us',
-            value: null,
             onClick: () => go('contact-responses'),
-            accent: 'border-sky-200 bg-sky-50/80 text-sky-950',
-            iconWrap: 'bg-white/80 text-sky-700 border-sky-200/70',
-            icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-            ),
             ariaLabel: 'Contact Us',
             badge: contactPending > 0 ? contactPending : null,
             badgeLoading: !contactPendingReady,
+            icon: (
+              <svg className={iconClass} viewBox="0 0 24 24" aria-hidden>
+                <path
+                  fill="currentColor"
+                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"
+                />
+              </svg>
+            ),
           },
         ]
       : []),
-    {
-      id: 'progress',
-      label: bn ? 'অগ্রগতি' : 'Progress',
-      value: null,
-      onClick: () => go('my-progress'),
-      accent: 'border-teal-200 bg-teal-50/80 text-teal-900',
-      iconWrap: 'bg-white/80 text-teal-600 border-teal-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M3 3v18h18" />
-          <path d="m19 9-5 5-4-4-3 3" />
-        </svg>
-      ),
-    },
-    {
-      id: 'rank',
-      label: bn ? 'র‍্যাঙ্ক' : 'Rank',
-      value: rankDisplay || (bn ? 'দেখুন' : 'View'),
-      onClick: () => go('leaderboard'),
-      accent: 'border-amber-200 bg-amber-50/80 text-amber-900',
-      iconWrap: 'bg-white/80 text-amber-600 border-amber-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-          <path d="M4 22h16" />
-          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-        </svg>
-      ),
-    },
+  ];
+  const workCards = [
     {
       id: 'sobai-firo',
-      label: 'SAFE HOME',
-      value: 'সবাই ফিরো',
+      label: bn ? '৮ মন্ত্র' : '8 Mantra',
       onClick: () => go('sops'),
-      accent: 'border-orange-200 bg-orange-50/80 text-orange-950',
-      iconWrap: 'bg-white/80 text-orange-600 border-orange-200/70',
+      ariaLabel: bn ? '৮ মন্ত্র — কাজের আগে আট কথা' : '8 Mantra — eight beats before work',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M3 10.5 12 3l9 7.5" />
-          <path d="M5 10v10h14V10" />
-          <path d="M9 20v-6h6v6" />
+        <svg className={iconClass} viewBox="0 0 24 24" aria-hidden>
+          <path
+            fill="currentColor"
+            d="M12 2 4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"
+          />
+          <path
+            fill="#fff"
+            d="M12 7.1c-1.22 0-2.2.9-2.2 2.05 0 .72.38 1.34.96 1.7-.78.4-1.31 1.18-1.31 2.1 0 1.32 1.12 2.4 2.55 2.4s2.55-1.08 2.55-2.4c0-.92-.53-1.7-1.31-2.1.58-.36.96-.98.96-1.7 0-1.15-.98-2.05-2.2-2.05zm0 1.4c.42 0 .75.32.75.7 0 .39-.33.7-.75.7s-.75-.31-.75-.7c0-.38.33-.7.75-.7zm0 4.35c.55 0 1 .43 1 .98s-.45.97-1 .97-1-.42-1-.97.45-.98 1-.98z"
+          />
         </svg>
       ),
-      ariaLabel: bn ? 'সবাই ফিরো — কাজের আগে আট কথা' : 'SAFE HOME — eight beats before work',
-    },
-    {
-      id: 'my-ppe',
-      label: bn ? 'আমার পিপিই' : 'My PPE',
-      value: null,
-      onClick: () => go('my_ppe'),
-      accent: 'border-orange-200 bg-orange-50/80 text-orange-900',
-      iconWrap: 'bg-white/80 text-orange-600 border-orange-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M2 18h20" />
-          <path d="M4 18v-3a8 8 0 0 1 16 0v3" />
-          <path d="M12 5v3" />
-          <path d="M9 18v2" />
-          <path d="M15 18v2" />
-        </svg>
-      ),
-      ariaLabel: bn ? 'আমার পিপিই' : 'My PPE',
-    },
-    {
-      id: 'safety-library',
-      label: bn ? 'পরিচিতি' : 'Identify',
-      value: null,
-      onClick: () => go('safety-library'),
-      accent: 'border-indigo-200 bg-indigo-50/80 text-indigo-900',
-      iconWrap: 'bg-white/80 text-indigo-600 border-indigo-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <path d="M12 8v5" />
-          <path d="M12 16h.01" />
-        </svg>
-      ),
-      ariaLabel: bn ? 'পরিচিতি' : 'Identify',
-    },
-    {
-      id: 'life-skill',
-      label: bn ? 'লাইফ স্কিল' : 'Life Skill',
-      value: null,
-      onClick: () => {
-        if (navigator.vibrate) navigator.vibrate(5);
-        window.location.hash = '/training?tab=supplementary';
-      },
-      accent: 'border-emerald-200 bg-emerald-50/80 text-emerald-900',
-      iconWrap: 'bg-white/80 text-emerald-600 border-emerald-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M12 3l1.8 5.5H20l-4.5 3.4 1.7 5.6L12 14.8 6.8 17.5l1.7-5.6L4 8.5h6.2L12 3Z" />
-        </svg>
-      ),
-      ariaLabel: bn ? 'লাইফ স্কিল' : 'Life Skill',
-    },
-    {
-      id: 'prizes',
-      label: bn ? 'পুরস্কার' : 'Prizes',
-      value: null,
-      onClick: () => go('prizes'),
-      accent: 'border-rose-200 bg-rose-50/80 text-rose-900',
-      iconWrap: 'bg-white/80 text-rose-600 border-rose-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M20 12v10H4V12" />
-          <path d="M2 7h20v5H2Z" />
-          <path d="M12 22V7" />
-          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7Z" />
-          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7Z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'video',
-      label: bn ? 'ভিডিও' : 'Video',
-      value: null,
-      onClick: () => go('video-guide'),
-      accent: 'border-sky-200 bg-sky-50/80 text-sky-900',
-      iconWrap: 'bg-white/80 text-sky-600 border-sky-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <rect x="2" y="5" width="20" height="14" rx="2" />
-          <path d="m10 9 5 3-5 3V9Z" fill="currentColor" stroke="none" />
-        </svg>
-      ),
-    },
-    {
-      id: 'faq',
-      label: bn ? 'কি কেন' : 'FAQ',
-      value: null,
-      onClick: () => {
-        if (navigator.vibrate) navigator.vibrate(5);
-        window.location.hash = '/training?tab=faq';
-      },
-      accent: 'border-yellow-200 bg-yellow-50/80 text-yellow-950',
-      iconWrap: 'bg-white/80 text-amber-600 border-yellow-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
-        </svg>
-      ),
-      ariaLabel: bn ? FAQ_PAGE_TITLE.bn : FAQ_PAGE_TITLE.en,
-    },
-    {
-      id: 'know-more',
-      label: bn ? 'জানুন' : 'Know',
-      value: null,
-      onClick: () => go('aro-janun'),
-      accent: 'border-violet-200 bg-violet-50/80 text-violet-900',
-      iconWrap: 'bg-white/80 text-violet-600 border-violet-200/70',
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z" />
-        </svg>
-      ),
-      ariaLabel: bn ? 'আরো জানুন' : 'Know More',
     },
     {
       id: 'more',
       label: bn ? 'আরও' : 'More',
-      value: null,
       onClick: () => go('menu'),
-      accent: 'border-slate-200 bg-slate-50/90 text-slate-800',
-      iconWrap: 'bg-white/80 text-slate-600 border-slate-200/70',
+      ariaLabel: bn ? 'আরও' : 'More',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClass}>
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <svg className={iconClass} viewBox="0 0 24 24" aria-hidden>
+          <path
+            fill="currentColor"
+            d="M13 13v8h8v-8h-8zM3 21h8v-8H3v8zM3 3v8h8V3H3zm13.66-1.31L11 7.34 16.66 13l5.66-5.66-5.66-5.65z"
+          />
         </svg>
       ),
     },
   ];
 
   return (
-    <div className={`min-h-full bg-[#fffdf7] pb-28 text-slate-900 ${bn ? 'home-screen--bn' : ''}`}>
+    <div className={`home-screen min-h-full pb-28 text-slate-900 ${bn ? 'home-screen--bn' : ''}`}>
 
       <div className="mx-auto max-w-lg px-4 pt-4 sm:pt-5">
         {cultureSurveyPending && (
@@ -752,60 +583,38 @@ export default function Home({
             </p>
           </button>
         )}
-        <header className="mb-4 flex items-center justify-between gap-3 sm:mb-5">
-          <div className="min-w-0 flex-1">
-            <p className={`font-semibold text-slate-500 ${bn ? 'font-bengali text-sm sm:text-base' : 'text-xs sm:text-sm'}`}>
-              {bn ? 'নমস্কার' : 'Hello'}
-            </p>
-            <div className="mt-0.5 flex min-w-0 items-center gap-2">
-              <h1 className={`min-w-0 truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'}`}>
-                {displayName}
-              </h1>
-              <span
-                className={`home-level-badge inline-flex shrink-0 items-center justify-center rounded-full px-2 font-black ${badge.color} ${bn ? 'home-level-badge--bn font-bengali' : 'py-0.5 text-[10px] uppercase leading-none tracking-wide sm:text-[11px]'}`}
-              >
-                <span className={bn ? 'home-level-badge__label' : undefined}>{badgeName}</span>
+        <header className="home-greet home-greet--tight">
+          <div className="home-greet__copy">
+            <h1 className={`home-greet__name ${bn ? 'font-bengali' : ''}`}>
+              <span className="home-greet__hello">{bn ? 'নমস্কার' : 'Hello'}, </span>
+              {displayName}
+            </h1>
+            <p className={`home-greet__meta ${bn ? 'font-bengali' : ''}`}>
+              <span>{badgeName}</span>
+              <span className="home-greet__dot" aria-hidden>
+                ·
               </span>
-            </div>
-            <div className={`mt-2.5 flex min-w-0 flex-wrap items-center gap-2 text-slate-600 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
-              <button
-                type="button"
-                onClick={() => go('leaderboard')}
-                className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-amber-200/90 bg-amber-50/90 px-2.5 py-0.5 font-bold text-amber-900 shadow-2xs transition-all hover:bg-amber-100 hover:shadow-xs active:scale-95"
-              >
-                <svg className="h-3.5 w-3.5 shrink-0 text-amber-700" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 6H5.5a2 2 0 0 0 0 4H7M17 6h1.5a2 2 0 0 1 0 4H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <span className="truncate">{rankDisplay || (bn ? 'র‍্যাঙ্ক' : 'Rank')}</span>
-              </button>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50/90 px-2.5 py-0.5 font-bold tabular-nums text-orange-950 shadow-2xs">
-                <span className="text-amber-500" aria-hidden>
-                  ★
-                </span>
+              <span className="home-greet__score">
+                <span aria-hidden>★</span>
                 {scoreDisplay}
               </span>
-            </div>
+            </p>
           </div>
 
           <button
             type="button"
             onClick={() => go('admin')}
-            className="home-avatar-btn"
+            className="home-greet__avatar"
             aria-label={bn ? 'প্রোফাইল' : 'Profile'}
           >
-            <div className="home-avatar-frame h-[4.5rem] w-[4.5rem] sm:h-[5rem] sm:w-[5rem]">
+            <span className="home-greet__photo">
               {avatarSrc ? (
                 <img src={avatarSrc} alt="" className="h-full w-full object-cover" decoding="async" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center p-3 text-slate-800">
+                <span className="home-greet__photo-fallback">
                   <UserIcon className="h-full w-full" />
-                </div>
+                </span>
               )}
-            </div>
-            <span className="home-avatar-status" aria-hidden>
-              <span className="home-avatar-status__ping" />
-              <span className="home-avatar-status__dot" />
             </span>
           </button>
         </header>
@@ -815,21 +624,15 @@ export default function Home({
           <button
             type="button"
             onClick={() => setTipBoardOpen(true)}
-            className="home-tip-board home-tip-board--card mb-4 w-full text-left sm:mb-5"
+            className="home-tip-board home-tip-board--card mb-2 w-full text-left"
             aria-label={bn ? 'টিপ দেখুন' : 'View tip'}
           >
             <div className="home-tip-board__inner">
               <p
-                className={`home-tip-board__text line-clamp-3 ${bn ? 'font-bengali' : ''}`}
+                className={`home-tip-board__text line-clamp-2 ${bn ? 'font-bengali' : ''}`}
               >
                 {homeTip.text}
               </p>
-              <span className={`home-tip-board__hint ${bn ? 'font-bengali' : ''}`}>
-                {bn ? 'ট্যাপ করুন' : 'Tap to view'}
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                  <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
             </div>
           </button>
         )}
@@ -842,187 +645,89 @@ export default function Home({
           />
         )}
 
-        <HomePrimaryActionCards
-          bn={bn}
-          hourlyDone={hourlyDone}
-          hourLabel={hourlyHourLabel}
-          pointsLabel={formatMakeupMaxPoints(hourlyMaxPoints)}
-          waitMinutes={hourlyWaitMinutes}
-          learningLabel={trainingLabel}
-          topicPrefix={topicPrefix}
-          topicTitle={topicTitle}
-          hintFallback={trainingHintFallback}
-          onHourlyClick={() => go('competitions')}
-          onLearningClick={openLearningCard}
-          showSleepNudge={showSleepNudge}
-          onDismissSleepNudge={() => {
-            dismissSleepNudge();
-            setSleepNudgeTick((n) => n + 1);
-          }}
-        />
-
-        <button
-          type="button"
-          onClick={() => go('sops')}
-          className="home-sobai-strip mb-4 w-full text-left sm:mb-5"
-          aria-label={bn ? 'সবাই ফিরো' : 'SAFE HOME'}
-        >
-          <div className="home-sobai-strip__content">
-            <p className={`home-sobai-strip__kicker ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'SAFE HOME (সবাই ফিরো)' : 'SAFE HOME (সবাই ফিরো)'}
-            </p>
-            <p className={`home-sobai-strip__line ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'থামো রে ভাই, কবচ পরো।' : 'Stop now brother, wear your armour.'}
-            </p>
+        <div className="home-3d-board">
+          <HomePrimaryActionCards
+            bn={bn}
+            hourlyDone={hourlyDone}
+            hourLabel={hourlyHourLabel}
+            pointsLabel={formatMakeupMaxPoints(hourlyMaxPoints)}
+            waitMinutes={hourlyWaitMinutes}
+            onHourlyClick={() => go('competitions')}
+            onLearningClick={openLearningCard}
+            showSleepNudge={showSleepNudge}
+            onDismissSleepNudge={() => {
+              dismissSleepNudge();
+              setSleepNudgeTick((n) => n + 1);
+            }}
+          />
+          <div className="home-3d-row">
+            {workCards.map((card) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={card.onClick}
+                aria-label={card.ariaLabel || card.label}
+                className={`home-3d-tile home-3d-tile--${card.id === 'sobai-firo' ? 'safe' : 'folder'}`}
+              >
+                <span className="home-3d-tile__icon" aria-hidden>
+                  {card.icon}
+                </span>
+                <span className={`home-3d-tile__label ${bn ? 'font-bengali' : ''}`}>
+                  {card.label}
+                </span>
+              </button>
+            ))}
           </div>
-          <svg className="home-sobai-strip__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden>
-            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+        </div>
 
-        {(isSafetyMitra || isAdmin) && user?.id ? (
-          <HomeTeamReminderCard userId={user.id} role={userProfile.role} language={language} />
+        {isAdmin || isSafetyMitra ? (
+          <section
+            className="more-staff"
+            aria-label={bn ? 'অ্যাডমিন / সেফটি মিত্র' : 'Admin / Safety Mitra'}
+          >
+            <h2 className={`more-staff__title ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'অ্যাডমিন / সেফটি মিত্র' : 'Admin / Safety Mitra'}
+            </h2>
+            {adminCards.length > 0 ? (
+              <div className="more-3d-list more-staff__list">
+                {adminCards.map((card) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={card.onClick}
+                    aria-label={card.ariaLabel || card.label}
+                    className={`home-3d-tile more-3d-tile home-3d-tile--${card.tone || 'manage'}`}
+                  >
+                    <span className="home-3d-tile__icon" aria-hidden>
+                      {card.icon}
+                      {card.badgeLoading ? (
+                        <span className="home-3d-tile__badge is-loading" />
+                      ) : card.badge ? (
+                        <span className="home-3d-tile__badge">
+                          {card.badge > 99 ? '99+' : card.badge}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className={`home-3d-tile__label ${bn ? 'font-bengali' : ''}`}>
+                      {card.label}
+                    </span>
+                    <svg className="more-3d-tile__go" viewBox="0 0 24 24" aria-hidden>
+                      <path fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {user?.id ? (
+              <div className="more-staff__extra">
+                <HomeTeamReminderCard userId={user.id} role={userProfile.role} language={language} />
+              </div>
+            ) : null}
+          </section>
         ) : null}
 
-        {typeof onOpenUserGuide === 'function' && (
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(5);
-              onOpenUserGuide();
-            }}
-            className="app-guide-chip mb-4 sm:mb-5"
-            aria-label={bn ? 'অ্যাপ গাইড দেখুন' : 'Watch app guide'}
-          >
-            <span className="app-guide-chip__icon" aria-hidden>
-              <svg className="ml-px h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="m7 4 12 8-12 8V4z" />
-              </svg>
-            </span>
-            <span className="app-guide-chip__copy">
-              <span className={`app-guide-chip__title ${bn ? 'font-bengali' : ''}`}>
-                {bn ? 'অ্যাপ গাইড' : 'App guide'}
-              </span>
-              <span className={`app-guide-chip__hint ${bn ? 'font-bengali' : ''}`}>
-                {bn ? 'অ্যাপ কীভাবে ব্যবহার করবেন' : 'How to use this app'}
-              </span>
-            </span>
-            <svg className="app-guide-chip__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-              <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        )}
-
-        {/* Shortcuts — old compact tiles in 2 columns */}
-        <div className="mb-4 grid grid-cols-2 gap-2.5 sm:mb-5 sm:gap-3">
-          {snapshotCards.map((card) => (
-            <button
-              key={card.id}
-              type="button"
-              onClick={card.onClick}
-              aria-label={card.ariaLabel || card.label}
-              className={`group flex items-center gap-3 rounded-2xl border text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] ${card.accent} ${bn ? 'px-3 py-3' : 'px-3 py-2.5'}`}
-            >
-              <span
-                className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-transform duration-200 group-hover:scale-105 ${card.iconWrap}`}
-                aria-hidden
-              >
-                {card.icon}
-                {card.badgeLoading ? (
-                  <span className="absolute -right-1 -top-1 h-4 min-w-[1.25rem] animate-pulse rounded-full bg-rose-300 ring-2 ring-white" />
-                ) : card.badge ? (
-                  <span className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-rose-600 px-1 text-center text-[10px] font-black leading-4 text-white shadow-sm shadow-rose-600/50 ring-2 ring-white">
-                    {card.badge > 99 ? '99+' : card.badge}
-                  </span>
-                ) : null}
-              </span>
-              <span className="min-w-0 flex-1">
-                <p className={`leading-snug ${bn ? 'font-bengali font-bold text-[15px]' : 'font-black text-sm'}`}>
-                  {card.label}
-                </p>
-                {card.value ? (
-                  <p className={`mt-0.5 tabular-nums opacity-75 ${bn ? 'font-bengali font-bold text-xs' : 'font-bold text-[11px]'}`}>
-                    {card.value}
-                  </p>
-                ) : null}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Progress detail — desktop / larger phones only */}
-        <div className="mb-4 hidden rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm sm:mb-5 sm:block">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className={`font-bold text-slate-700 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
-              {bn ? 'পড়ার অগ্রগতি' : 'Reading progress'}
-            </p>
-            <p className={`font-black tabular-nums text-orange-600 ${bn ? 'text-sm' : 'text-xs'}`}>{progressPct}%</p>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-500"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Emergency + invite */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={() => go('emergency')}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-red-200/90 bg-red-50/90 px-3 py-3 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-100/80 hover:shadow-sm active:scale-[0.98] sm:justify-start"
-            aria-label={bn ? 'জরুরি' : 'Emergency'}
-          >
-            <span className="text-lg leading-none" aria-hidden>
-              🚨
-            </span>
-            <span className={`font-black text-red-800 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
-              {bn ? 'জরুরি' : 'Emergency'}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(5);
-              openLinemanInviteWhatsApp(language);
-            }}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-200/90 bg-emerald-50/90 px-3 py-3 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-100/80 hover:shadow-sm active:scale-[0.98] sm:justify-start"
-            aria-label={bn ? 'শেয়ার' : 'Invite'}
-          >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white" aria-hidden>
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12.04 2a9.84 9.84 0 0 0-8.52 14.76L2 22l5.39-1.42A9.94 9.94 0 1 0 12.04 2Zm0 17.99a8.15 8.15 0 0 1-4.15-1.14l-.3-.18-3.2.84.85-3.12-.2-.32A8.15 8.15 0 1 1 12.04 20Zm4.47-6.1c-.24-.12-1.45-.72-1.68-.8-.22-.08-.38-.12-.55.12-.16.25-.63.8-.77.97-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21a7.35 7.35 0 0 1-1.36-1.7c-.14-.24-.02-.37.1-.49.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.17.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.25-.85.83-.85 2.02s.87 2.34.99 2.5c.12.17 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.45-.6 1.66-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28Z" />
-              </svg>
-            </span>
-            <span className={`font-black text-emerald-800 ${bn ? 'font-bengali text-sm' : 'text-xs'}`}>
-              {bn ? 'শেয়ার' : 'Invite'}
-            </span>
-          </button>
-        </div>
-
-        {/* Simple footer — language + Facebook + WhatsApp group + Our Story */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-3 border-t border-slate-200/70 pt-4">
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(5);
-              onLanguageChange?.(bn ? 'en' : 'bn');
-            }}
-            aria-label={bn ? 'ভাষা পরিবর্তন' : 'Change language'}
-            title={bn ? 'ভাষা' : 'Language'}
-            className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-slate-200/80 bg-white px-3.5 text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98]"
-          >
-            <span className="flex items-baseline gap-px font-black leading-none" aria-hidden>
-              <span className={`text-[13px] ${!bn ? 'text-orange-600' : 'text-slate-400'}`}>A</span>
-              <span className={`font-bengali text-[13px] ${bn ? 'text-orange-600' : 'text-slate-400'}`}>অ</span>
-            </span>
-            <span className={`text-xs font-bold ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'বাংলা' : 'English'}
-            </span>
-          </button>
-
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white p-1 shadow-sm">
+        <div className="home-connect">
+          <div className="home-connect__row">
             <button
               type="button"
               onClick={() => {
@@ -1030,15 +735,14 @@ export default function Home({
                 void openExternalUrl(FACEBOOK_PAGE_URL);
               }}
               aria-label={bn ? 'ফেসবুক পেজ' : 'Facebook Page'}
-              title={bn ? 'ফেসবুক পেজ' : 'Facebook Page'}
-              className={`inline-flex min-h-[32px] items-center gap-1.5 rounded-full px-3 text-sm font-bold text-[#1877F2] transition-all hover:bg-blue-50 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+              className="home-connect__btn home-connect__btn--fb"
             >
-              <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
-              </svg>
-              <span>{bn ? 'পেজ' : 'Page'}</span>
+              <span className="home-connect__icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                </svg>
+              </span>
             </button>
-            <span className="h-4 w-px bg-slate-200" aria-hidden />
             <button
               type="button"
               onClick={() => {
@@ -1046,41 +750,15 @@ export default function Home({
                 void openExternalUrl(WHATSAPP_GROUP_URL);
               }}
               aria-label={bn ? 'হোয়াটসঅ্যাপ গ্রুপ' : 'WhatsApp Group'}
-              title={bn ? 'হোয়াটসঅ্যাপ গ্রুপ' : 'WhatsApp Group'}
-              className={`inline-flex min-h-[32px] items-center gap-1.5 rounded-full px-3 text-sm font-bold text-[#25D366] transition-all hover:bg-green-50 active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+              className="home-connect__btn home-connect__btn--wa"
             >
-              <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-              </svg>
-              <span>{bn ? 'গ্রুপ' : 'Group'}</span>
+              <span className="home-connect__icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+              </span>
             </button>
-          </div>
-
-          <div className="flex w-full flex-wrap items-center justify-center gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(5);
-                setCurrentView('amader-kotha');
-              }}
-              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-orange-200/90 bg-orange-50/90 px-3.5 text-sm font-bold text-orange-900 shadow-2xs transition-all hover:bg-orange-100 hover:shadow-xs active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
-              aria-label={bn ? 'আমাদের কথা' : 'Our Story'}
-            >
-              <span aria-hidden>📖</span>
-              <span>{bn ? 'আমাদের কথা' : 'Our Story'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (navigator.vibrate) navigator.vibrate(5);
-                setCurrentView('accident-stories');
-              }}
-              className={`inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-rose-200/90 bg-rose-50/90 px-3.5 text-sm font-bold text-rose-900 shadow-2xs transition-all hover:bg-rose-100 hover:shadow-xs active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
-              aria-label={bn ? 'করুণ কাহিনী' : 'Tragic Stories'}
-            >
-              <span aria-hidden>🕯️</span>
-              <span>{bn ? 'করুণ কাহিনী' : 'Tragic Stories'}</span>
-            </button>
+            <LanguageSwitch language={language} onChange={onLanguageChange} />
           </div>
         </div>
 

@@ -18,7 +18,6 @@ export default function LinemanPPEView({
     view: controlledView,
     onViewChange,
     readOnly = false,
-    setCurrentView,
 }) {
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState([]);
@@ -126,37 +125,6 @@ export default function LinemanPPEView({
     const pageTitle = language === 'en' ? 'My PPE' : 'আমার পিপিই';
     const bn = language === 'bn';
 
-    const readOnlyBanner = readOnly ? (
-        <div className="shrink-0 border-b border-orange-200/70 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50">
-            <div className={`flex items-center gap-2.5 ${embedded ? 'px-3 py-2 sm:px-6' : 'px-4 py-2.5 sm:px-6'}`}>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-orange-600 shadow-sm ring-1 ring-orange-200/80">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M12 9v4m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z" />
-                    </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                    <p className={`text-[13px] font-bold leading-snug text-slate-800 ${bn ? 'font-bengali' : ''}`}>
-                        {bn ? 'পিপিই আপডেট কেবলমাত্র এদের জন্য' : 'PPE update is only for'}
-                    </p>
-                    <p className={`mt-0.5 text-[10px] font-medium leading-snug text-slate-500 ${bn ? 'font-bengali' : ''}`}>
-                        {bn
-                            ? 'এইচটি মোবাইল ভ্যান · এলটি মোবাইল ভ্যান · এইচটি-এলটি আদারস · সাবস্টেশন অপারেশন'
-                            : 'HT Mobile Van · LT Mobile Van · HT-LT Others · Substation Operation'}
-                    </p>
-                </div>
-                {typeof setCurrentView === 'function' && (
-                    <button
-                        type="button"
-                        onClick={() => setCurrentView('safety-library')}
-                        className={`shrink-0 rounded-full bg-orange-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm shadow-orange-500/20 transition-all hover:bg-orange-600 active:scale-95 ${bn ? 'font-bengali' : ''}`}
-                    >
-                        {bn ? 'পরিচিতি' : 'Identify'}
-                    </button>
-                )}
-            </div>
-        </div>
-    ) : null;
-
     /** Fixed toolbar — same place for figure and list so the toggle never jumps. */
     const viewToolbar = (
         <div className={`shrink-0 ${embedded ? 'px-3 pt-2 sm:px-6' : 'px-4 pt-3 sm:px-6'}`}>
@@ -169,9 +137,11 @@ export default function LinemanPPEView({
                     {pageTitle}
                 </h1>
             </div>
-            <div className="mx-auto flex w-full max-w-xs items-center justify-center">
-                <PpeViewSegment view={view} onChange={setView} language={language} />
-            </div>
+            {!readOnly ? (
+                <div className="mx-auto flex w-full max-w-xs items-center justify-center">
+                    <PpeViewSegment view={view} onChange={setView} language={language} />
+                </div>
+            ) : null}
         </div>
     );
 
@@ -222,7 +192,7 @@ export default function LinemanPPEView({
                 )}
             </div>
 
-            {OTHER_PPE_ITEMS.length > 0 && (
+            {OTHER_PPE_ITEMS.length > 0 && !readOnly && (
                 <button
                     type="button"
                     onClick={() => setView('list')}
@@ -259,10 +229,25 @@ export default function LinemanPPEView({
     );
 
     const content = (
-        <>
-            {readOnlyBanner}
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
             {viewToolbar}
-            {view === 'list' ? listBody : figureBody}
+            <div className="relative flex min-h-0 flex-1 flex-col">
+                {view === 'list' && !readOnly ? listBody : figureBody}
+                {readOnly ? (
+                    <div
+                        className="absolute inset-0 z-20 flex items-center justify-center px-6"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <div className="absolute inset-0 bg-[#fffdf7]/78 backdrop-blur-[3px]" aria-hidden />
+                        <div className="relative w-full max-w-[17rem] rounded-2xl border border-orange-100 bg-white/95 px-5 py-6 text-center shadow-[0_12px_32px_-16px_rgba(28,25,23,0.35)]">
+                            <p className={`text-[1.05rem] font-black leading-snug text-slate-800 ${bn ? 'font-bengali' : ''}`}>
+                                {bn ? 'কেবলমাত্র টেকনিক্যাল কর্মীদের জন্য' : 'Only for technical workers'}
+                            </p>
+                        </div>
+                    </div>
+                ) : null}
+            </div>
             {!readOnly && selectedName && (
                 <PPEItemSheet
                     itemName={selectedName}
@@ -273,7 +258,7 @@ export default function LinemanPPEView({
                     onSave={handleSaveItem}
                 />
             )}
-        </>
+        </div>
     );
 
     if (embedded) {

@@ -1788,7 +1788,7 @@ export default function SmartLinemanUI() {
               }}
               userProfile={userProfile}
               language={language}
-              onToggleLanguageModal={() => setShowLanguageModal(true)}
+              onLanguageChange={handleLanguageSelect}
               onToggleNotifications={() => setCurrentView('notifications')}
               onLogout={() => setShowLogoutModal(true)}
               onOpenUserGuide={() => setUserGuideOpen(true)}

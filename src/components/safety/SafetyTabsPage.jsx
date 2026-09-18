@@ -5,8 +5,8 @@ import MyPPE from './MyPPE';
 import SafetyLibrary from './SafetyLibrary';
 
 /**
- * Full-height shell for My PPE and Identify (Porichiti).
- * Home opens each as its own view — no shared top tabs.
+ * Shell for one safety view at a time: My PPE (`my_ppe`) or Identify (`safety-library`).
+ * Each is its own page — no shared top tabs.
  */
 export default function SafetyTabsPage({ activeTab, setCurrentView, language, user, userProfile }) {
     const isPpe = activeTab === 'my_ppe';
@@ -45,7 +45,6 @@ export default function SafetyTabsPage({ activeTab, setCurrentView, language, us
                         language={language}
                         user={user}
                         userProfile={userProfile}
-                        setCurrentView={setCurrentView}
                         embedded
                     />
                 ) : (

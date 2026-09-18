@@ -2,92 +2,245 @@ import React from 'react';
 import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
-import { FAQ_PAGE_TITLE } from '../utils/faqFilters';
 import { openLinemanInviteWhatsApp } from '../utils/linemanInviteShare';
 import { hapticImpact, openExternalUrl, shareContent } from '../utils/nativeAndroidUx';
 import { isNativeCapacitorPlatform } from '../utils/webPush';
 import AndroidAppDownloadCta from './AndroidAppDownloadCta';
 import AvatarPhoto from './AvatarPhoto';
+import LanguageSwitch from './LanguageSwitch';
 import { AVATAR_EDGE } from '../utils/avatarImage';
 
 const FACEBOOK_PAGE_URL = 'https://www.facebook.com/smartlineman';
 const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Ljs2zuKTCX2K0oS16ga8wG?mode=gi_t';
+
+function Glyph({ d, cut, children }) {
+  return (
+    <svg className="home-3d-tile__glyph" viewBox="0 0 24 24" aria-hidden>
+      {d ? <path fill="currentColor" d={d} /> : null}
+      {cut ? <path fill="#fff" d={cut} /> : null}
+      {children}
+    </svg>
+  );
+}
 
 export default function MorePage({
   currentView,
   setCurrentView,
   userProfile,
   language,
-  onToggleLanguageModal,
+  onLanguageChange,
   onToggleNotifications,
   onLogout,
   onOpenUserGuide,
 }) {
   const { startRadio, loading: radioLoading } = useLifeSkillRadio();
   const bn = language === 'bn';
+  const isStaff = ['admin', 'safety mitra'].includes(userProfile?.role);
 
-  const sections = [
+  const items = [
     {
-      id: 'learn',
-      title: bn ? 'শেখা' : 'Learn',
-      items: [
-        { id: 'home', label: bn ? 'হোম' : 'Home', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
-        { id: 'training', label: bn ? 'প্রশিক্ষণ' : 'Training', icon: '📚', tint: 'bg-orange-100 text-orange-700', show: true },
-        { id: 'video-guide', label: bn ? 'ভিডিও গাইড' : 'Video Guide', icon: '📺', tint: 'bg-sky-100 text-sky-700', show: true },
-        { id: 'app-guide', label: bn ? 'অ্যাপ গাইড' : 'App guide', icon: '▶', tint: 'bg-fuchsia-100 text-fuchsia-700', show: typeof onOpenUserGuide === 'function' },
-        { id: 'aro-janun', label: bn ? 'আরো জানুন' : 'Know More', icon: '🧰', tint: 'bg-violet-100 text-violet-700', show: true },
-        { id: 'training-faq', label: bn ? FAQ_PAGE_TITLE.bn : FAQ_PAGE_TITLE.en, icon: '💡', tint: 'bg-yellow-100 text-yellow-700', show: true, redirectTo: 'training', tab: 'faq' },
-        { id: 'my-progress', label: bn ? 'আমার অগ্রগতি' : 'My Progress', icon: '📈', tint: 'bg-emerald-100 text-emerald-700', show: true },
-      ],
+      id: 'amader-kotha',
+      label: bn ? 'আমাদের কথা' : 'Our Story',
+      tone: 'story',
+      show: true,
+      icon: <Glyph d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />,
     },
     {
-      id: 'compete',
-      title: bn ? 'প্রতিযোগিতা' : 'Compete',
-      items: [
-        { id: 'competitions', label: bn ? 'খেলুন' : 'Play', icon: '🎯', tint: 'bg-rose-100 text-rose-700', show: true },
-        { id: 'leaderboard', label: bn ? 'র‍্যাঙ্ক' : 'Rank', icon: '🏆', tint: 'bg-amber-100 text-amber-700', show: true },
-        { id: 'prizes', label: bn ? 'পুরস্কার' : 'Prizes', icon: '🎁', tint: 'bg-orange-100 text-orange-700', show: true },
-      ],
+      id: 'prizes',
+      label: bn ? 'পুরস্কার' : 'Prizes',
+      tone: 'prize',
+      show: true,
+      icon: (
+        <Glyph>
+          <path
+            fill="currentColor"
+            d="M9.2 3.1c1.5.1 2.45 1.4 2.8 2.65.35-1.25 1.3-2.55 2.8-2.65 1.7-.1 3 1.2 3 2.7 0 1.75-1.8 2.7-3.5 3.3L12 9.85 9.7 9.1C8 8.5 6.2 7.55 6.2 5.8c0-1.5 1.3-2.8 3-2.7z"
+          />
+          <path
+            fill="currentColor"
+            d="M4.35 9.15h15.3c.7 0 1.25.55 1.25 1.25v1.5H3.1v-1.5c0-.7.55-1.25 1.25-1.25z"
+          />
+          <path
+            fill="currentColor"
+            d="M5.15 12.65h13.7v7.15c0 .8-.65 1.45-1.45 1.45H6.6c-.8 0-1.45-.65-1.45-1.45v-7.15z"
+          />
+          <path fill="#fff" d="M11.2 9.15h1.6v12.1h-1.6z" />
+          <path fill="#fff" d="M3.1 10.5h17.8v1.5H3.1z" />
+        </Glyph>
+      ),
     },
     {
-      id: 'safety',
-      title: bn ? 'সুরক্ষা' : 'Safety',
-      items: [
-        { id: 'safety-library', label: bn ? 'পরিচিতি' : 'Identify', icon: '🛡️', tint: 'bg-teal-100 text-teal-700', show: true },
-        { id: 'sops', label: bn ? 'SAFE HOME (সবাই ফিরো)' : 'SAFE HOME (সবাই ফিরো)', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
-        { id: 'my_ppe', label: bn ? 'সুরক্ষা' : 'Suraksha', icon: '👷', tint: 'bg-orange-100 text-orange-700', show: true },
-        { id: 'my_tools', label: bn ? 'আমার সরঞ্জাম' : 'My Tools', icon: '🔧', tint: 'bg-slate-200 text-slate-700', show: true },
-        { id: 'emergency', label: bn ? 'জরুরি' : 'Emergency', icon: '🚨', tint: 'bg-red-100 text-red-700', show: true, danger: true },
-      ],
+      id: 'my_ppe',
+      label: bn ? 'আমার পিপিই' : 'My PPE',
+      tone: 'safe',
+      show: true,
+      gapAfter: true,
+      icon: (
+        <Glyph
+          d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"
+          cut="m10.2 14.7-2.6-2.6 1.4-1.4 1.2 1.2 3.7-3.7 1.4 1.4-5.1 5.1z"
+        />
+      ),
     },
     {
-      id: 'account',
-      title: bn ? 'অ্যাকাউন্ট' : 'Account',
-      items: [
-        { id: 'notifications', label: bn ? 'বিজ্ঞপ্তি' : 'Notifications', icon: '🔔', tint: 'bg-rose-100 text-rose-700', show: true },
-        { id: 'language', label: bn ? 'ভাষা' : 'Language', icon: '🌐', tint: 'bg-sky-100 text-sky-700', show: true },
-        {
-          id: 'admin',
-          label: (userProfile?.role === 'lineman' || userProfile?.role === 'guest')
-            ? (bn ? 'আমার প্রোফাইল' : 'My Profile')
-            : (bn ? 'প্রোফাইল আপডেট' : 'Update Profile'),
-          icon: '⚙️',
-          tint: 'bg-slate-200 text-slate-700',
-          show: ['admin', 'safety mitra', 'lineman', 'guest'].includes(userProfile?.role),
-        },
-        { id: 'guide', label: bn ? 'হ্যান্ডবুক' : 'Handbook', icon: '📖', tint: 'bg-emerald-100 text-emerald-700', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
-        { id: 'admin-services', label: bn ? 'সার্ভিস' : 'Services', icon: '🔄', tint: 'bg-violet-100 text-violet-700', show: ['admin', 'safety mitra'].includes(userProfile?.role) },
-      ],
+      id: 'app-guide',
+      label: bn ? 'অ্যাপ গাইড' : 'App guide',
+      tone: 'phone',
+      show: typeof onOpenUserGuide === 'function',
+      icon: (
+        <Glyph
+          d="M17 1.01 7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99z"
+          cut="M7 5h10v12H7z"
+        />
+      ),
+    },
+    {
+      id: 'my-progress',
+      label: bn ? 'আমার অগ্রগতি' : 'My Progress',
+      tone: 'learn',
+      show: true,
+      icon: (
+        <Glyph d="M21 8c-1.45 0-2.26 1.44-1.93 2.51l-3.55 3.56c-.3-.09-.74-.09-1.04 0l-2.55-2.55C12.27 10.45 11.46 9 10 9c-1.45 0-2.27 1.45-1.93 2.52l-4.56 4.55C2.44 15.74 1 16.55 1 18c0 1.1.9 2 2 2 1.45 0 2.26-1.44 1.93-2.51l4.55-4.56c.3.09.74.09 1.04 0l2.55 2.55C12.73 16.55 13.54 18 15 18c1.45 0 2.27-1.45 1.93-2.52l3.56-3.55c1.07.33 2.51-.48 2.51-1.93 0-1.1-.9-2-2-2z" />
+      ),
+    },
+    {
+      id: 'training-faq',
+      label: bn ? 'জিজ্ঞাসা' : 'FAQ',
+      tone: 'manage',
+      show: true,
+      redirectTo: 'training',
+      tab: 'faq',
+      icon: (
+        <Glyph
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+          cut="M13 17h-2v-2h2v2zm1.07-7.75-.9.92C12.45 10.9 12 11.5 12 13h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+        />
+      ),
+    },
+    {
+      id: 'aro-janun',
+      label: bn ? 'আরো জানুন' : 'Know More',
+      tone: 'idea',
+      show: true,
+      icon: <Glyph d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z" />,
+    },
+    {
+      id: 'video-guide',
+      label: bn ? 'ভিডিও গাইড' : 'Video Guide',
+      tone: 'video',
+      show: true,
+      icon: (
+        <Glyph
+          d="M21 3H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.11-.9-2-2-2z"
+          cut="M16 11.5 9 15.5v-8z"
+        />
+      ),
+    },
+    {
+      id: 'my_tools',
+      label: bn ? 'আমার সরঞ্জাম' : 'My Tools',
+      tone: 'tools',
+      show: true,
+      icon: <Glyph d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />,
+    },
+    {
+      id: 'emergency',
+      label: bn ? 'জরুরি' : 'Emergency',
+      tone: 'sos',
+      show: true,
+      gapBefore: true,
+      icon: (
+        <Glyph
+          d="M1 21h22L12 2 1 21z"
+          cut="M11 9h2v6h-2zm0 8h2v2h-2z"
+        />
+      ),
+    },
+    {
+      id: 'accident-stories',
+      label: bn ? 'করুণ কাহিনী' : 'Tragic Stories',
+      tone: 'heart',
+      show: true,
+      icon: <Glyph d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />,
+    },
+    {
+      id: 'radio',
+      label: bn ? 'SLM রেডিও' : 'SLM Radio',
+      tone: 'indigo',
+      show: true,
+      live: true,
+      disabled: radioLoading,
+      action: 'radio',
+      icon: <Glyph d="M3.24 6.15C2.51 6.43 2 7.17 2 8v12c0 1.1.89 2 2 2h16c1.11 0 2-.9 2-2V8c0-1.1-.89-2-2-2H8.3l8.26-3.34L15.88 1 3.24 6.15zM7 20c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-8h-2v-2h-2v2H4V8h16v4z" />,
+    },
+    {
+      id: 'notifications',
+      label: bn ? 'বিজ্ঞপ্তি' : 'Notifications',
+      tone: 'bell',
+      show: true,
+      icon: <Glyph d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />,
+    },
+    {
+      id: 'community',
+      label: bn ? 'প্রশ্নোত্তর' : 'Forum',
+      tone: 'forum',
+      show: true,
+      icon: <Glyph d="M21 6c0-1.1-.9-2-2-2H5C3.9 4 3 4.9 3 6v9c0 1.1.9 2 2 2h3v3.5L12.5 17H19c1.1 0 2-.9 2-2V6z" />,
+    },
+    {
+      id: 'share',
+      label: bn ? 'শেয়ার করুন' : 'Share',
+      tone: 'share',
+      show: true,
+      action: 'share',
+      icon: <Glyph d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />,
+    },
+  ].filter((item) => item.show);
+
+  const staffTools = [
+    {
+      id: 'guide',
+      tone: 'survey',
+      label: bn ? 'হ্যান্ডবুক' : 'Handbook',
+      icon: (
+        <Glyph d="M12 11.55C9.64 9.35 6.48 8 3 8v11c3.48 0 6.64 1.35 9 3.55 2.36-2.19 5.52-3.55 9-3.55V8c-3.48 0-6.64 1.35-9 3.55zM12 8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z" />
+      ),
+    },
+    {
+      id: 'admin-services',
+      tone: 'more',
+      label: bn ? 'সার্ভিস' : 'Services',
+      icon: (
+        <Glyph d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
+      ),
     },
   ];
 
-  const displayUserId = userProfile?.slm_id || userProfile?.id ? String(userProfile?.slm_id || userProfile?.id) : null;
-  const displayName = (userProfile?.full_name && !userProfile.full_name.includes('@')) ? userProfile.full_name : 'Guest';
+  const shareInvite = () => {
+    void hapticImpact('Light');
+    if (navigator.vibrate) navigator.vibrate(5);
+    if (isNativeCapacitorPlatform()) {
+      void shareContent({
+        title: APP_NAME,
+        text: bn
+          ? 'স্মার্টলাইনম্যান — খেলতে খেলতে শিখুন, পুরস্কার জিতুন।'
+          : 'SmartLineman — learn while you play, win prizes.',
+        url: WEBSITE_URL,
+        dialogTitle: bn ? 'শেয়ার করুন' : 'Share SmartLineman',
+      });
+    } else {
+      openLinemanInviteWhatsApp(language);
+    }
+  };
 
   const handleNavClick = (item) => {
     if (navigator.vibrate) navigator.vibrate(5);
-    if (item.id === 'language') {
-      if (onToggleLanguageModal) onToggleLanguageModal();
+    if (item.action === 'radio') {
+      if (!radioLoading) startRadio();
+      return;
+    }
+    if (item.action === 'share') {
+      shareInvite();
       return;
     }
     if (item.id === 'notifications') {
@@ -110,254 +263,153 @@ export default function MorePage({
   };
 
   return (
-    <div className="min-h-full bg-[#fffdf7] pb-24 text-slate-900">
-
-      {/* Profile header */}
-      <header className="border-b border-slate-200/80 bg-[#fffdf7]/90 px-4 py-3 backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
-          <div className="relative shrink-0">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-orange-200/80 bg-orange-400 text-slate-900 shadow-sm">
+    <div className={`home-screen min-h-full pb-28 text-slate-900 ${bn ? 'home-screen--bn' : ''}`}>
+      <div className="mx-auto max-w-lg px-4 pt-4 sm:pt-5">
+        <header className="more-head">
+          <h1 className={`more-head__title ${bn ? 'font-bengali' : ''}`}>
+            {bn ? 'আরও' : 'More'}
+          </h1>
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(5);
+              if (setCurrentView) setCurrentView('admin');
+              else window.location.hash = '/admin';
+            }}
+            className="home-greet__avatar"
+            aria-label={bn ? 'প্রোফাইল' : 'Profile'}
+          >
+            <span className="home-greet__photo">
               {userProfile?.avatar_url ? (
-                <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.card} alt={displayName} className="h-full w-full object-cover" />
+                <AvatarPhoto url={userProfile.avatar_url} edge={AVATAR_EDGE.card} alt="" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center p-2 text-slate-900">
+                <span className="home-greet__photo-fallback">
                   <UserIcon className="h-full w-full" />
-                </div>
+                </span>
               )}
-            </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#fffdf7] bg-emerald-500" aria-hidden />
-          </div>
+            </span>
+          </button>
+        </header>
 
-          <div className="min-w-0 flex-1">
-            <p className={`truncate font-black leading-tight text-slate-900 ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
-              {displayName}
-            </p>
-            <div className="mt-0.5 flex items-center gap-2 text-[10px] font-bold text-slate-500">
-              <span className={`shrink-0 text-orange-600 ${bn ? 'font-bengali' : 'uppercase'}`}>
-                {userProfile?.role || 'lineman'}
+        <div className="more-3d-list">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              disabled={item.disabled}
+              onClick={() => handleNavClick(item)}
+              aria-label={item.label}
+              aria-current={currentView === item.id ? 'page' : undefined}
+              className={`home-3d-tile more-3d-tile home-3d-tile--${item.tone || 'more'}${item.disabled ? ' is-done' : ''}${item.gapAfter ? ' is-gap-after' : ''}${item.gapBefore ? ' is-gap-before' : ''}`}
+            >
+              <span className="home-3d-tile__icon" aria-hidden>
+                {item.icon}
+                {item.live ? <span className="home-3d-tile__badge is-live" /> : null}
               </span>
-              {displayUserId && (
-                <>
-                  <span className="text-slate-300" aria-hidden>·</span>
-                  <span className="truncate" title={displayUserId}>ID {displayUserId}</span>
-                </>
-              )}
-            </div>
-          </div>
+              <span className={`home-3d-tile__label ${bn ? 'font-bengali' : ''}`}>
+                {item.label}
+              </span>
+              <svg className="more-3d-tile__go" viewBox="0 0 24 24" aria-hidden>
+                <path fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
+              </svg>
+            </button>
+          ))}
+        </div>
 
-          <div className="flex shrink-0 items-center gap-1.5">
+        {isStaff ? (
+          <section className="more-staff" aria-label={bn ? 'অ্যাডমিন / সেফটি মিত্র' : 'Admin / Safety Mitra'}>
+            <h2 className={`more-staff__title ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'অ্যাডমিন / সেফটি মিত্র' : 'Admin / Safety Mitra'}
+            </h2>
+            <div className="more-3d-list more-staff__list">
+              {staffTools.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleNavClick(item)}
+                  aria-label={item.label}
+                  aria-current={currentView === item.id ? 'page' : undefined}
+                  className={`home-3d-tile more-3d-tile home-3d-tile--${item.tone}`}
+                >
+                  <span className="home-3d-tile__icon" aria-hidden>
+                    {item.icon}
+                  </span>
+                  <span className={`home-3d-tile__label ${bn ? 'font-bengali' : ''}`}>
+                    {item.label}
+                  </span>
+                  <svg className="more-3d-tile__go" viewBox="0 0 24 24" aria-hidden>
+                    <path fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="more-android-wrap">
+          <AndroidAppDownloadCta language={language} />
+        </section>
+
+        <div className="home-connect">
+          <div className="home-connect__row">
             <button
               type="button"
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(5);
-                if (onToggleLanguageModal) onToggleLanguageModal();
+                void openExternalUrl(FACEBOOK_PAGE_URL);
               }}
-              aria-label={bn ? 'ভাষা' : 'Language'}
-              title={bn ? 'ভাষা' : 'Language'}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
+              aria-label={bn ? 'ফেসবুক পেজ' : 'Facebook Page'}
+              className="home-connect__btn home-connect__btn--fb"
             >
-              <span className="flex items-baseline gap-px font-black" aria-hidden>
-                <span className="text-[13px] text-orange-600">A</span>
-                <span className="font-bengali text-[13px] text-slate-800">অ</span>
+              <span className="home-connect__icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
+                </svg>
               </span>
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(5);
+                void openExternalUrl(WHATSAPP_GROUP_URL);
+              }}
+              aria-label={bn ? 'হোয়াটসঅ্যাপ গ্রুপ' : 'WhatsApp Group'}
+              className="home-connect__btn home-connect__btn--wa"
+            >
+              <span className="home-connect__icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+              </span>
+            </button>
+            <LanguageSwitch language={language} onChange={onLanguageChange} />
             <button
               type="button"
               onClick={onLogout}
               aria-label={bn ? 'লগ আউট' : 'Logout'}
-              title={bn ? 'লগ আউট' : 'Logout'}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-red-200/80 bg-red-50 text-red-700 shadow-sm transition-all hover:bg-red-100 active:scale-95"
+              className="home-connect__btn home-connect__btn--out"
             >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-lg px-4 py-4">
-        {/* Suraksha Sathi — highlighted (moved from floating FAB) */}
-        <button
-          type="button"
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(5);
-            if (setCurrentView) setCurrentView('sops');
-            else window.location.hash = '/sops';
-          }}
-          className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-emerald-300/80 bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3.5 text-left text-white shadow-md shadow-emerald-600/25 ring-2 ring-emerald-400/40 transition-all hover:shadow-lg active:scale-[0.99]"
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/20 shadow-inner" aria-hidden>
-            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className={`block font-black leading-tight ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
-              SAFE HOME (সবাই ফিরো)
-            </span>
-            <span className={`mt-0.5 block font-semibold leading-snug text-emerald-50/95 ${bn ? 'font-bengali text-sm' : 'text-[11px]'}`}>
-              {bn ? 'থামো রে ভাই, কবচ পরো।' : 'Stop now brother, wear your armour.'}
-            </span>
-          </span>
-          <svg className="h-4 w-4 shrink-0 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        {/* SLM Radio CTA */}
-        <button
-          type="button"
-          disabled={radioLoading}
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(5);
-            startRadio();
-          }}
-          className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3.5 text-left text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white text-lg leading-none text-indigo-600 shadow-sm" aria-hidden>
-            📻
-          </span>
-          <span className={`flex-1 font-black leading-tight ${bn ? 'font-bengali text-base' : 'text-sm'}`}>
-            {bn ? 'SLM রেডিও শুনুন' : 'Listen to SLM Radio'}
-          </span>
-          <span className={`shrink-0 rounded-full border border-white/50 bg-white/95 px-2 py-0.5 font-black text-indigo-700 ${bn ? 'font-bengali text-[11px]' : 'text-[9px] uppercase'}`}>
-            {bn ? 'লাইভ' : 'Live'}
-          </span>
-        </button>
-
-        {/* Share with acquaintance linemen — system share on native, WhatsApp invite on web */}
-        <button
-          type="button"
-          onClick={() => {
-            void hapticImpact('Light');
-            if (navigator.vibrate) navigator.vibrate(5);
-            if (isNativeCapacitorPlatform()) {
-              void shareContent({
-                title: APP_NAME,
-                text: bn
-                  ? 'স্মার্টলাইনম্যান — খেলতে খেলতে শিখুন, পুরস্কার জিতুন।'
-                  : 'SmartLineman — learn while you play, win prizes.',
-                url: WEBSITE_URL,
-                dialogTitle: bn ? 'শেয়ার করুন' : 'Share SmartLineman',
-              });
-            } else {
-              openLinemanInviteWhatsApp(language);
-            }
-          }}
-          className="mb-5 flex w-full items-start gap-3 rounded-2xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-green-50/80 to-white px-4 py-3.5 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm" aria-hidden>
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.04 2a9.84 9.84 0 0 0-8.52 14.76L2 22l5.39-1.42A9.94 9.94 0 1 0 12.04 2Zm0 17.99a8.15 8.15 0 0 1-4.15-1.14l-.3-.18-3.2.84.85-3.12-.2-.32A8.15 8.15 0 1 1 12.04 20Zm4.47-6.1c-.24-.12-1.45-.72-1.68-.8-.22-.08-.38-.12-.55.12-.16.25-.63.8-.77.97-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.96-1.21a7.35 7.35 0 0 1-1.36-1.7c-.14-.24-.02-.37.1-.49.11-.11.25-.28.37-.42.12-.14.16-.24.24-.4.08-.17.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.8-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.25-.85.83-.85 2.02s.87 2.34.99 2.5c.12.17 1.71 2.61 4.14 3.66.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.45-.6 1.66-1.17.2-.58.2-1.07.14-1.17-.06-.1-.22-.16-.47-.28Z" />
-            </svg>
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-2">
-              <span className={`text-sm font-black leading-tight text-slate-900 ${bn ? 'font-bengali' : ''}`}>
-                {bn ? 'আরও লাইনম্যানকে জানান' : 'Reach more linemen'}
+              <span className="home-connect__icon" aria-hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
               </span>
-              <span className={`shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-800 ${bn ? 'font-bengali' : 'uppercase'}`}>
-                {bn ? 'শেয়ার' : 'Share'}
-              </span>
-            </span>
-            <span className={`mt-1 block text-xs font-medium leading-relaxed text-slate-600 ${bn ? 'font-bengali' : ''}`}>
-              {bn
-                ? 'আপনার পরিচিত লাইনম্যানদের শেয়ার করুন—খেলতে খেলতে শেখা, শিখতে শিখতে পুরস্কার, নিজেকে স্মার্ট বানানো।'
-                : 'Share with linemen you know — learn through play, earn prizes, become smarter.'}
-            </span>
-          </span>
-        </button>
-
-        {sections.map((section) => {
-          const items = section.items.filter((item) => item.show);
-          if (items.length === 0) return null;
-          return (
-            <section key={section.id} className="mb-5">
-              <h2 className={`mb-2 flex items-center gap-2 px-0.5 font-bold text-slate-500 ${bn ? 'font-bengali text-sm' : 'text-[11px] uppercase tracking-wider'}`}>
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" aria-hidden />
-                {section.title}
-              </h2>
-              <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-                {items.map((item, idx) => {
-                  const isActive = currentView === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleNavClick(item)}
-                      aria-current={isActive ? 'page' : undefined}
-                      className={`group flex w-full items-center gap-3 px-3 py-3 text-left transition-colors ${
-                        idx !== 0 ? 'border-t border-slate-100' : ''
-                      } ${isActive ? 'bg-orange-50' : 'hover:bg-orange-50/60 active:bg-orange-50'}`}
-                    >
-                      <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/60 text-lg leading-none shadow-sm transition-transform group-active:scale-95 ${item.tint}`}
-                        aria-hidden
-                      >
-                        {item.icon}
-                      </span>
-                      <span
-                        className={`min-w-0 flex-1 truncate font-bold leading-tight ${item.danger ? 'text-red-700' : 'text-slate-800'} ${bn ? 'font-bengali text-base' : 'text-sm'}`}
-                      >
-                        {item.label}
-                      </span>
-                      {isActive ? (
-                        <span className={`shrink-0 rounded-full bg-orange-500 px-2 py-0.5 font-black text-white shadow-sm ${bn ? 'font-bengali text-[11px]' : 'text-[9px] uppercase'}`}>
-                          {bn ? 'এখন' : 'Now'}
-                        </span>
-                      ) : (
-                        <svg className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                        </svg>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
-
-        <section className="mb-5">
-          <AndroidAppDownloadCta language={language} />
-        </section>
-
-        {/* Footer */}
-        <div className="mt-6 border-t border-slate-200/80 pt-4">
-          <div className="flex items-center justify-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => void openExternalUrl(FACEBOOK_PAGE_URL)}
-              aria-label={bn ? 'ফেসবুক পেজ' : 'Facebook Page'}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-[#1877F2] shadow-sm transition-all hover:bg-blue-50 active:scale-95"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => void openExternalUrl(WHATSAPP_GROUP_URL)}
-              aria-label={bn ? 'হোয়াটসঅ্যাপ গ্রুপ' : 'WhatsApp Group'}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-[#25D366] shadow-sm transition-all hover:bg-green-50 active:scale-95"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-              </svg>
             </button>
           </div>
 
-          <p className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-center text-[10px] font-semibold text-slate-500">
-            <button type="button" onClick={() => void openExternalUrl(WEBSITE_URL)} className="font-black text-slate-700 hover:text-orange-700">
+          <div className="more-meta">
+            <button
+              type="button"
+              onClick={() => void openExternalUrl(WEBSITE_URL)}
+              className="more-meta__name"
+            >
               {APP_NAME}
             </button>
-            <span className="text-orange-600">v{CURRENT_APP_VERSION}</span>
-            <span className="text-slate-300" aria-hidden>·</span>
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium lowercase tracking-normal text-slate-600 hover:text-slate-800">
+            <p className="more-meta__ver">v{CURRENT_APP_VERSION}</p>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="more-meta__mail">
               {SUPPORT_EMAIL}
             </a>
-          </p>
+          </div>
         </div>
       </div>
     </div>
