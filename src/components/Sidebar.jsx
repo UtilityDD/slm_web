@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserIcon } from './icons';
 import { APP_NAME, CURRENT_APP_VERSION, WEBSITE_URL, SUPPORT_EMAIL } from '../config';
 import { useLifeSkillRadio } from '../context/LifeSkillRadioContext';
@@ -24,11 +24,23 @@ export default function Sidebar({
   unreadNotificationsCount,
   onLogout,
   onOpenUserGuide,
+  canPin = false,
 }) {
   const { startRadio, loading: radioLoading } = useLifeSkillRadio();
   const bn = language === 'bn';
+  const [wideScreen, setWideScreen] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+  ));
+  const pinned = Boolean(canPin) && wideScreen;
 
   const sections = [
+    {
+      id: 'start',
+      title: '',
+      items: [
+        { id: 'home', label: bn ? 'হোম' : 'Home', icon: '🏠', tint: 'bg-orange-100 text-orange-700', show: true },
+      ],
+    },
     {
       id: 'learn',
       title: bn ? 'শেখা' : 'Learn',
@@ -90,13 +102,21 @@ export default function Sidebar({
   const readingPoints = userProfile ? (userProfile.reading_points || 0).toLocaleString('en-US') : '…';
 
   useEffect(() => {
-    if (!isOpen) return undefined;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const sync = () => setWideScreen(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || pinned) return undefined;
     const onKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, pinned]);
 
   const handleNavClick = (item) => {
     if (item.id === 'language') {
@@ -128,9 +148,11 @@ export default function Sidebar({
     }
     onClose();
   };
+  const visible = isOpen || pinned;
+
   return (
     <>
-      {isOpen && (
+      {isOpen && !pinned && (
         <div
           className="app-sidebar__scrim"
           onClick={onClose}
@@ -139,8 +161,8 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`app-sidebar ${isOpen ? 'app-sidebar--open' : ''}`}
-        aria-hidden={!isOpen}
+        className={`app-sidebar${visible ? ' app-sidebar--open' : ''}${pinned ? ' app-sidebar--pinned' : ''}`}
+        aria-hidden={!visible}
         aria-label={bn ? 'মেনু' : 'Menu'}
       >
         <header className="app-sidebar__header">
@@ -174,48 +196,34 @@ export default function Sidebar({
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="app-sidebar__close"
-              aria-label={bn ? 'বন্ধ করুন' : 'Close'}
-              title={bn ? 'বন্ধ করুন' : 'Close'}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {pinned ? null : (
+              <button
+                type="button"
+                onClick={onClose}
+                className="app-sidebar__close"
+                aria-label={bn ? 'বন্ধ করুন' : 'Close'}
+                title={bn ? 'বন্ধ করুন' : 'Close'}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </header>
 
         <nav className="app-sidebar__nav custom-scrollbar">
-          <button
-            type="button"
-            disabled={radioLoading}
-            onClick={() => {
-              startRadio();
-              onClose();
-            }}
-            className="app-sidebar__radio"
-          >
-            <span className="app-sidebar__radio-icon" aria-hidden>📻</span>
-            <span className={`app-sidebar__radio-label ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'SLM রেডিও শুনুন' : 'Listen to SLM Radio'}
-            </span>
-            <span className={`app-sidebar__radio-live ${bn ? 'font-bengali' : ''}`}>
-              {bn ? 'লাইভ' : 'Live'}
-            </span>
-          </button>
-
           {sections.map((section) => {
             const items = section.items.filter((item) => item.show);
             if (items.length === 0) return null;
             return (
               <section key={section.id} className="app-sidebar__section">
-                <h2 className={`app-sidebar__section-title ${bn ? 'font-bengali' : ''}`}>
-                  <span className="app-sidebar__section-dot" aria-hidden />
-                  {section.title}
-                </h2>
+                {section.title ? (
+                  <h2 className={`app-sidebar__section-title ${bn ? 'font-bengali' : ''}`}>
+                    <span className="app-sidebar__section-dot" aria-hidden />
+                    {section.title}
+                  </h2>
+                ) : null}
                 <div className="app-sidebar__section-list">
                   {items.map((item) => {
                     const isActive = currentView === item.id;
@@ -251,6 +259,24 @@ export default function Sidebar({
               </section>
             );
           })}
+
+          <button
+            type="button"
+            disabled={radioLoading}
+            onClick={() => {
+              startRadio();
+              onClose();
+            }}
+            className="app-sidebar__radio"
+          >
+            <span className="app-sidebar__radio-icon" aria-hidden>📻</span>
+            <span className={`app-sidebar__radio-label ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'SLM রেডিও শুনুন' : 'Listen to SLM Radio'}
+            </span>
+            <span className={`app-sidebar__radio-live ${bn ? 'font-bengali' : ''}`}>
+              {bn ? 'লাইভ' : 'Live'}
+            </span>
+          </button>
         </nav>
 
         <footer className="app-sidebar__footer">

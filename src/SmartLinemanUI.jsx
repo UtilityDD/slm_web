@@ -1967,6 +1967,25 @@ export default function SmartLinemanUI() {
     Boolean(sponsorAdOpen) ||
     shouldSuppressOverlay('monthWinners', activeShellOverlay);
 
+  const sidebarCanPin =
+    Boolean(user) && !['login', 'verify', 'accident-stories'].includes(currentView);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const sync = () => {
+      document.documentElement.classList.toggle(
+        'has-pinned-sidebar',
+        Boolean(sidebarCanPin) && mq.matches
+      );
+    };
+    sync();
+    mq.addEventListener('change', sync);
+    return () => {
+      mq.removeEventListener('change', sync);
+      document.documentElement.classList.remove('has-pinned-sidebar');
+    };
+  }, [sidebarCanPin]);
+
   return (
     <Suspense fallback={<PageLoader />}>
       <>
@@ -1982,7 +2001,9 @@ export default function SmartLinemanUI() {
               : 'bg-[var(--slm-status-bg,#fffdf7)] transition-colors duration-300'
           } ${
             isNativeCapacitorPlatform() && nativeBootExiting ? 'slm-app-reveal' : ''
-          } ${celebrationSplashOpen || celebrationPreview ? 'invisible pointer-events-none' : ''}`}
+          } ${celebrationSplashOpen || celebrationPreview ? 'invisible pointer-events-none' : ''} ${
+            sidebarCanPin ? 'app-shell--sidebar-pinned' : ''
+          }`}
           aria-hidden={celebrationSplashOpen || celebrationPreview ? true : undefined}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -2018,10 +2039,11 @@ export default function SmartLinemanUI() {
               onToggleNotifications={() => navigateWithCultureGate('notifications')}
               onLogout={() => setShowLogoutModal(true)}
               onOpenUserGuide={() => setUserGuideOpen(true)}
+              canPin={sidebarCanPin}
             />
           )}
 
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <div className="app-shell-main flex-1 flex flex-col h-full overflow-hidden">
             {isGuestUser(userProfile) && (
               <GuestPreviewBanner language={language} />
             )}
@@ -2263,9 +2285,6 @@ export default function SmartLinemanUI() {
                 <div className="max-w-7xl mx-auto mobile-container">
                   <div className="flex justify-between items-center h-14 md:h-16">
                     <div className="flex items-center gap-2 relative z-[110]">
-                      {user && (
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-orange-50 text-slate-700 rounded-lg transition-colors" title="Menu" aria-label="Toggle menu"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg></button>
-                      )}
                       <div className="flex items-center gap-2 group cursor-pointer px-2 py-1 -ml-1 transition-all active:scale-95" onClick={() => setCurrentView('home')}><div className="flex items-baseline gap-0.5 select-none"><span className="text-xl sm:text-2xl logo-text logo-text-default">SmartLineMan</span><span className="text-[10px] sm:text-xs font-black bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-md border border-orange-500/20 shadow-sm ml-0.5 transform -translate-y-1">.in</span></div></div>
                     </div>
                     <div className="flex-grow"></div>
