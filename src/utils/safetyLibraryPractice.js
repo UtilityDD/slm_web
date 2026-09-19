@@ -3,6 +3,7 @@ import { storageUtils } from './storageUtils.js';
 const SCORE_KEY = 'slm_identify_practice_v1';
 export const IDENTIFY_PRACTICE_QUESTION_COUNT = 10;
 export const IDENTIFY_PRACTICE_CHOICE_COUNT = 4;
+export const IDENTIFY_PRACTICE_MODES = ['name', 'grid', 'clue'];
 
 function shuffle(list) {
     const next = [...list];
@@ -23,6 +24,35 @@ export function isIdentifyPracticeItem(item) {
         && Array.isArray(item.images)
         && item.images.some((src) => typeof src === 'string' && src.trim())
     );
+}
+
+/** Bangla/English ask line for clue rounds — name PPE/Tools/Insulators; generic for others. */
+export function practiceClueAsk(category, language = 'bn') {
+    const named = {
+        PPE: { bn: 'পিপিই', en: 'PPE' },
+        Tools: { bn: 'টুল', en: 'tool' },
+        Insulators: { bn: 'ইনসুলেটর', en: 'insulator' },
+    };
+    const label = named[category];
+    if (language === 'en') {
+        if (label) return `Which ${label.en} does the description below match?`;
+        return 'Which item does the description below match?';
+    }
+    if (label) return `নিচের বর্ণনা কোন ${label.bn}কে চেনা যায়?`;
+    return 'নিচের বর্ণনা কোন আইটেমকে চেনা যায়?';
+}
+
+/** Prefer function_bn, else guide_bn — used for “read the clue, pick the photo” rounds. */
+export function practiceClueText(item) {
+    const about = typeof item?.function_bn === 'string' ? item.function_bn.trim() : '';
+    if (about.length >= 10) return about;
+    const guide = typeof item?.guide_bn === 'string' ? item.guide_bn.trim() : '';
+    if (guide.length >= 10) return guide;
+    return '';
+}
+
+export function isIdentifyPracticeClueItem(item) {
+    return isIdentifyPracticeItem(item) && Boolean(practiceClueText(item));
 }
 
 export function firstPracticeImage(item) {
@@ -102,27 +132,54 @@ function questionFromItem(item, pool) {
     return {
         itemId: item.id,
         name_bn: item.name_bn,
+        category: item.category || '',
         image: firstPracticeImage(item),
+        clue_bn: practiceClueText(item),
         choices,
     };
 }
 
-export function nextIdentifyPracticeMode(recentModes) {
-    const last = recentModes?.[recentModes.length - 1];
-    const prev = recentModes?.[recentModes.length - 2];
-    if (last && last === prev) {
-        return last === 'name' ? 'grid' : 'name';
-    }
-    return Math.random() < 0.5 ? 'name' : 'grid';
+function pickRandomMode(except) {
+    const options = IDENTIFY_PRACTICE_MODES.filter((m) => m !== except);
+    return options[Math.floor(Math.random() * options.length)] || 'name';
 }
 
-export function buildIdentifyPracticeQuestion(items, avoidItemId) {
+/**
+ * Mix name / grid / clue. Never allow the same type three times in a row
+ * (if the last two match, force a different mode).
+ */
+export function nextIdentifyPracticeMode(recentModes, items) {
+    const last = recentModes?.[recentModes.length - 1];
+    const prev = recentModes?.[recentModes.length - 2];
+    const clueReady = (items || []).filter(isIdentifyPracticeClueItem).length >= 2;
+
+    let mode;
+    if (last && last === prev) {
+        mode = pickRandomMode(last);
+    } else {
+        mode = IDENTIFY_PRACTICE_MODES[Math.floor(Math.random() * IDENTIFY_PRACTICE_MODES.length)];
+    }
+
+    if (mode === 'clue' && !clueReady) {
+        mode = last === 'grid' ? 'name' : 'grid';
+    }
+    return mode;
+}
+
+export function buildIdentifyPracticeQuestion(items, avoidItemId, mode = 'name') {
     const pool = (items || []).filter(isIdentifyPracticeItem);
     if (pool.length < 2) return null;
+
+    let source = pool;
+    if (mode === 'clue') {
+        const withClue = pool.filter(isIdentifyPracticeClueItem);
+        if (withClue.length >= 2) source = withClue;
+    }
+
     const candidates = avoidItemId
-        ? pool.filter((row) => row.id !== avoidItemId)
-        : pool;
-    const pickFrom = candidates.length ? candidates : pool;
+        ? source.filter((row) => row.id !== avoidItemId)
+        : source;
+    const pickFrom = candidates.length ? candidates : source;
     const item = pickFrom[Math.floor(Math.random() * pickFrom.length)];
     return questionFromItem(item, pool);
 }

@@ -18,23 +18,23 @@ export default function IdentifyChartThumb({
 
     return (
         <div
-            className={`identify-chart-thumb relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-gradient-to-br ${accent.soft} ${
-                compact ? 'gap-1.5 px-2' : 'gap-2.5 px-3'
+            className={`identify-chart-thumb relative flex h-full w-full min-w-0 flex-col items-center justify-center overflow-hidden bg-gradient-to-br ${accent.soft} ${
+                compact ? 'gap-1 px-1.5' : 'gap-2.5 px-3'
             }`}
             aria-hidden
         >
             <div className="pointer-events-none absolute -right-5 -top-5 h-20 w-20 rounded-full bg-white/50 blur-2xl" />
             <div className="pointer-events-none absolute -bottom-6 -left-4 h-16 w-16 rounded-full bg-white/40 blur-2xl" />
 
-            <div className={`relative flex items-center justify-center ${compact ? 'h-11 w-11' : 'h-16 w-16 sm:h-[4.25rem] sm:w-[4.25rem]'}`}>
+            <div className={`relative flex shrink-0 items-center justify-center ${compact ? 'h-9 w-9' : 'h-16 w-16 sm:h-[4.25rem] sm:w-[4.25rem]'}`}>
                 <span className={`absolute inset-0 rounded-[1.15rem] bg-gradient-to-br ${accent.blob} opacity-95 shadow-lg shadow-orange-500/25`} />
                 <span className="relative text-white drop-shadow-sm">
-                    <TopicIcon name={topic.icon} className={compact ? 'h-5 w-5' : 'h-8 w-8 sm:h-9 sm:w-9'} />
+                    <TopicIcon name={topic.icon} className={compact ? 'h-4 w-4' : 'h-8 w-8 sm:h-9 sm:w-9'} />
                 </span>
             </div>
 
             <span
-                className={`relative line-clamp-1 max-w-[7.5rem] rounded-full px-2.5 py-0.5 text-center font-black leading-tight ring-1 ring-inset ${accent.chip} ${accent.ring} ${
+                className={`relative line-clamp-2 max-w-full min-w-0 break-words rounded-full px-2 py-0.5 text-center font-black leading-tight ring-1 ring-inset ${accent.chip} ${accent.ring} ${
                     compact ? 'text-[9px]' : 'text-[10px] sm:text-[11px]'
                 } ${bn ? 'font-bengali' : ''}`}
             >

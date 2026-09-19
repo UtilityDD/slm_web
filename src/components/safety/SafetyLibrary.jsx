@@ -627,7 +627,7 @@ const SafetyLibraryLoadingView = ({ language }) => {
             : { line: 'Loading photos…', sub: 'Just a moment' };
 
     return (
-        <div className="max-w-7xl mx-auto p-3 sm:p-8" aria-busy="true" aria-live="polite">
+        <div className="mx-auto w-full min-w-0 max-w-7xl overflow-x-hidden p-3 sm:p-8" aria-busy="true" aria-live="polite">
             <div className="mb-6 flex flex-col items-center gap-3 py-2 sm:py-4">
                 <div className="nb-icon-badge relative flex h-[4.5rem] w-[4.5rem] items-center justify-center bg-orange-100">
                     <ShieldCheckIcon className="relative h-8 w-8 text-orange-600 animate-safety-float" />
@@ -638,19 +638,19 @@ const SafetyLibraryLoadingView = ({ language }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 lg:gap-4">
                 {Array.from({ length: 8 }, (_, i) => (
                     <div
                         key={i}
-                        className="overflow-hidden nb-card bg-white p-0"
-                        style={{ animationDelay: `${i * 70}ms` }}
+                        className="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white"
+                        style={{ animationDelay: `${i * 50}ms` }}
                     >
                         <div className="relative aspect-square overflow-hidden bg-slate-100">
                             <SkeletonShimmer className="opacity-90" />
                         </div>
-                        <div className="space-y-2 p-2.5 sm:p-4">
-                            <div className="mx-auto h-3 w-[88%] bg-slate-200 border border-slate-300" />
-                            <div className="mx-auto h-3 w-[62%] bg-slate-100 border border-slate-200" />
+                        <div className="space-y-1.5 px-2 py-2">
+                            <div className="mx-auto h-2.5 w-[88%] rounded bg-slate-200" />
+                            <div className="mx-auto h-2.5 w-[62%] rounded bg-slate-100" />
                         </div>
                     </div>
                 ))}
@@ -712,7 +712,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const tabsRef = useRef(null);
     const detailSliderRef = useRef(null);
     const [detailZoomLevel, setDetailZoomLevel] = useState(1);
-    /** Modal only: breadcrumb stack when jumping via Related items chips. */
+    /** Modal only: stack when opening a related chart from a product item. */
     const [modalBrowseStack, setModalBrowseStack] = useState([]);
 
     useEffect(() => {
@@ -814,7 +814,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             practiceCta: 'Try',
             practiceBadgeAria: 'Familiarity',
             scoreAll: 'All time',
-            relatedWithLabel: 'Also',
+            relatedChartLabel: 'Chart',
             allCategory: 'All',
             retry: 'Try again',
             details: 'Details',
@@ -841,7 +841,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             practiceCta: 'কতটা চেনেন?',
             practiceBadgeAria: 'চেনা',
             scoreAll: 'মোট',
-            relatedWithLabel: 'এগুলোও',
+            relatedChartLabel: 'চার্ট',
             allCategory: 'সব',
             retry: 'আবার',
             details: 'বিস্তারিত',
@@ -869,10 +869,10 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         if (item?.id) setRecentIds(pushIdentifyRecent(item.id));
     }, []);
 
-    const goToRelatedLibraryItem = useCallback(
+    const goToRelatedChart = useCallback(
         (rel) => {
             const full = items.find((i) => i.id === rel.id);
-            if (!full) return;
+            if (!full || !hasIdentifyChartPage(full.id)) return;
             setModalBrowseStack((prev) => (selectedItem ? [...prev, selectedItem] : prev));
             setSelectedItem(full);
             setRecentIds(pushIdentifyRecent(full.id));
@@ -926,16 +926,6 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         setFilteredItems(filtered);
     }, [searchQuery, activeCategory, items, language]);
 
-    const chartRelatedForModal = useMemo(() => {
-        if (!selectedItem?.related_items?.length) return [];
-        return selectedItem.related_items.filter((r) => r.category === 'Charts');
-    }, [selectedItem]);
-
-    const nonChartRelatedForModal = useMemo(() => {
-        if (!selectedItem?.related_items?.length) return [];
-        return selectedItem.related_items.filter((r) => r.category !== 'Charts');
-    }, [selectedItem]);
-
     const recentItems = useMemo(() => {
         if (!recentIds.length || !items.length) return [];
         const byId = new Map(items.map((item) => [item.id, item]));
@@ -946,6 +936,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         () => (selectedItem ? getIdentifyChartPage(selectedItem.id) : null),
         [selectedItem]
     );
+
+    /** Product modals only: related Charts that have an in-app detail page. */
+    const chartRelatedForModal = useMemo(() => {
+        if (!selectedItem?.related_items?.length || selectedChartPage) return [];
+        return selectedItem.related_items.filter(
+            (r) => r.category === 'Charts' && hasIdentifyChartPage(r.id)
+        );
+    }, [selectedItem, selectedChartPage]);
 
     const chipCategories = useMemo(
         () => [{ id: 'All' }, ...categories],
@@ -1096,17 +1094,25 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     );
 
     const libraryContent = (
-        <div className={`max-w-7xl mx-auto p-3 sm:p-8 ${embedded ? 'pb-24' : ''}`}>
+        <div
+            className={
+                practiceOpen
+                    ? 'mx-auto flex h-full min-h-0 w-full max-w-7xl min-w-0 flex-col overflow-hidden p-2 sm:p-4'
+                    : `mx-auto w-full max-w-7xl min-w-0 overflow-x-hidden px-2.5 pb-3 pt-2 sm:p-8 ${embedded ? 'pb-24' : ''}`
+            }
+        >
 
                 {practiceOpen ? (
-                    <IdentifyPractice
-                        language={language}
-                        items={items}
-                        score={practiceScore}
-                        onClose={() => setQuitConfirmOpen(true)}
-                        onOpenItem={openItemDetail}
-                        onScoreSaved={setPracticeScore}
-                    />
+                    <div className="flex h-full min-h-0 w-full flex-col">
+                        <IdentifyPractice
+                            language={language}
+                            items={items}
+                            score={practiceScore}
+                            onClose={() => setQuitConfirmOpen(true)}
+                            onOpenItem={openItemDetail}
+                            onScoreSaved={setPracticeScore}
+                        />
+                    </div>
                 ) : null}
 
                 {practiceOpen || !loading ? null : (
@@ -1114,19 +1120,19 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 )}
 
                 {!practiceOpen && showRecents ? (
-                    <div className="mb-4 sm:mb-6">
-                        <p className={`mb-2 text-[11px] font-bold text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    <div className="mb-3 rounded-xl border border-slate-200/70 bg-slate-50/90 px-2 py-2 sm:mb-4 sm:px-2.5 sm:py-2.5">
+                        <p className={`mb-1.5 px-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:text-[11px] ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
                             {t.recentsLabel}
                         </p>
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
                             {recentItems.map((item) => (
                                 <button
                                     key={item.id}
                                     type="button"
                                     onClick={() => openItemDetail(item)}
-                                    className="w-[4.75rem] shrink-0 text-left sm:w-20"
+                                    className="w-14 shrink-0 text-left sm:w-[3.75rem]"
                                 >
-                                    <div className="aspect-square overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                                    <div className="aspect-square overflow-hidden rounded-lg border border-white bg-white shadow-sm ring-1 ring-slate-200/60">
                                         {hasIdentifyChartPage(item.id) ? (
                                             <IdentifyChartThumb
                                                 chartId={item.id}
@@ -1139,7 +1145,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                             <GridImage images={item.images} alt={item.name_bn} language={language} />
                                         )}
                                     </div>
-                                    <span className={`mt-1.5 line-clamp-2 text-center text-[10px] font-bold leading-tight text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <span className={`mt-1 line-clamp-1 text-center text-[9px] font-semibold leading-tight text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {hasIdentifyChartPage(item.id) ? getChartTopic(item.id).shortBn : item.name_bn}
                                     </span>
                                 </button>
@@ -1149,37 +1155,37 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 ) : null}
 
                 {!practiceOpen && !loading && filteredItems.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 lg:gap-4">
                         {filteredItems.map((item) => {
                             const isChart = hasIdentifyChartPage(item.id);
                             return (
-                            <div
+                            <button
                                 key={item.id}
+                                type="button"
                                 onClick={() => openItemDetail(item)}
-                                className="group flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
+                                className="group flex w-full min-w-0 max-w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-sm transition-all hover:border-orange-200 hover:shadow-md active:scale-[0.98]"
                             >
-                                <div className={`relative w-full shrink-0 overflow-hidden bg-slate-50 ${isChart ? 'aspect-[4/5]' : 'aspect-square'}`}>
-                                    <div className="absolute inset-0">
-                                        {isChart ? (
-                                            <IdentifyChartThumb
-                                                chartId={item.id}
-                                                name={item.name_bn}
-                                                language={language}
-                                                kind={getIdentifyChartPage(item.id)?.kind}
-                                            />
-                                        ) : (
-                                            <GridImage images={item.images} alt={item.name_bn} language={language} />
-                                        )}
-                                    </div>
+                                <div className="relative aspect-square w-full min-w-0 shrink-0 overflow-hidden bg-slate-50">
+                                    {isChart ? (
+                                        <IdentifyChartThumb
+                                            chartId={item.id}
+                                            name={item.name_bn}
+                                            language={language}
+                                            kind={getIdentifyChartPage(item.id)?.kind}
+                                            compact
+                                        />
+                                    ) : (
+                                        <GridImage images={item.images} alt={item.name_bn} language={language} />
+                                    )}
                                 </div>
                                 {isChart ? null : (
-                                <div className="flex h-[3.25rem] shrink-0 items-center justify-center bg-white px-2 py-2 sm:h-[3.75rem] sm:px-3">
-                                    <h3 className={`line-clamp-2 text-center text-[11px] font-black leading-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                <div className="flex min-h-[2.75rem] w-full min-w-0 items-center justify-center px-1.5 py-1.5 sm:min-h-[3rem] sm:px-2">
+                                    <h3 className={`line-clamp-2 w-full min-w-0 break-words text-center text-[11px] font-bold leading-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {item.name_bn}
                                     </h3>
                                 </div>
                                 )}
-                            </div>
+                            </button>
                             );
                         })}
                     </div>
@@ -1192,31 +1198,31 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                     </div>
                 ) : null}
 
-                {/* Detail modal — Material/Android chrome */}
+                {/* Detail modal — compact sheet chrome */}
                 {selectedItem && (
                     <div className="fixed inset-0 z-[11000] flex items-end justify-center p-0 animate-fade-in sm:items-start sm:px-4 sm:pb-4 sm:pt-20 lg:px-6 lg:pb-6 lg:pt-24">
                         <div className="absolute inset-0 bg-slate-900/55" onClick={closeDetailModal} aria-hidden="true" />
 
-                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-slate-200/80 bg-[#fffdf7] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),940px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,1220px)] sm:max-w-none sm:rounded-3xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),940px)] lg:max-h-[calc(100dvh-7rem)]">
-                            <div className="mx-auto mb-1 mt-2 h-1.5 w-12 shrink-0 cursor-pointer rounded-full bg-slate-300 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
+                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200/80 bg-[#fffdf7] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),820px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,980px)] sm:max-w-none sm:rounded-2xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),820px)] lg:max-h-[calc(100dvh-7rem)]">
+                            <div className="mx-auto mb-0.5 mt-1.5 h-1 w-10 shrink-0 cursor-pointer rounded-full bg-slate-300 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
 
-                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 border-b border-slate-200/80 bg-white/95 px-3 py-2 backdrop-blur-md sm:px-6 sm:py-3">
-                                <div className="flex min-w-0 items-center gap-2">
+                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1.5 border-b border-slate-200/80 bg-white/95 px-2.5 py-1.5 backdrop-blur-md sm:px-4 sm:py-2">
+                                <div className="flex min-w-0 items-center gap-1.5">
                                     {modalBrowseStack.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={popModalBrowseBack}
-                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
+                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 transition-all hover:bg-slate-50 active:scale-95"
                                             aria-label={t.backPreviousAria}
                                         >
                                             <ChevronLeftIcon className="h-4 w-4" />
                                         </button>
                                     )}
-                                    <span className={`shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-2 py-1 text-[8px] font-bold text-orange-800 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <span className={`shrink-0 rounded-full border border-orange-200/70 bg-orange-50 px-1.5 py-0.5 text-[8px] font-bold text-orange-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {categoryLabel(selectedItem.category, language)}
                                     </span>
                                     <h2
-                                        className={`min-w-0 flex-1 truncate text-left text-[13px] font-black leading-snug tracking-tight text-slate-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}
+                                        className={`min-w-0 flex-1 truncate text-left text-[13px] font-bold leading-snug tracking-tight text-slate-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}
                                         title={selectedItem.name_bn}
                                     >
                                         {selectedItem.name_bn}
@@ -1229,7 +1235,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         role="toolbar"
                                         aria-label={t.zoomToolbarAria}
                                         data-zoom-ui
-                                        className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-sm"
+                                        className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5"
                                     >
                                         <button
                                             type="button"
@@ -1254,55 +1260,32 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 <button
                                     type="button"
                                     onClick={closeDetailModal}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center justify-self-end rounded-full border border-slate-200/80 bg-white text-slate-900 transition-all hover:bg-slate-50 active:scale-95"
                                     aria-label={t.closeAria}
                                 >
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
 
-                            {(chartRelatedForModal.length > 0 || nonChartRelatedForModal.length > 0) && (
-                                <div className="shrink-0 border-b border-slate-200/80 bg-[#fffdf7]">
-                                    <p className={`px-3 pt-2 text-[11px] font-bold text-slate-500 sm:px-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {t.relatedWithLabel}
-                                    </p>
-                                    {chartRelatedForModal.length > 0 && (
-                                        <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden bg-amber-50/90 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-6 sm:py-2">
-                                            {chartRelatedForModal.map((chart) => (
-                                                <button
-                                                    key={chart.id}
-                                                    type="button"
-                                                    onClick={() => goToRelatedLibraryItem(chart)}
-                                                    className={`inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-0 pl-1.5 pr-2.5 text-left text-[10px] font-bold leading-tight text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-[14rem] ${language === 'bn' ? 'font-bengali' : ''}`}
-                                                    aria-label={[t.relatedOpenAriaPrefix, chart.name_bn].filter(Boolean).join(' ')}
-                                                >
-                                                    <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
-                                                    <span className="min-w-0 truncate">{chart.name_bn}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {nonChartRelatedForModal.length > 0 && (
-                                        <div className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden bg-white px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
-                                            {nonChartRelatedForModal.map((rel) => (
-                                                <button
-                                                    key={rel.id}
-                                                    type="button"
-                                                    onClick={() => goToRelatedLibraryItem(rel)}
-                                                    className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-1.5 pl-3 pr-2 text-left text-[11px] font-bold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-full"
-                                                    aria-label={[t.relatedOpenAriaPrefix, rel.name_bn].filter(Boolean).join(' ')}
-                                                >
-                                                    <span className={`min-w-0 flex-1 truncate ${language === 'bn' ? 'font-bengali' : ''}`}>{rel.name_bn}</span>
-                                                    <span className={`shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                        {categoryLabel(rel.category, language)}
-                                                    </span>
-                                                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                            {chartRelatedForModal.length > 0 && (
+                                <div className="flex shrink-0 flex-nowrap items-center gap-1 overflow-x-auto border-b border-slate-200/80 bg-amber-50/80 px-2.5 py-1 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-4">
+                                    <span className={`shrink-0 text-[9px] font-bold text-amber-800/80 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {t.relatedChartLabel}
+                                    </span>
+                                    {chartRelatedForModal.map((chart) => (
+                                        <button
+                                            key={chart.id}
+                                            type="button"
+                                            onClick={() => goToRelatedChart(chart)}
+                                            className={`inline-flex h-7 max-w-[min(100%,12rem)] shrink-0 items-center gap-1 rounded-full border border-amber-200/80 bg-white py-0 pl-1 pr-2 text-left text-[10px] font-bold leading-tight text-slate-800 transition-all hover:bg-orange-50 active:scale-95 sm:max-w-[14rem] ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            aria-label={[t.relatedOpenAriaPrefix, chart.name_bn].filter(Boolean).join(' ')}
+                                        >
+                                            <LineChartIcon className="h-3 w-3 shrink-0 text-amber-700" aria-hidden />
+                                            <span className="min-w-0 truncate">{chart.name_bn}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             )}
 
@@ -1317,8 +1300,9 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         />
                                     </div>
                                 ) : (
-                                <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
-                                <div className="group/modal-img relative flex h-[66dvh] w-full max-h-[66dvh] shrink-0 items-center justify-center bg-white sm:h-[66dvh] sm:max-h-[66dvh] sm:border-r sm:border-slate-200/80">
+                                <div className="flex min-h-0 flex-col sm:h-full sm:flex-row sm:items-start">
+                                <div className="flex shrink-0 justify-center bg-white px-3 py-2.5 sm:w-[min(42%,280px)] sm:shrink-0 sm:border-r sm:border-slate-200/80 sm:px-4 sm:py-4">
+                                    <div className="group/modal-img relative aspect-square w-[min(52vw,220px)] sm:w-full sm:max-w-[240px]">
                                     <ImageSlider
                                         key={selectedItem.id}
                                         ref={detailSliderRef}
@@ -1333,35 +1317,36 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         autoAdvance={false}
                                         emptyLabel={t.noPhoto}
                                     />
+                                    </div>
                                 </div>
 
-                                <div className="space-y-6 p-6 pb-32 sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:p-8 sm:pb-14 sm:pl-7 sm:pr-8 sm:no-scrollbar">
+                                <div className="min-w-0 flex-1 space-y-3 p-3 pb-8 sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:p-4 sm:pb-8 sm:no-scrollbar">
                                     {selectedItem.approx_price_inr && selectedItem.approx_price_inr !== '---' && (
-                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-1 text-emerald-800 shadow-sm">
-                                            <span className="text-[10px]">₹</span>
-                                            <span className="text-xs font-black tabular-nums">{selectedItem.approx_price_inr}</span>
+                                        <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200/70 bg-emerald-50 px-2 py-0.5 text-emerald-800">
+                                            <span className="text-[9px]">₹</span>
+                                            <span className="text-[11px] font-bold tabular-nums">{selectedItem.approx_price_inr}</span>
                                         </div>
                                     )}
 
                                     {selectedItem.function_bn && (
-                                        <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-                                            <div className="flex items-center gap-1.5 text-slate-500">
-                                                <InfoIcon className="h-3.5 w-3.5" />
+                                        <div className="space-y-1 border-b border-slate-200/70 pb-3">
+                                            <div className="flex items-center gap-1 text-slate-500">
+                                                <InfoIcon className="h-3 w-3" />
                                                 <span className={`text-[10px] font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>{t.aboutLabel}</span>
                                             </div>
-                                            <p className={`text-[14px] font-semibold leading-relaxed text-slate-700 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            <p className={`text-[13px] font-medium leading-snug text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {selectedItem.function_bn}
                                             </p>
                                         </div>
                                     )}
 
                                     {selectedItem.guide_bn && (
-                                        <div className="space-y-2 rounded-2xl border border-amber-100 bg-amber-50/90 p-4 shadow-sm sm:p-5">
-                                            <div className={`flex items-center gap-2 text-[10px] font-black text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                        <div className="space-y-1 rounded-lg bg-amber-50/80 px-2.5 py-2">
+                                            <div className={`flex items-center gap-1.5 text-[10px] font-bold text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                                                 {t.guideLabel}
                                             </div>
-                                            <p className={`text-xs font-bold italic leading-relaxed text-slate-700 sm:text-sm ${language === 'bn' ? 'font-bengali not-italic' : ''}`}>
+                                            <p className={`text-xs font-medium leading-snug text-slate-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {selectedItem.guide_bn}
                                             </p>
                                         </div>
@@ -1439,9 +1424,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
     if (embedded) {
         return (
-            <div className="flex flex-col h-full min-h-0 overflow-hidden">
+            <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
                 {searchAndCategories}
-                <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+                <div
+                    className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden ${
+                        practiceOpen ? 'overflow-hidden' : 'overflow-y-auto'
+                    }`}
+                >
                     {libraryContent}
                 </div>
                 {scoreSheet}

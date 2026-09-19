@@ -38,11 +38,14 @@ export default function IdentifyPractice({
     const bn = language === 'bn';
     const recentModes = useRef([]);
     const [mode, setMode] = useState(() => {
-        const first = nextIdentifyPracticeMode([]);
+        const first = nextIdentifyPracticeMode([], items);
         recentModes.current = [first];
         return first;
     });
-    const [question, setQuestion] = useState(() => buildIdentifyPracticeQuestion(items));
+    const [question, setQuestion] = useState(() => {
+        const first = recentModes.current[0] || 'name';
+        return buildIdentifyPracticeQuestion(items, undefined, first);
+    });
     const [pickedId, setPickedId] = useState('');
     const [flash, setFlash] = useState('');
     const advanceTimer = useRef(0);
@@ -54,10 +57,10 @@ export default function IdentifyPractice({
     useEffect(() => () => window.clearTimeout(advanceTimer.current), []);
 
     const goNext = (fromItemId) => {
-        const nextMode = nextIdentifyPracticeMode(recentModes.current);
+        const nextMode = nextIdentifyPracticeMode(recentModes.current, items);
         recentModes.current = [...recentModes.current, nextMode].slice(-2);
         setMode(nextMode);
-        setQuestion(buildIdentifyPracticeQuestion(items, fromItemId));
+        setQuestion(buildIdentifyPracticeQuestion(items, fromItemId, nextMode));
         setPickedId('');
         setFlash('');
     };
@@ -80,15 +83,19 @@ export default function IdentifyPractice({
         );
     }
 
-    if (mode === 'grid') {
+    if (mode === 'grid' || mode === 'clue') {
+        const clueText = mode === 'clue' ? (question.clue_bn || '') : '';
         return (
-            <IdentifyGridPractice
-                language={language}
-                question={question}
-                score={score}
-                onScoreSaved={onScoreSaved}
-                onAdvance={goNext}
-            />
+            <div className="flex h-full min-h-0 w-full flex-col">
+                <IdentifyGridPractice
+                    language={language}
+                    question={question}
+                    score={score}
+                    onScoreSaved={onScoreSaved}
+                    onAdvance={goNext}
+                    clueText={clueText}
+                />
+            </div>
         );
     }
 

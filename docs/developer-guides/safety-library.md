@@ -15,9 +15,9 @@
 | `src/utils/libraryService.js` | Returns the in-app catalog (no live Google Sheet). |
 | `src/utils/safetyLibraryImageUrl.js` | Resolves `/assets/safety/...` for web and native. |
 | `src/utils/safetyLibraryRecents.js` | Last 8 opened item ids in `localStorage` (`slm_identify_recents_v1`). |
-| `src/utils/safetyLibraryPractice.js` | Practice pool (all except Charts); mixed name/grid questions; same type cannot run 3 times in a row; one cumulative count+% in `slm_identify_practice_v1`. |
-| `src/components/safety/IdentifyPractice.jsx` | Practice overlay on Identify (no type tabs; randomizes নাম কী? / ছবি বাছুন). |
-| `src/components/safety/IdentifyGridPractice.jsx` | 2×2 photo pick; right/wrong flash only. |
+| `src/utils/safetyLibraryPractice.js` | Practice pool (all except Charts); mixed **name** / **grid** / **clue** questions; same type cannot run 3 times in a row; one cumulative count+% in `slm_identify_practice_v1`. |
+| `src/components/safety/IdentifyPractice.jsx` | Practice overlay on Identify (no type tabs; randomizes নাম কী? / ছবি বাছুন / নিচের বর্ণনা…). |
+| `src/components/safety/IdentifyGridPractice.jsx` | 2×2 photo pick (name ask or description clue); right/wrong flash only. |
 | `src/SmartLinemanUI.jsx` | Lazy-loads `SafetyLibrary` when `currentView === 'safety-library'`. |
 
 Identify does **not** fetch the published Google Sheet at runtime. Hourly visual quiz still uses its own sheet tab.
@@ -50,28 +50,29 @@ Identify does **not** fetch the published Google Sheet at runtime. Hourly visual
 - **Search** is always on (not behind a mobile icon). It matches `name_bn`, `function_bn`, `guide_bn`, Bangla/English category labels, and **chart page body text** (tables, steps, tips).
 - **Chips** use Bangla labels only (no icons), with item counts: সব, পিপিই, টুলস, ইনসুলেটর, চার্ট, এবি কেবল সরঞ্জাম, অন্যান্য (only categories present in the catalog). Default chip stays **পিপিই**.
 - **Video guides** is not always in the Identify header. After about a minute of browsing (practice time does not count), an orange **ভিডিও** pill fades in under **কতটা চেনেন?** (absolute, so the header does not shift), stays ~16s, then fades out. It stays available on More. Do not put the orange video banner back on this page.
-- **কতটা চেনেন?** is an orange pill in the title row; the **?** wiggles (no button breathe/scale pulse). While practice is open it is replaced by an **X** on the right. The X asks **বন্ধ করবেন?** in a centered body portal (not a bottom sheet). There are **no type tabs**. Each question is randomly **নাম কী?** or **ছবি বাছুন**, from all catalog items except Charts, with the same type never three times in a row. Play continues until they confirm quit. Both auto-advance with ঠিক/ভুল only. Score is one running total in `localStorage` (`slm_identify_practice_v1`) — count + percent. The header `%` badge updates after every answer; tap it for a clean all-time card (bold % + count only).
-- **Grid cards** are square photo + Bangla name only — no English category badge.
-- **Recents** (`এইমাত্র`) show when search is empty: last 8 opened ids, local only.
+- **কতটা চেনেন?** is an orange pill in the title row; the **?** wiggles (no button breathe/scale pulse). While practice is open it is replaced by an **X** on the right. The X asks **বন্ধ করবেন?** in a centered body portal (not a bottom sheet). There are **no type tabs**. Each question is randomly **নাম কী?** (photo → name), **ছবি বাছুন** (name → photo), or a clue round (**নিচের বর্ণনা কোন পিপিই/টুল/ইনসুলেটরকে চেনা যায়?** — generic **আইটেম** for other categories; clue from `function_bn` / `guide_bn` → photo), from all catalog items except Charts. Clue rounds only use items with usable descriptive text. The same type never three times in a row. Play continues until they confirm quit. Both auto-advance with ঠিক/ভুল only. Score is one running total in `localStorage` (`slm_identify_practice_v1`) — count + percent. The header `%` badge updates after every answer; tap it for a clean all-time card (bold % + count only). The **4-grid** board is sized in JS to `min(fitWidth, fitHeight)` so tiles stay on-screen with no horizontal overflow.
+- **Grid cards** are square photo + Bangla name in a **2-column** mobile grid (3 on `sm`, 4 on `lg`) — no English category badge. Cards use `min-w-0` / `overflow-hidden` so they cannot push past the viewport.
+- **Recents** (`এইমাত্র`) show when search is empty: last 8 opened ids, local only. Compact horizontal strip in a light slate panel so it reads separate from the main catalog grid.
 - There is **no** Identify → আমার পিপিই shortcut on this page.
 
 ---
 
 ## Detail modal layout (important)
 
-The modal is a **column flex** shell with view-specific behavior:
+The modal is a **compact column flex** shell with view-specific behavior:
 
 - **Mobile:** full-screen sheet style (`h-[100dvh]`) with safe-area top/bottom padding.
-- **Desktop:** larger framed dialog (`sm:w-[min(96vw,1220px)]`, height constrained by viewport) that starts below the app title bar (`sm:pt-20 lg:pt-24` on overlay container) so the modal header is never hidden.
+- **Desktop:** framed dialog (`sm:w-[min(96vw,980px)]`, max height ~820px) that starts below the app title bar (`sm:pt-20 lg:pt-24` on overlay container) so the modal header is never hidden.
 
 1. **Drag pill** (mobile only, `sm:hidden`) — tap to dismiss; decorative affordance.
-2. **Toolbar row** (`shrink-0`) — **category** label (left) and **Close** (right). This bar sits **above** the image so labels and chrome **do not overlay** the artwork.
+2. **Toolbar row** (`shrink-0`, tight padding) — **category** chip + title (left), zoom ± (center, products only), **Close** `h-8` (right). This bar sits **above** the image so labels and chrome **do not overlay** the artwork.
 3. **Scroll body** (`flex-1 min-h-0`) — mobile is stacked; desktop is split into two columns.
 
-- **Desktop content split:** `sm:grid` with image + text side-by-side (`~1.15fr / 0.85fr`) for product items.
-- **Charts:** open as a **full-width illustrative page** (`IdentifyChartPage`) from `src/data/identifyCharts.js` — steps, compare panels, or tables. No poster WebP, no zoom toolbar. Grid cards use `IdentifyChartThumb` (CSS), and catalog `images` for Charts stay empty.
-- **Related links UI:** compact chips under **এগুলোও** (`relatedWithLabel`). Chart chips stay on the amber row; other items on the white row. Category pills on related chips use the Bangla/English label helper, not the raw English `category` id.
-- **Copy boxes** (product items): **এটা কী** (`function_bn`) then **খেয়াল রাখুন** (`guide_bn`). Price shows only when it is not `---`. Chart tip/warning live inside the page content.
+- **Product photo:** compact centered square (~220–240px), not a full-width banner. Desktop keeps it in a narrow left column beside the copy.
+- **Desktop content split:** image column + text (`flex` row), `items-start`.
+- **Charts:** open as a **full-width illustrative page** (`IdentifyChartPage`) from `src/data/identifyCharts.js` — steps, compare panels, or tables. No poster WebP, no zoom toolbar. Grid cards use `IdentifyChartThumb` (CSS, compact), and catalog `images` for Charts stay empty.
+- **Related chart links (product items only):** if `related_items` includes Charts with an in-app page (`hasIdentifyChartPage`), show a single compact amber chip row. Non-chart related items are not shown. Opening a chart pushes a browse-back stack (**পিছনে**).
+- **Copy** (product items): flat sections — **এটা কী** (`function_bn`) with a light divider, then **খেয়াল রাখুন** (`guide_bn`) on a soft amber wash (no heavy cards). Price shows only when it is not `---`. Chart tip/warning live inside the page content.
 
 **Do not** reintroduce `absolute top-4` badges or close buttons on top of the image region without reserving space (padding or a dedicated bar)—that caused overlap on tall graphics and titles.
 
@@ -102,7 +103,7 @@ Product images are app-hosted WebP under `/assets/safety/` (max ~960px). **Chart
 
 ### Cross-links
 
-Set `related_items` to other catalog `id`s. The detail modal shows compact chips (chart + non-chart split). **Back** appears after following a link.
+On product detail modals, related **Charts** with an `IdentifyChartPage` appear as chips. Other `related_items` (PPE/tools/etc.) stay in the catalog but are not rendered. **Back** returns from a chart opened via those chips.
 
 ---
 
