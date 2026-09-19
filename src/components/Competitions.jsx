@@ -242,13 +242,6 @@ function MonthlyHourlyAvgPill({ hourly, language, encouragementBoards, align = '
     );
 }
 
-function formatChaseDisplayName(fullName) {
-    const trimmed = (fullName || '').trim();
-    if (!trimmed || trimmed.includes('@')) return null;
-    const first = trimmed.split(/\s+/)[0];
-    return first.length > 18 ? `${first.slice(0, 16)}…` : first;
-}
-
 /** Top-3 podium / strip: first name only (display). */
 function formatPodiumFirstName(fullName) {
     const trimmed = (fullName || '').trim();
@@ -256,36 +249,6 @@ function formatPodiumFirstName(fullName) {
     const base = trimmed.includes('@') ? trimmed.split('@')[0] : trimmed;
     const first = base.split(/\s+/)[0] || base;
     return first.length > 14 ? `${first.slice(0, 12)}…` : first;
-}
-
-/** Display-only: read rival one rank above for chase banner. Never used for scoring or writes. */
-async function fetchRivalAheadForDisplay(myScoreValue) {
-    const { data: rivalRow, error: rivalError } = await supabase
-        .from('leaderboard_view')
-        .select('user_id, full_name, score')
-        .gt('score', myScoreValue)
-        .order('score', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-
-    if (rivalError) throw rivalError;
-    if (!rivalRow) return null;
-
-    const rivalScore = rivalRow.score ?? 0;
-    const { count: rivalAheadCount, error: rivalRankError } = await supabase
-        .from('leaderboard_view')
-        .select('*', { count: 'exact', head: true })
-        .gt('score', rivalScore);
-
-    if (rivalRankError) throw rivalRankError;
-
-    return {
-        user_id: rivalRow.user_id,
-        full_name: rivalRow.full_name,
-        score: rivalScore,
-        rank: rivalAheadCount + 1,
-        gap: rivalScore - myScoreValue,
-    };
 }
 
 function CountUpNumber({ value, format = (n) => n, className, duration = 700 }) {
@@ -320,50 +283,6 @@ function CountUpNumber({ value, format = (n) => n, className, duration = 700 }) 
     }, [target, duration]);
 
     return <span className={className}>{format(display)}</span>;
-}
-
-function buildHourlyChaseMessage({ language, userRank, hoursLeft }) {
-    if (!userRank) return null;
-
-    const fmt = (n) => formatLeaderboardNumber(n);
-    const isBn = language === 'bn';
-
-    if (userRank.rank === 1) {
-        return isBn
-            ? 'আপনি এখন শীর্ষে! এক নম্বর জায়গা ধরে রাখতে খেলতে থাকুন।'
-            : "You're #1 right now — keep playing every hour to stay on top.";
-    }
-
-    const rival = userRank.rival;
-    if (!rival?.full_name) {
-        return isBn
-            ? (hoursLeft > 0
-                ? `আজ আরও ${fmt(hoursLeft)}টি কুইজ বাকি আছে, খেলে পয়েন্ট বাড়িয়ে নিন!`
-                : 'আজকের সব কুইজ শেষ! কাল আবার নতুন উদ্যমে শুরু করুন।')
-            : (hoursLeft > 0
-                ? `${fmt(hoursLeft)} hour${hoursLeft === 1 ? '' : 's'} left today — keep playing to climb the board.`
-                : "Today's hours are done — come back tomorrow and keep building your score.");
-    }
-
-    const name = formatChaseDisplayName(rival.full_name) || (isBn ? 'সহপ্রতিযোগী' : 'the player ahead');
-    const gap = Math.max(0, rival.gap ?? 0);
-    const rankLabel = rival.rank ? `#${rival.rank}` : '';
-    const hoursBitBn = hoursLeft > 0
-        ? ` আজ আরও ${fmt(hoursLeft)}টি কুইজ বাকি আছে — খেললে ব্যবধান কমানো সম্ভব!`
-        : '';
-    const hoursBitEn = hoursLeft > 0
-        ? ` ${fmt(hoursLeft)} hour${hoursLeft === 1 ? '' : 's'} left today — play them to close the gap.`
-        : '';
-
-    if (gap <= 10) {
-        return isBn
-            ? `${name}${rankLabel ? ` (${rankLabel})` : ''} থেকে মাত্র ${fmt(gap)} পয়েন্ট পিছিয়ে! ভালো খেললে এক ঘণ্টাই যথেষ্ট।${hoursBitBn}`
-            : `Only ${fmt(gap)} point${gap === 1 ? '' : 's'} behind ${name}${rankLabel ? ` (${rankLabel})` : ''}! One strong hour could do it.${hoursBitEn}`;
-    }
-
-    return isBn
-        ? `${name}${rankLabel ? ` (${rankLabel})` : ''} এর চেয়ে ${fmt(gap)} পয়েন্ট কম।${hoursBitBn || ' প্রতি ঘণ্টা খেলে ব্যবধান কমিয়ে ফেলুন!'}`
-        : `You're ${fmt(gap)} points behind ${name}${rankLabel ? ` (${rankLabel})` : ''}.${hoursBitEn || ' Steady hour-by-hour play adds up.'}`;
 }
 
 /** Convert a date to an IST (UTC+5:30) date representation for timezone safety */
@@ -820,10 +739,6 @@ export default function Competitions({
         }
     }[language];
 
-    const currentUserBadge = getBadgeByLevel(
-        (userProfile && userProfile.training_level) || 0,
-        firstTimeReadingPointsFromLessons(userProfile?.completed_lessons)
-    );
     const hourlyLifetimePoints = getLifetimePoints(userProfile, userRank);
     const hourlyStakesUi = getHourlyStakesUi(hourlyLifetimePoints, language);
     const [showHourlyPenaltyInfoModal, setShowHourlyPenaltyInfoModal] = useState(false);
@@ -1074,45 +989,6 @@ export default function Competitions({
         0
     );
 
-    const getStreak = (slots) => {
-        const now = getIstDate(getSyncedTime());
-        const currentHour = now.getUTCHours();
-        let streak = 0;
-        // Count consecutive played hours ending at current/last hour
-        // Slots are already reversed (23 -> 0)
-
-        let counting = false;
-        // Find start point: either current hour (if played) or previous hour
-        // Since slots are 23..0, we iterate
-        for (const slot of slots) {
-            if (slot.hour > currentHour) continue; // Future
-
-            // If it's current hour and live, skip (doesn't break streak yet, but doesn't count)
-            if (slot.hour === currentHour && slot.status === 'live') continue;
-
-            if (slot.status === 'played') {
-                streak++;
-                counting = true;
-            } else if (counting) {
-                // Break streak if we hit a non-played slot after starting count
-                break;
-            } else if (slot.status === 'missed' || slot.status === 'open') {
-                break;
-            }
-        }
-        return streak;
-    };
-
-    const getPlayablePreview = () => {
-        const nowMs = getSyncedTime().getTime();
-        const open = listPlayableHourlySlots(playedHourlyIdSet(), nowMs);
-        return {
-            openCount: open.length,
-            catchUpCount: open.filter((slot) => !slot.isLive).length,
-            live: open.find((slot) => slot.isLive) || getLiveHourlySlot(nowMs),
-        };
-    };
-
     const syncPackTimingRef = (patch) => {
         packTimingRef.current = { ...packTimingRef.current, ...patch };
     };
@@ -1137,21 +1013,6 @@ export default function Competitions({
         syncPackTimingRef({ onTime: flags });
         return flags;
     };
-
-    const hourlyChaseMessage = useMemo(() => {
-        if (isFullLeaderboard || !user || loading || !userRank) return null;
-        const hoursLeft = buildHourlySlots().filter((slot) => (
-            slot.status === 'live' || slot.status === 'upcoming' || slot.status === 'upcoming-next'
-        )).length;
-        const preview = getPlayablePreview();
-        if (preview.catchUpCount > 0) {
-            return language === 'bn'
-                ? `${preview.catchUpCount}টি ঘণ্টা এখনও খোলা — প্রতিটি ৫টি প্রশ্ন।`
-                : `${preview.catchUpCount} hour(s) still open — 5 questions each.`;
-        }
-        return buildHourlyChaseMessage({ language, userRank, hoursLeft });
-    }, [isFullLeaderboard, user, loading, language, userRank, todayAttempts, lastAttemptTime, serverTimeOffset]);
-
 
     /**
      * Direct submission logic for Hourly Quiz
@@ -1496,6 +1357,8 @@ export default function Competitions({
         }
         const isAdmin = userProfile?.role === 'admin';
         const bypassReadingGate = Boolean(options.bypassReadingGate) && isAdmin;
+        /** Admin preview may reopen an already-played hour to inspect the modal UI. */
+        const allowAdminPreviewReplay = bypassReadingGate;
 
         if (!bypassReadingGate) {
             const completedLessons = filterCoreCompletedLessonIds(
@@ -1543,10 +1406,10 @@ export default function Competitions({
                         || (parsed ? hourIdFromParts(parsed.year, parsed.month, parsed.day, parsed.hour) : target.hourId),
                 };
             }
-            if (playedHourlyIdSet().has(target.quizId)) return;
+            if (!allowAdminPreviewReplay && playedHourlyIdSet().has(target.quizId)) return;
             const quiz = await fetchHourlyQuiz(true, target.hourId);
             if (!quiz) return;
-            await startQuiz({ ...quiz, id: target.quizId });
+            await startQuiz({ ...quiz, id: target.quizId }, { allowAdminPreviewReplay });
         } finally {
             setHourlyQuizRefreshBusy(false);
         }
@@ -1659,13 +1522,7 @@ export default function Competitions({
             );
 
             if (rankData) {
-                const rival = await requestManager.fetch(
-                    `user_rival_ahead_${user.id}`,
-                    () => fetchRivalAheadForDisplay(rankData.score),
-                    { ttl: 5, swr: true, forceRefresh }
-                ).catch(() => null);
-
-                setUserRank({ ...rankData, rival: rival || null });
+                setUserRank(rankData);
             } else {
                 setUserRank(null);
             }
@@ -1771,12 +1628,6 @@ export default function Competitions({
         }
     }, [surface, isPrizesSurface, isRankSurface]);
 
-    const goToGlobalLeaderboard = () => {
-        if (typeof setCurrentView === 'function') {
-            setCurrentView('leaderboard');
-        }
-    };
-
     const switchToMonthlyLeaderboard = () => {
         setLeaderboardTab('monthly');
     };
@@ -1811,7 +1662,7 @@ export default function Competitions({
         setLeaderboardUserSheet({ userId, preview, rank });
     };
 
-    const startQuiz = async (quiz) => {
+    const startQuiz = async (quiz, options = {}) => {
         if (!user) {
             setCurrentView('login');
             return;
@@ -1823,7 +1674,10 @@ export default function Competitions({
             return;
         }
 
-        if (playedHourlyIdSet().has(quiz.id) || (todayAttempts || []).some((row) => row.quiz_id === quiz.id)) {
+        if (
+            !options.allowAdminPreviewReplay
+            && (playedHourlyIdSet().has(quiz.id) || (todayAttempts || []).some((row) => row.quiz_id === quiz.id))
+        ) {
             return;
         }
 
@@ -2168,6 +2022,11 @@ export default function Competitions({
         activeQuiz && Array.isArray(quizQuestions) && quizQuestions.length > 0
             ? quizQuestions[currentQuestionIndex]
             : null;
+    const hourlyImageOptionsMode = Boolean(
+        hourlyCurrentQuestion
+        && Array.isArray(hourlyCurrentQuestion.options)
+        && hourlyCurrentQuestion.options.some((opt) => isImageOption(opt))
+    );
     const activeHourLabel = hourlyClockLabel(activeQuiz?.id);
     const hourlyCurrentAnswered =
         reviewMode ||
@@ -3030,102 +2889,49 @@ export default function Competitions({
     }
 
     return (
-        <div className="max-w-md mx-auto relative bg-[#fffdf7] text-slate-900 min-h-[100dvh] pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] md:min-h-screen md:pb-28">
-            {/* 1. STICKY SCOREBOARD HEADER */}
-            <div className="sticky top-0 z-30 shrink-0 border-b border-slate-200/80 bg-[#fffdf7]/95 backdrop-blur">
-                <div className="px-3 py-2 sm:px-4 sm:py-3">
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                                <h1 className={`truncate text-base font-black leading-tight tracking-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali normal-case' : ''}`}>
-                                    {language === 'en' ? 'Hourly Quiz' : 'ঘণ্টার কুইজ'}
-                                </h1>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowHourlyPenaltyInfoModal(true)}
-                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm transition-colors hover:bg-orange-50 sm:h-7 sm:w-7"
-                                    aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
-                                >
-                                    <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                                        <circle cx="12" cy="12" r="10" />
-                                        <path strokeLinecap="round" d="M12 6v6l4 2" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <p className={`mt-0.5 hidden text-[10px] font-semibold text-slate-600 sm:block sm:text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                {language === 'en' ? '5 quizzes / hour' : 'প্রতি ঘণ্টায় ৫ কুইজ'}
-                            </p>
-                        </div>
-                        {userRank && (
-                            <div className="flex shrink-0 items-center gap-1.5">
-                                <span className={`hidden rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm sm:inline-flex ${currentUserBadge.color}`}>
-                                    {language === 'en' ? currentUserBadge.en : currentUserBadge.bn}
-                                </span>
-                                <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-black text-white shadow-sm shadow-orange-500/30 sm:px-2.5 sm:py-1 sm:text-sm">#{userRank.rank}</span>
-                            </div>
-                        )}
-                    </div>
+        <div className={`relative mx-auto flex h-[100dvh] max-h-[100dvh] max-w-md flex-col overflow-hidden bg-[#fffdf7] text-slate-900 pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] md:h-screen md:max-h-screen md:pb-28 ${language === 'bn' ? 'font-bengali' : ''}`}>
+            <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-64 opacity-80"
+                aria-hidden
+                style={{
+                    background:
+                        'radial-gradient(ellipse 90% 60% at 10% -10%, rgba(255,154,98,0.28), transparent 55%)',
+                }}
+            />
 
-                    {!loading && (
-                    <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:mt-3">
-                        <div className="grid grid-cols-3 divide-x divide-slate-200/80">
-                            <div className="bg-white px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-slate-500 sm:mb-1 sm:text-[9px]">{t.points}</p>
-                                <p className="text-base font-black tabular-nums leading-none text-slate-900 sm:text-xl">{formatLeaderboardNumber(userRank?.score)}</p>
-                            </div>
-                            <div className="bg-orange-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-orange-700 sm:mb-1 sm:text-[9px]">
-                                    {language === 'en' ? 'Today · Net' : 'আজ · নেট'}
-                                </p>
-                                <p className="text-base font-black tabular-nums leading-none text-orange-600 sm:text-xl">
-                                    <CountUpNumber
-                                        value={getTodayNetScore()}
-                                        format={(n) => `${n > 0 ? '+' : ''}${formatLeaderboardNumber(n)}`}
-                                    />
-                                </p>
-                            </div>
-                            <div className="bg-amber-50 px-1.5 py-2 text-center sm:px-3 sm:py-3">
-                                <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-amber-700 sm:mb-1 sm:text-[9px]">{t.streak}</p>
-                                <p className="font-black flex items-center justify-center gap-0.5 text-base leading-none text-amber-600 sm:gap-1 sm:text-xl">
-                                    <span className="tabular-nums">{getStreak(buildHourlySlots())}</span>
-                                    <span className="text-sm sm:text-base" aria-hidden>🔥</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    )}
-
-                    {!loading && hourlyChaseMessage && (
-                        <div className="mt-2 border-t border-dashed border-slate-200/80 pt-2">
-                            <div className="rounded-2xl border border-dashed border-orange-200/80 bg-gradient-to-br from-orange-50 via-[#fffdf7] to-amber-50 px-2 py-1.5 shadow-sm">
-                                <div className="flex items-start gap-1.5">
-                                    <span className="mt-0.5 shrink-0 text-xs leading-none" aria-hidden>💪</span>
-                                    <div className="min-w-0 flex-1">
-                                        <p className={`line-clamp-2 text-[10px] font-semibold leading-snug text-slate-800 sm:text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                            {hourlyChaseMessage}
-                                        </p>
-                                        {userRank?.rank > 1 && userRank?.rival && (
-                                            <button
-                                                type="button"
-                                                onClick={goToGlobalLeaderboard}
-                                                className={`mt-0.5 text-[9px] font-bold text-orange-600 transition-colors hover:text-orange-700 sm:text-[10px] ${language === 'bn' ? 'font-bengali' : ' tracking-wide'}`}
-                                            >
-                                                {language === 'en' ? 'Rankings →' : 'লিডারবোর্ড →'}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+            {/* Thin header */}
+            <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 px-4 pb-1 pt-3 sm:px-5 sm:pt-4">
+                <div className="flex min-w-0 items-center gap-2">
+                    <h1 className={`truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {language === 'en' ? 'Hourly Quiz' : 'ঘণ্টার কুইজ'}
+                    </h1>
+                    <button
+                        type="button"
+                        onClick={() => setShowHourlyPenaltyInfoModal(true)}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-slate-500 ring-1 ring-slate-200/70"
+                        aria-label={language === 'en' ? 'Penalty info' : 'পেনাল্টি তথ্য'}
+                    >
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" aria-hidden>
+                            <circle cx="12" cy="12" r="10" />
+                            <path strokeLinecap="round" d="M12 6v6l4 2" />
+                        </svg>
+                    </button>
                 </div>
-            </div>
+                {!loading && (
+                    <p className="shrink-0 text-lg font-bold tabular-nums text-orange-600">
+                        <CountUpNumber
+                            value={getTodayNetScore()}
+                            format={(n) => `${n > 0 ? '+' : ''}${formatLeaderboardNumber(n)}`}
+                        />
+                    </p>
+                )}
+            </header>
 
-            {/* 2. 24-HOUR DAY RING */}
-            <div className="relative flex flex-col items-center px-3 pb-2 pt-3 sm:px-4 sm:pb-3 sm:pt-5" ref={ladderRef}>
+            {/* Main: hero + horizontal strip — fits remaining viewport */}
+            <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 pt-1 sm:px-5" ref={ladderRef}>
                 {loading ? (
                     <div
-                        className="flex min-h-[min(70vh,520px)] w-full flex-col items-center justify-center py-8"
+                        className="flex min-h-0 flex-1 flex-col items-center justify-center"
                         role="status"
                         aria-live="polite"
                         aria-busy="true"
@@ -3137,7 +2943,7 @@ export default function Competitions({
                     </div>
                 ) : (
                     <HourlyDayRing
-                        slots={[...buildHourlySlots()].reverse()}
+                        slots={buildHourlySlots()}
                         language={language}
                         timeLeft={timeLeft}
                         loading={false}
@@ -3162,11 +2968,11 @@ export default function Competitions({
                         type="button"
                         disabled={hourlyQuizRefreshBusy}
                         onClick={() => { void beginHourlyQuiz({ bypassReadingGate: true }); }}
-                        className={`mt-1.5 text-center text-[10px] font-bold text-slate-500 underline-offset-2 hover:text-orange-600 hover:underline disabled:opacity-50 ${language === 'bn' ? 'font-bengali' : ''}`}
+                        className={`shrink-0 py-1 text-center text-xs font-semibold text-slate-400 underline-offset-2 hover:text-orange-600 hover:underline disabled:opacity-50 ${language === 'bn' ? 'font-bengali' : ''}`}
                     >
                         {language === 'bn'
-                            ? 'অ্যাডমিন: রিডিং লক ছাড়া প্রিভিউ'
-                            : 'Admin: preview without reading lock'}
+                            ? 'অ্যাডমিন প্রিভিউ'
+                            : 'Admin preview'}
                     </button>
                 )}
             </div>
@@ -3218,17 +3024,29 @@ export default function Competitions({
 
             {/* Quiz Modal (Keep Portal) */}
             {activeQuiz && createPortal(
-                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/55 animate-fade-in">
-                    <div className="w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
-                        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-[#fffdf7] shadow-xl max-h-[90vh] flex flex-col">
+                <div className="fixed inset-0 z-[150] flex items-end justify-center bg-slate-900/50 animate-fade-in sm:items-center sm:p-4">
+                    <div
+                        className={`flex w-full max-w-2xl flex-col animate-scale-in ${
+                            hourlyImageOptionsMode && !quizSubmitted
+                                ? 'h-[100dvh] max-h-[100dvh] sm:h-[min(90vh,720px)] sm:max-h-[90vh]'
+                                : 'max-h-[100dvh] sm:max-h-[90vh]'
+                        }`}
+                    >
+                        <div
+                            className={`flex min-h-0 flex-col overflow-hidden rounded-t-2xl border border-slate-200/70 bg-[#fffdf7] shadow-lg sm:rounded-2xl ${
+                                hourlyImageOptionsMode && !quizSubmitted
+                                    ? 'h-full'
+                                    : 'max-h-[100dvh] sm:max-h-[90vh]'
+                            }`}
+                        >
                                                     {!quizSubmitted ? (
                             <>
-                                <div className="flex items-center gap-2 border-b border-slate-200/80 bg-white px-3 py-2.5 sm:gap-3 sm:px-5 sm:py-3 shrink-0">
+                                <div className="flex shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/95 px-3 py-2 backdrop-blur-sm sm:gap-2.5 sm:px-4 sm:py-2.5">
                                     <div className="min-w-0 flex-1">
-                                        <h3 className={`truncate text-base font-black leading-tight text-slate-900 sm:text-lg ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <h3 className={`truncate text-[15px] font-bold leading-tight text-slate-900 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {language === 'bn' ? 'ঘণ্টার কুইজ' : 'Hourly quiz'}
                                         </h3>
-                                        <div className={`mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-bold tabular-nums text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        <div className={`mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] font-medium tabular-nums text-slate-400 sm:text-[11px] ${language === 'bn' ? 'font-bengali' : ''}`}>
                                             {activeHourLabel && (
                                                 <span>
                                                     {reviewMode
@@ -3253,21 +3071,21 @@ export default function Competitions({
                                                 role="status"
                                                 aria-live="polite"
                                                 aria-label={packTimerUi.ariaLabel}
-                                                className={`flex items-center gap-1 rounded-full border px-2 py-1 shadow-sm ${
+                                                className={`flex items-center gap-1 rounded-full px-2 py-0.5 ${
                                                     packTimerUi.tone === 'green'
-                                                        ? 'border-emerald-300 bg-emerald-500 text-white'
-                                                        : 'border-amber-300 bg-amber-500 text-white'
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : 'bg-amber-500 text-white'
                                                 }`}
                                             >
-                                                <svg className="h-3.5 w-3.5 opacity-95" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                                                <svg className="h-3 w-3 opacity-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                                                     <circle cx="12" cy="12" r="9" />
                                                     <path strokeLinecap="round" d="M12 7v5l3 2" />
                                                 </svg>
-                                                <span className="text-sm font-black tabular-nums leading-none tracking-tight">
+                                                <span className="text-xs font-bold tabular-nums leading-none tracking-tight">
                                                     {packTimerUi.tone === 'green' ? packTimerUi.badge : packTimerUi.pointsMark}
                                                 </span>
                                                 {packTimerUi.tone === 'green' && (
-                                                    <span className="text-[11px] font-black leading-none opacity-95" aria-hidden>
+                                                    <span className="text-[10px] font-bold leading-none opacity-90" aria-hidden>
                                                         {packTimerUi.pointsMark}
                                                     </span>
                                                 )}
@@ -3276,22 +3094,30 @@ export default function Competitions({
                                         <button
                                             type="button"
                                             onClick={handleAbortQuiz}
-                                            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-orange-50 transition-colors"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/70 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
                                             aria-label={language === 'bn' ? 'বন্ধ' : 'Close'}
                                         >
-                                            ✕
+                                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className="mb-0 overflow-y-auto flex-1 p-3 sm:p-5 text-slate-900">
-                                    <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 sm:mb-4">
-                                        <div className="h-full bg-orange-600 transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
+                                <div
+                                    className={`mb-0 min-h-0 flex-1 p-3 text-slate-900 sm:p-4 ${
+                                        hourlyImageOptionsMode
+                                            ? 'flex flex-col overflow-hidden'
+                                            : 'overflow-y-auto'
+                                    }`}
+                                >
+                                    <div className={`h-1 w-full overflow-hidden rounded-full bg-slate-200/80 ${hourlyImageOptionsMode ? 'mb-2 shrink-0' : 'mb-3 sm:mb-3.5'}`}>
+                                        <div className="h-full rounded-full bg-orange-500 transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <div className="flex justify-between items-start gap-3 mb-4 sm:mb-6">
-                                        <div className="flex-1 min-w-0">
-                                            {quizQuestions[currentQuestionIndex]?.question_image_url && (
-                                                <div className="mb-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                                    <div className={`flex items-start justify-between gap-2.5 ${hourlyImageOptionsMode ? 'mb-2 shrink-0 sm:mb-2.5 sm:gap-2' : 'mb-3 sm:mb-4 sm:gap-3'}`}>
+                                        <div className="min-w-0 flex-1">
+                                            {quizQuestions[currentQuestionIndex]?.question_image_url && !hourlyImageOptionsMode && (
+                                                <div className="mb-3 overflow-hidden rounded-xl border border-slate-200/70 bg-white">
                                                     {(() => {
                                                         const questionImageKey = `q_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}`;
                                                         return (
@@ -3299,7 +3125,7 @@ export default function Competitions({
                                                     <img
                                                         src={buildRetryImageSrc(quizQuestions[currentQuestionIndex]?.question_image_url, questionImageKey)}
                                                         alt={language === 'en' ? 'Question visual' : 'প্রশ্নের ছবি'}
-                                                        className="w-full max-h-64 object-contain"
+                                                        className="w-full max-h-56 object-contain sm:max-h-64"
                                                         loading="lazy"
                                                         data-fallback-index="0"
                                                         onError={(e) => {
@@ -3314,7 +3140,7 @@ export default function Competitions({
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => retryImageLoad(questionImageKey)}
-                                                                        className="mt-2 text-xs px-3 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                                                                        className="mt-2 rounded-full border border-orange-200/80 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-100"
                                                                     >
                                                                         {language === 'en' ? 'Retry image' : 'ছবি আবার লোড করুন'}
                                                                     </button>
@@ -3325,17 +3151,21 @@ export default function Competitions({
                                                     })()}
                                                 </div>
                                             )}
-                                            <div className="flex items-start justify-between gap-3">
-                                                <h2 className={`min-w-0 flex-1 text-lg font-black leading-snug tracking-tight text-slate-950 sm:text-xl sm:leading-snug ${language === 'bn' ? 'font-bengali leading-relaxed sm:leading-relaxed' : ''}`}>
+                                            <div className="flex items-start justify-between gap-2.5">
+                                                <h2 className={`min-w-0 flex-1 font-bold tracking-tight text-slate-900 ${
+                                                    hourlyImageOptionsMode
+                                                        ? `line-clamp-3 text-sm leading-snug sm:text-[15px] ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`
+                                                        : `text-base leading-snug sm:text-lg sm:leading-snug ${language === 'bn' ? 'font-bengali leading-relaxed sm:leading-relaxed' : ''}`
+                                                }`}>
                                                     {quizQuestions[currentQuestionIndex]?.question_text}
                                                 </h2>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleHourlyGoogleSearch(quizQuestions[currentQuestionIndex]?.question_text)}
-                                                    className="shrink-0 p-2 rounded-full border border-slate-200/80 bg-white shadow-sm hover:bg-amber-50 text-slate-600 hover:text-amber-600 transition-all active:scale-90"
+                                                    className="shrink-0 rounded-full border border-slate-200/70 bg-white p-1.5 text-slate-500 transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 active:scale-90"
                                                     title={language === 'en' ? 'Search Google' : 'গুগল সার্চ'}
                                                 >
-                                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                                                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                                                         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                                                         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -3358,39 +3188,51 @@ export default function Competitions({
                                                 }
                                             }}
                                             disabled={userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode}
-                                            className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-full border border-slate-200/80 transition-all shadow-sm active:scale-95 ${(userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode)
-                                                ? 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                                                : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-40'
+                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all active:scale-95 ${(userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode)
+                                                ? 'border-amber-200/80 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                                : 'cursor-not-allowed border-slate-200/70 bg-slate-50 text-slate-300 opacity-50'
                                                 }`}
                                             title={hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) ? (language === 'en' ? 'Answer Locked (Hint Viewed)' : 'উত্তর লক করা হয়েছে (ইঙ্গিত দেখা হয়েছে)') : (userAnswers[quizQuestions[currentQuestionIndex]?.id] === undefined && !reviewMode ? t.hintDisabled : t.hint)}
                                         >
-                                            <span className="text-xl">💡</span>
+                                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                            </svg>
                                         </button>
                                     </div>
 
                                     {showHint && (userAnswers[quizQuestions[currentQuestionIndex]?.id] !== undefined || reviewMode) && (
-                                        <div className="mb-6 p-4 bg-amber-50 rounded-2xl border border-amber-200/80 shadow-sm animate-fade-in">
+                                        <div className={`rounded-xl border border-amber-200/70 bg-amber-50/90 px-3 py-2.5 animate-fade-in ${hourlyImageOptionsMode ? 'mb-2 shrink-0' : 'mb-4'}`}>
                                             <div className="flex items-start gap-2">
-                                                <span className="text-amber-500 mt-0.5">ℹ️</span>
-                                                <p className={`text-sm text-amber-900 italic font-medium leading-relaxed ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                                                    <circle cx="12" cy="12" r="9" />
+                                                    <path strokeLinecap="round" d="M12 8v5m0 3h.01" />
+                                                </svg>
+                                                <p className={`text-[13px] font-medium leading-relaxed text-amber-900 ${language === 'bn' ? 'font-bengali' : ''} ${hourlyImageOptionsMode ? 'line-clamp-3' : ''}`}>
                                                     {quizQuestions[currentQuestionIndex]?.hint || t.noHint}
                                                 </p>
                                             </div>
                                         </div>
                                     )}
-                                    <div className="space-y-2.5">
+                                    <div
+                                        className={
+                                            hourlyImageOptionsMode
+                                                ? 'grid min-h-0 min-w-0 flex-1 grid-cols-2 grid-rows-2 gap-1.5 sm:gap-2'
+                                                : 'space-y-2'
+                                        }
+                                    >
                                         {quizQuestions[currentQuestionIndex]?.options?.map((option, idx) => {
                                             const isSelected = userAnswers[quizQuestions[currentQuestionIndex].id] === idx;
                                             const isCorrect = idx === quizQuestions[currentQuestionIndex].correct_option_index;
+                                            const optionIsImage = isImageOption(option);
 
-                                            let buttonClass = 'rounded-2xl border border-slate-200/80 bg-white hover:bg-orange-50 hover:border-orange-300 text-slate-950 shadow-sm';
+                                            let buttonClass = 'rounded-xl border border-slate-200/70 bg-white text-slate-900 hover:border-orange-200 hover:bg-orange-50/60';
 
                                             if (reviewMode) {
-                                                if (isCorrect) buttonClass = 'rounded-2xl border border-emerald-300 bg-emerald-50 text-green-950 font-bold shadow-sm';
-                                                else if (isSelected && !isCorrect) buttonClass = 'rounded-2xl border border-red-300 bg-red-50 text-red-950 font-bold shadow-sm';
-                                                else buttonClass = 'rounded-2xl border border-slate-200 bg-slate-50 text-slate-800';
+                                                if (isCorrect) buttonClass = 'rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-950 font-semibold';
+                                                else if (isSelected && !isCorrect) buttonClass = 'rounded-xl border border-rose-200 bg-rose-50 text-rose-950 font-semibold';
+                                                else buttonClass = 'rounded-xl border border-slate-200/60 bg-slate-50/80 text-slate-600';
                                             } else if (isSelected) {
-                                                buttonClass = 'rounded-2xl border border-orange-400 bg-orange-50 text-orange-950 font-bold shadow-sm';
+                                                buttonClass = 'rounded-xl border border-orange-300 bg-orange-50 text-orange-950 font-semibold ring-1 ring-orange-200/80';
                                             }
 
                                             return (
@@ -3399,15 +3241,38 @@ export default function Competitions({
                                                     type="button"
                                                     onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
                                                     disabled={reviewMode || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
-                                                    className={`w-full text-left p-3.5 transition-all duration-200 ${buttonClass} ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed' : ''}`}
+                                                    className={`${buttonClass} text-left transition-all duration-200 ${
+                                                        hourlyImageOptionsMode && optionIsImage
+                                                            ? 'relative flex min-h-0 min-w-0 flex-col overflow-hidden p-1.5 sm:p-2'
+                                                            : 'flex w-full items-start gap-2.5 p-3'
+                                                    } ${hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode ? 'cursor-not-allowed' : ''}`}
                                                 >
-                                                    <span className="mr-3 font-mono font-black text-inherit opacity-80">{String.fromCharCode(65 + idx)}.</span>
-                                                    {isImageOption(option) ? (
+                                                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold tabular-nums ${
+                                                        hourlyImageOptionsMode && optionIsImage
+                                                            ? 'absolute left-1.5 top-1.5 z-10 shadow-sm'
+                                                            : 'mt-0.5'
+                                                    } ${
+                                                        isSelected && !reviewMode
+                                                            ? 'bg-orange-500 text-white'
+                                                            : reviewMode && isCorrect
+                                                              ? 'bg-emerald-500 text-white'
+                                                              : reviewMode && isSelected && !isCorrect
+                                                                ? 'bg-rose-500 text-white'
+                                                                : 'bg-slate-100 text-slate-500'
+                                                    }`}>
+                                                        {String.fromCharCode(65 + idx)}
+                                                    </span>
+                                                    <span className={`min-w-0 ${hourlyImageOptionsMode && optionIsImage ? 'flex h-full w-full flex-1 items-center justify-center' : 'flex-1'}`}>
+                                                    {optionIsImage ? (
                                                         <>
                                                             <img
                                                                 src={buildRetryImageSrc(option, `o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`)}
                                                                 alt={`${language === 'en' ? 'Option' : 'অপশন'} ${String.fromCharCode(65 + idx)}`}
-                                                                className="inline-block max-h-28 w-auto max-w-full object-contain rounded"
+                                                                className={
+                                                                    hourlyImageOptionsMode
+                                                                        ? 'h-full w-full object-contain object-center'
+                                                                        : 'inline-block max-h-28 w-auto max-w-full rounded-lg object-contain'
+                                                                }
                                                                 loading="lazy"
                                                                 data-fallback-index="0"
                                                                 onError={(e) => {
@@ -3425,28 +3290,43 @@ export default function Competitions({
                                                                         evt.stopPropagation();
                                                                         retryImageLoad(`o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`);
                                                                     }}
-                                                                    className="ml-2 text-[11px] px-2 py-1 rounded-full border border-orange-200 bg-orange-50 text-orange-700"
+                                                                    className={`rounded-full border border-orange-200/80 bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-700 ${
+                                                                        hourlyImageOptionsMode ? 'absolute bottom-1.5 right-1.5 z-10' : 'ml-2'
+                                                                    }`}
                                                                 >
                                                                     {language === 'en' ? 'Retry' : 'রিলোড'}
                                                                 </button>
                                                             )}
                                                         </>
                                                     ) : (
-                                                        <span className={`text-sm sm:text-base font-bold leading-snug text-inherit ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`}>
+                                                        <span className={`text-sm font-medium leading-snug text-inherit sm:text-[15px] ${language === 'bn' ? 'font-bengali leading-relaxed' : ''}`}>
                                                             {option}
                                                         </span>
                                                     )}
-                                                    {reviewMode && isCorrect && <span className="float-right text-green-600">✓</span>}
-                                                    {reviewMode && isSelected && !isCorrect && <span className="float-right text-red-600">✗</span>}
-                                                    {hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode && isSelected && <span className="float-right text-slate-400">🔒</span>}
+                                                    </span>
+                                                    {reviewMode && isCorrect && (
+                                                        <svg className={`h-4 w-4 shrink-0 text-emerald-600 ${hourlyImageOptionsMode && optionIsImage ? 'absolute right-1.5 top-1.5 z-10' : 'mt-0.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    )}
+                                                    {reviewMode && isSelected && !isCorrect && (
+                                                        <svg className={`h-4 w-4 shrink-0 text-rose-600 ${hourlyImageOptionsMode && optionIsImage ? 'absolute right-1.5 top-1.5 z-10' : 'mt-0.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    )}
+                                                    {hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id) && !reviewMode && isSelected && (
+                                                        <svg className={`h-4 w-4 shrink-0 text-slate-400 ${hourlyImageOptionsMode && optionIsImage ? 'absolute right-1.5 top-1.5 z-10' : 'mt-0.5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                        </svg>
+                                                    )}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2 p-4 sm:p-6 border-t border-slate-200/80 bg-white shrink-0">
-                                    <div className="flex justify-between items-center">
+                                <div className="flex shrink-0 flex-col gap-1.5 border-t border-slate-200/70 bg-white px-3 py-3 sm:px-4 sm:py-3.5">
+                                    <div className="flex items-center justify-between gap-2">
                                         <button
                                             type="button"
                                             disabled={currentQuestionIndex === 0}
@@ -3454,7 +3334,7 @@ export default function Competitions({
                                                 setCurrentQuestionIndex((prev) => prev - 1);
                                                 setShowHint(false);
                                             }}
-                                            className="rounded-full border border-slate-200/80 bg-white px-4 py-2 font-bold text-sm text-slate-700 shadow-sm disabled:opacity-30"
+                                            className="rounded-full border border-slate-200/70 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-30"
                                         >
                                             ← Prev
                                         </button>
@@ -3464,12 +3344,12 @@ export default function Competitions({
                                                 disabled={!reviewMode && !hourlyCurrentAnswered}
                                                 onClick={reviewMode ? () => setActiveQuiz(null) : submitQuiz}
                                                 aria-disabled={!reviewMode && !hourlyCurrentAnswered}
-                                                className={`px-6 py-2.5 font-bold text-sm transition-colors ${
+                                                className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
                                                     reviewMode
-                                                        ? 'rounded-full border border-slate-200/80 bg-white text-slate-700 shadow-sm'
+                                                        ? 'border border-slate-200/70 bg-white text-slate-700'
                                                         : hourlyCurrentAnswered
-                                                          ? 'rounded-full bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
-                                                          : 'rounded-full border border-slate-200/80 bg-white text-slate-400 opacity-50 cursor-not-allowed'
+                                                          ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                                          : 'cursor-not-allowed border border-slate-200/70 bg-white text-slate-400 opacity-50'
                                                 }`}
                                             >
                                                 {reviewMode ? 'Close Review' : 'Finish Quiz'}
@@ -3483,10 +3363,10 @@ export default function Competitions({
                                                     setShowHint(false);
                                                 }}
                                                 aria-disabled={!reviewMode && !hourlyCurrentAnswered}
-                                                className={`px-6 py-2.5 font-bold text-sm transition-colors ${
+                                                className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
                                                     reviewMode || hourlyCurrentAnswered
-                                                        ? 'rounded-full bg-orange-500 text-white shadow-sm shadow-orange-500/30'
-                                                        : 'rounded-full border border-slate-200/80 bg-white text-slate-400 opacity-50 cursor-not-allowed'
+                                                        ? 'bg-orange-500 text-white hover:bg-orange-600'
+                                                        : 'cursor-not-allowed border border-slate-200/70 bg-white text-slate-400 opacity-50'
                                                 }`}
                                             >
                                                 Next →
@@ -3495,7 +3375,7 @@ export default function Competitions({
                                     </div>
                                     {!reviewMode && !hourlyCurrentAnswered && (
                                         <p
-                                            className={`text-center text-xs font-semibold text-amber-700 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            className={`text-center text-[11px] font-medium text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}
                                             role="status"
                                         >
                                             {t.selectAnswerToContinue}
@@ -3504,50 +3384,63 @@ export default function Competitions({
                                 </div>
                             </>
                         ) : submitRejected ? (
-                            <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
-                                <div className="w-20 h-20 rounded-full bg-red-50 text-red-600 text-4xl flex items-center justify-center mx-auto mb-4">⛔</div>
-                                <h2 className={`text-2xl font-black text-slate-900 mb-3 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            <div className="overflow-y-auto px-4 py-8 text-center sm:px-6">
+                                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                                    <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                </div>
+                                <h2 className={`mb-2 text-xl font-bold text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {submitRejected.type === 'time'
                                         ? (language === 'en' ? 'Score not counted' : 'স্কোর গণনা হয়নি')
                                         : (language === 'en' ? 'Not saved' : 'সংরক্ষণ হয়নি')}
                                 </h2>
-                                <p className={`mx-auto mb-6 max-w-md text-sm leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                <p className={`mx-auto mb-5 max-w-md text-sm leading-relaxed text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {submitRejected.message}
                                 </p>
                                 {submitRejected.type === 'window' && (
-                                    <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <div className={`mx-auto mb-5 max-w-md rounded-xl border border-slate-200/70 bg-slate-50 p-3 text-left text-xs leading-relaxed text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? 'That hour is no longer open. You can still play any hour that is still orange or amber on the ring.'
                                             : 'সেই ঘণ্টা আর খোলা নেই। রিং-এ যে ঘণ্টা কমলা বা অ্যাম্বার আছে সেগুলো খেলতে পারবেন।'}
                                     </div>
                                 )}
                                 {submitRejected.type === 'time' && (
-                                    <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left text-xs text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <div className={`mx-auto mb-5 max-w-md rounded-xl border border-amber-200/70 bg-amber-50/90 p-3 text-left text-xs leading-relaxed text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? 'How to fix: Phone Settings → Date & time → turn ON "Set automatically". Then reopen the hourly challenge.'
                                             : 'সমাধান: ফোন সেটিংস → তারিখ ও সময় → "স্বয়ংক্রিয়ভাবে সেট করুন" চালু করুন। তারপর আবার ঘণ্টার চ্যালেঞ্জ খুলুন।'}
                                     </div>
                                 )}
-                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); setSubmitRejected(null); }} className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]">
+                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); setSubmitRejected(null); }} className="w-full rounded-full bg-orange-500 py-2.5 text-sm font-semibold text-white transition-all hover:bg-orange-600 active:scale-[0.99]">
                                     {t.close}
                                 </button>
                             </div>
                         ) : (
-                            <div className="text-center py-6 px-4 sm:px-6 overflow-y-auto">
-                                <div className={`w-20 h-20 rounded-full text-4xl flex items-center justify-center mx-auto mb-4 ${isGuestUser(userProfile) ? 'bg-sky-50 text-sky-600' : 'bg-green-50 text-green-600'}`}>
-                                    {isGuestUser(userProfile) ? '👀' : '🎉'}
+                            <div className="overflow-y-auto px-4 py-8 text-center sm:px-6">
+                                <div className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full ${isGuestUser(userProfile) ? 'bg-sky-50 text-sky-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    {isGuestUser(userProfile) ? (
+                                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    )}
                                 </div>
-                                <h2 className={`text-2xl font-black text-slate-900 mb-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                <h2 className={`mb-5 text-xl font-bold text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                     {isGuestUser(userProfile)
                                         ? (language === 'en' ? 'Preview complete' : 'প্রিভিউ সম্পন্ন')
                                         : t.completed}
                                 </h2>
 
-                                <div className="flex flex-col items-center justify-center mb-8 animate-scale-in">
-                                    <div className={`text-6xl sm:text-7xl font-black mb-2 ${(quizResults?.score || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <div className="mb-6 flex flex-col items-center justify-center animate-scale-in">
+                                    <div className={`mb-1 text-5xl font-bold tabular-nums sm:text-6xl ${(quizResults?.score || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                         {(quizResults?.score || 0) > 0 ? '+' : ''}{quizResults?.score || 0}
                                     </div>
-                                    <div className={`text-xs sm:text-sm font-bold uppercase tracking-widest ${(quizResults?.score || 0) >= 0 ? 'text-green-600/80' : 'text-red-600/80'}`}>
+                                    <div className={`text-[11px] font-semibold uppercase tracking-wide ${(quizResults?.score || 0) >= 0 ? 'text-emerald-600/70' : 'text-rose-600/70'}`}>
                                         {isGuestUser(userProfile)
                                             ? (language === 'en' ? 'Practice score' : 'অনুশীলন স্কোর')
                                             : ((quizResults?.score || 0) >= 0
@@ -3557,58 +3450,58 @@ export default function Competitions({
                                 </div>
 
                                 {isGuestUser(userProfile) && (
-                                    <div className={`mx-auto mb-6 max-w-md rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-left text-xs leading-relaxed text-sky-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <div className={`mx-auto mb-5 max-w-md rounded-xl border border-sky-200/70 bg-sky-50/90 px-3.5 py-2.5 text-left text-xs leading-relaxed text-sky-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {guestPreviewText(language, 'hourlyResultGuest')}
                                     </div>
                                 )}
 
                                 {quizResults?.savedHourLabel && (
-                                    <p className={`mx-auto mb-2 max-w-md text-center text-xs font-bold leading-relaxed text-slate-700 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`mx-auto mb-1.5 max-w-md text-center text-xs font-semibold leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? `Saved for ${quizResults.savedHourLabel}.`
                                             : `স্কোর যোগ হয়েছে ${quizResults.savedHourLabel}-এর জন্য।`}
                                     </p>
                                 )}
                                 {quizResults?.clockMoved && quizResults?.liveHourLabel && (
-                                    <p className={`mx-auto mb-2 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`mx-auto mb-1.5 max-w-md text-center text-xs leading-relaxed text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? `${quizResults.liveHourLabel} is a new quiz. This score is not for that hour.`
                                             : `${quizResults.liveHourLabel} আলাদা কুইজ। এই স্কোর সেই ঘণ্টার নয়।`}
                                     </p>
                                 )}
                                 {(quizResults?.openCount || 0) > 0 && (
-                                    <p className={`mx-auto mb-4 max-w-md text-center text-xs leading-relaxed text-slate-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`mx-auto mb-3 max-w-md text-center text-xs leading-relaxed text-slate-500 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? 'More hours are still open. Close and tap the clock to play them.'
                                             : 'আরও ঘণ্টা খোলা আছে। বন্ধ করে ঘড়িতে ট্যাপ করে খেলুন।'}
                                     </p>
                                 )}
                                 {(quizResults?.latePacks || 0) > 0 && (
-                                    <p className={`mx-auto mb-6 max-w-md text-center text-xs leading-relaxed text-amber-700 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`mx-auto mb-5 max-w-md text-center text-xs leading-relaxed text-amber-700 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? `${quizResults.latePacks} set(s) finished after green time → those points are half.`
                                             : `${quizResults.latePacks}টি সেট সবুজ সময়ের পরে শেষ — সেগুলোর পয়েন্ট অর্ধেক।`}
                                     </p>
                                 )}
 
-                                <div className={`mx-auto mb-8 grid max-w-md gap-3 ${(quizResults?.penalty || 0) > 0 ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
-                                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-3 shadow-sm">
-                                        <div className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mb-1">
+                                <div className={`mx-auto mb-6 grid max-w-md gap-2 ${(quizResults?.penalty || 0) > 0 ? 'grid-cols-2' : 'grid-cols-1 max-w-[11rem]'}`}>
+                                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/90 px-3 py-2.5">
+                                        <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
                                             {language === 'bn' ? 'সঠিক' : 'Right'}
                                         </div>
-                                        <div className="text-lg font-black text-green-700 tabular-nums">+{quizResults?.pointsEarned || 0}</div>
+                                        <div className="text-base font-bold tabular-nums text-emerald-700">+{quizResults?.pointsEarned || 0}</div>
                                     </div>
                                     {(quizResults?.penalty || 0) > 0 && (
-                                        <div className="rounded-2xl border border-red-100 bg-red-50 p-3 shadow-sm">
-                                            <div className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mb-1">
+                                        <div className="rounded-xl border border-rose-100 bg-rose-50/90 px-3 py-2.5">
+                                            <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-600">
                                                 {language === 'bn' ? 'পেনাল্টি' : 'Penalty'}
                                             </div>
-                                            <div className="text-lg font-black text-red-700 tabular-nums">-{quizResults.penalty}</div>
+                                            <div className="text-base font-bold tabular-nums text-rose-700">-{quizResults.penalty}</div>
                                         </div>
                                     )}
                                 </div>
                                 {(quizResults?.skipped || 0) > 0 && (
-                                    <p className={`mb-6 text-center text-[11px] text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    <p className={`mb-5 text-center text-[11px] text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {language === 'en'
                                             ? `This saved attempt includes ${quizResults.skipped} unanswered question(s) from an older format. New quizzes require every answer.`
                                             : `আগের বারের কুইজে ${quizResults.skipped}টি প্রশ্নের উত্তর দেওয়া হয়নি। নতুন নিয়ম অনুযায়ী সব প্রশ্নের উত্তর দেওয়া বাধ্যতামূলক।`}
@@ -3617,24 +3510,31 @@ export default function Competitions({
 
                                 {/* Sync Status Footer */}
                                 {!isGuestUser(userProfile) && (
-                                    <div className="mt-2 mb-6 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm max-w-xs mx-auto text-xs font-bold">
+                                    <div className="mx-auto mb-5 max-w-xs rounded-xl border border-slate-200/70 bg-white px-3 py-2.5 text-xs font-semibold">
                                         {syncStatus === 'syncing' && (
                                             <div className="flex items-center justify-center gap-2 text-amber-600">
-                                                <span className="h-2 w-2 animate-ping rounded-full bg-amber-500" />
+                                                <span className="h-1.5 w-1.5 animate-ping rounded-full bg-amber-500" />
                                                 {language === 'en' ? 'Syncing with server...' : 'সার্ভারের সাথে সিঙ্ক হচ্ছে...'}
                                             </div>
                                         )}
                                         {syncStatus === 'success' && (
                                             <div className="flex items-center justify-center gap-1.5 text-emerald-600">
-                                                <span>✓</span>
+                                                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
                                                 {language === 'en' ? 'Successfully saved to server!' : 'সার্ভারে সফলভাবে সংরক্ষিত হয়েছে!'}
                                             </div>
                                         )}
                                         {syncStatus === 'failed' && (
                                             <div className="flex flex-col items-center gap-2">
-                                                <div className="text-red-600">
-                                                    ⚠️ {language === 'en' ? 'Failed to save to server' : 'সার্ভারে সেভ করা যায়নি'}
-                                                    {syncErrorMessage && <p className="text-[10px] text-slate-500 font-normal mt-0.5">{syncErrorMessage}</p>}
+                                                <div className="text-rose-600">
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                                        </svg>
+                                                        {language === 'en' ? 'Failed to save to server' : 'সার্ভারে সেভ করা যায়নি'}
+                                                    </span>
+                                                    {syncErrorMessage && <p className="mt-0.5 text-[10px] font-normal text-slate-400">{syncErrorMessage}</p>}
                                                 </div>
                                                 <button
                                                     type="button"
@@ -3643,7 +3543,7 @@ export default function Competitions({
                                                         quizResults?.penalty,
                                                         quizResults?.quizId || activeQuiz?.id || null
                                                     )}
-                                                    className="px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase text-[10px] shadow-sm active:scale-95"
+                                                    className="rounded-full bg-amber-500 px-3 py-1.5 text-[10px] font-bold uppercase text-white transition-colors hover:bg-amber-600 active:scale-95"
                                                 >
                                                     {language === 'en' ? 'Retry Save' : 'পুনরায় চেষ্টা করুন'}
                                                 </button>
@@ -3652,7 +3552,7 @@ export default function Competitions({
                                     </div>
                                 )}
 
-                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full py-3 rounded-full bg-orange-500 text-white font-bold shadow-sm shadow-orange-500/30 transition-all hover:bg-orange-600 active:scale-[0.99]">
+                                <button type="button" onClick={() => { handleAbortQuiz(); setQuizSubmitted(false); }} className="w-full rounded-full bg-orange-500 py-2.5 text-sm font-semibold text-white transition-all hover:bg-orange-600 active:scale-[0.99]">
                                     {isGuestUser(userProfile) ? guestPreviewText(language, 'hourlyCloseGuest') : t.close}
                                 </button>
                             </div>

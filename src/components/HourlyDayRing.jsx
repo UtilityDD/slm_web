@@ -1,46 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { BrutalLoaderContent } from './loaders/PageLoader';
-
-const CX = 140;
-const CY = 140;
-const R_OUT = 118;
-const R_IN = 74;
-const SEG = 360 / 24;
-const PAD = 1.1;
-
-const THEME = {
-    played: { fill: '#34d399', stroke: 'transparent' },
-    live: { fill: '#f97316', stroke: 'transparent' },
-    open: { fill: '#fbbf24', stroke: 'transparent' },
-    missed: { fill: '#cbd5e1', stroke: 'transparent' },
-    'upcoming-next': { fill: '#fde68a', stroke: 'transparent' },
-    upcoming: { fill: '#f1f5f9', stroke: 'transparent' },
-};
-
-function polar(cx, cy, r, deg) {
-    const rad = ((deg - 90) * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
-
-function donutSegmentPath(cx, cy, rOut, rIn, startDeg, endDeg) {
-    const largeArc = endDeg - startDeg > 180 ? 1 : 0;
-    const sOut = polar(cx, cy, rOut, startDeg);
-    const eOut = polar(cx, cy, rOut, endDeg);
-    const sIn = polar(cx, cy, rIn, endDeg);
-    const eIn = polar(cx, cy, rIn, startDeg);
-    return [
-        `M ${sOut.x} ${sOut.y}`,
-        `A ${rOut} ${rOut} 0 ${largeArc} 1 ${eOut.x} ${eOut.y}`,
-        `L ${sIn.x} ${sIn.y}`,
-        `A ${rIn} ${rIn} 0 ${largeArc} 0 ${eIn.x} ${eIn.y}`,
-        'Z',
-    ].join(' ');
-}
-
-function hourLabelPos(hour, radius) {
-    const mid = hour * SEG + SEG / 2 - 90;
-    return polar(CX, CY, radius, mid);
-}
+import { isNightSleepSlotHour } from '../utils/hourlyNightWindow';
 
 function slotTimeParts(hour) {
     const hour12 = hour % 12 || 12;
@@ -57,166 +17,250 @@ function formatSignedScore(value) {
     return String(value);
 }
 
-function HourlyTimeBadge({ hour, variant = 'default', className = '' }) {
-    const { hour12, period } = slotTimeParts(hour);
-    const variants = {
-        default: 'border-slate-200/80 bg-white text-slate-900 shadow-sm',
-        live: 'border-orange-300 bg-orange-500 text-white shadow-md shadow-orange-500/35',
-        open: 'border-amber-300 bg-amber-400 text-amber-950 shadow-md shadow-amber-500/25',
-        played: 'border-emerald-200 bg-emerald-400 text-slate-900 shadow-sm',
-        missed: 'border-slate-200 bg-slate-100 text-slate-500 shadow-sm',
-        next: 'border-amber-200 bg-amber-300 text-slate-900 shadow-sm',
-        upcoming: 'border-dashed border-slate-300 bg-white text-slate-400',
-    };
+/** Sky phase from hour (0–23). Sleep window = 11 PM–5 AM (same as Home nudge). */
+function skyPhaseForHour(hour) {
+    const h = ((Number(hour) % 24) + 24) % 24;
+    if (isNightSleepSlotHour(h)) return 'sleep';
+    if (h >= 6 && h < 8) return 'dawn';
+    if (h >= 8 && h < 17) return 'day';
+    if (h >= 17 && h < 20) return 'dusk';
+    return 'night';
+}
 
+function SleepFigure({ className = 'h-16 w-16' }) {
     return (
-        <div className={`flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl border sm:h-12 sm:w-12 ${variants[variant]} ${className}`}>
-            <span className="text-base font-black leading-none tabular-nums sm:text-lg">{hour12}</span>
-            <span className={`mt-0.5 text-[7px] font-bold tracking-[0.12em] sm:text-[8px] ${variant === 'live' ? 'text-orange-100' : 'text-slate-500'}`}>
-                {period}
-            </span>
-        </div>
+        <svg className={className} viewBox="0 0 64 64" aria-hidden>
+            <ellipse cx="32" cy="52" rx="22" ry="6" fill="currentColor" opacity="0.12" />
+            <path
+                d="M14 40c0-2.2 1.8-4 4-4h20c3.3 0 6 2.7 6 6v2H18c-2.2 0-4-1.8-4-4z"
+                fill="currentColor"
+                opacity="0.9"
+            />
+            <circle cx="44" cy="30" r="8" fill="currentColor" opacity="0.95" />
+            <path d="M38 30h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.35" />
+            <g fill="currentColor" opacity="0.75" className="hourly-sleep-zzz">
+                <text x="8" y="18" fontSize="9" fontWeight="700">z</text>
+                <text x="14" y="12" fontSize="11" fontWeight="700">z</text>
+                <text x="21" y="7" fontSize="13" fontWeight="700">Z</text>
+            </g>
+        </svg>
     );
 }
 
-function ScoreBlock({ label, value, suffix, accent = 'slate' }) {
-    const accents = {
-        slate: 'text-slate-900',
-        orange: 'text-orange-600',
-        amber: 'text-amber-600',
-        emerald: 'text-emerald-700',
-    };
+function SleepMark() {
     return (
-        <div className="min-w-0 shrink-0 text-right">
-            <p className="mb-0.5 text-[8px] font-bold uppercase tracking-[0.06em] text-slate-500 sm:text-[9px]">{label}</p>
-            <p className={`text-lg font-black tabular-nums leading-none sm:text-xl ${accents[accent]}`}>
-                {value}
-                {suffix ? <span className="ml-1 text-xs font-bold text-red-500 sm:text-sm">{suffix}</span> : null}
-            </p>
-        </div>
+        <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+            <circle cx="8" cy="8" r="7" fill="#6366f1" />
+            <path d="M4.5 9.2c0-.9.7-1.6 1.6-1.6h4.2c1.1 0 2 .9 2 2v.4H6.1c-.9 0-1.6-.7-1.6-1.6z" fill="#e0e7ff" />
+            <circle cx="11.2" cy="6.2" r="2.1" fill="#e0e7ff" />
+            <text x="3.2" y="5.2" fill="#c7d2fe" fontSize="4.5" fontWeight="700">z</text>
+        </svg>
     );
 }
 
-function RingCenterFocus({ activeSlot, language, timeLeft, labels, hourlyQuizRefreshBusy }) {
-    if (!activeSlot) return null;
-    const { hour12, period } = slotTimeParts(activeSlot.hour);
-    const bn = language === 'bn';
-
-    if (activeSlot.status === 'live') {
-        return (
-            <div className="flex flex-col items-center justify-center text-center">
-                <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-orange-600">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-orange-500" aria-hidden />
-                    {labels.liveNow}
-                </span>
-                {timeLeft ? (
-                    <p className="text-3xl font-black tabular-nums leading-none tracking-tight text-slate-900 sm:text-4xl">
-                        {timeLeft}
-                    </p>
-                ) : (
-                    <p className="text-2xl font-black tabular-nums text-slate-900">
-                        {hour12}
-                        <span className="ml-1 text-xs font-bold text-slate-400">{period}</span>
-                    </p>
-                )}
-                {hourlyQuizRefreshBusy ? (
-                    <p className="mt-1 text-[9px] font-bold text-amber-600">{bn ? 'আপডেট…' : 'Updating…'}</p>
-                ) : (
-                    <p className={`mt-1 text-[10px] font-semibold text-slate-500 ${bn ? 'font-bengali' : 'uppercase tracking-wide'}`}>
-                        {labels.timeLeft}
-                    </p>
-                )}
-            </div>
-        );
+/**
+ * Sun arcs 6 AM→6 PM (left→zenith→right).
+ * Moon arcs 7 PM→5 AM across the *upper* sky only (never through title text).
+ */
+function celestialPos(hour) {
+    const h = ((Number(hour) % 24) + 24) % 24;
+    if (h >= 6 && h < 19) {
+        const t = (h - 6) / 12;
+        return {
+            kind: 'sun',
+            x: 34 + t * 212,
+            // Day sun may dip toward horizon at edges; stay mostly above mid card
+            y: 48 + (1 - Math.sin(t * Math.PI)) * 78,
+            t,
+        };
     }
+    const nightIndex = h >= 19 ? h - 19 : h + 5;
+    const t = nightIndex / 10;
+    return {
+        kind: 'moon',
+        x: 42 + t * 196,
+        // Keep moon in the top band so time/title stay clear
+        y: 28 + Math.sin(t * Math.PI) * 22,
+        t,
+        sleep: isNightSleepSlotHour(h),
+    };
+}
 
-    if (activeSlot.status === 'upcoming-next') {
-        return (
-            <div className="flex flex-col items-center justify-center text-center">
-                <span className={`mb-1 text-[9px] font-black uppercase tracking-wider text-amber-600 ${bn ? 'font-bengali normal-case' : ''}`}>
-                    {labels.nextChallengeLabel}
-                </span>
-                {timeLeft ? (
-                    <p className="text-3xl font-black tabular-nums leading-none tracking-tight text-slate-900 sm:text-4xl">
-                        {timeLeft}
-                    </p>
-                ) : (
-                    <p className="text-2xl font-black tabular-nums text-slate-900">
-                        {hour12}
-                        <span className="ml-1 text-xs font-bold text-slate-400">{period}</span>
-                    </p>
-                )}
-                <p className={`mt-1 text-[10px] font-semibold text-slate-500 ${bn ? 'font-bengali' : ''}`}>
-                    {bn ? 'শুরু হতে বাকি' : 'Starts in'}
-                </p>
-            </div>
-        );
-    }
-
-    if (activeSlot.status === 'played') {
-        const netScore = getSlotNetScore(activeSlot);
-        return (
-            <div className="flex flex-col items-center justify-center text-center">
-                <span className="mb-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-600">
-                    {bn ? 'নেট স্কোর' : 'Net score'}
-                </span>
-                <p className="text-3xl font-black tabular-nums leading-none text-emerald-600 sm:text-4xl">
-                    {formatSignedScore(netScore)}
-                </p>
-                {activeSlot.penalty > 0 && (
-                    <p className="mt-1 text-[11px] font-bold text-red-500">
-                        {bn ? 'পেনাল্টি' : 'Penalty'} −{activeSlot.penalty}
-                    </p>
-                )}
-            </div>
-        );
-    }
-
-    if (activeSlot.status === 'open') {
-        const closes = Number(activeSlot.closesInMin);
-        return (
-            <div className="flex flex-col items-center justify-center text-center">
-                <span className={`mb-1 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-700 ${bn ? 'font-bengali normal-case' : ''}`}>
-                    {bn ? 'এখনও খোলা' : 'Still open'}
-                </span>
-                <p className="text-2xl font-black tabular-nums text-amber-800">
-                    {hour12}
-                    <span className="ml-1 text-xs font-bold text-amber-600">{period}</span>
-                </p>
-                {Number.isFinite(closes) && closes > 0 && (
-                    <p className={`mt-1 text-[10px] font-bold text-amber-700 ${bn ? 'font-bengali' : ''}`}>
-                        {bn ? `${closes} মি বাকি` : `${closes}m left`}
-                    </p>
-                )}
-            </div>
-        );
-    }
-
-    if (activeSlot.status === 'missed') {
-        return (
-            <div className="flex flex-col items-center justify-center text-center">
-                <p className="text-2xl font-black tabular-nums text-slate-400">
-                    {hour12}
-                    <span className="ml-1 text-xs font-bold text-slate-300">{period}</span>
-                </p>
-                <p className={`mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${bn ? 'font-bengali normal-case' : ''}`}>
-                    {bn ? 'মিস' : 'Missed'}
-                </p>
-            </div>
-        );
-    }
+function SkyDecor({ hour, phase }) {
+    const pos = celestialPos(hour);
+    const glowCx = `${(pos.x / 280) * 100}%`;
+    const glowCy = `${(pos.y / 200) * 100}%`;
+    const isMoon = pos.kind === 'moon';
 
     return (
-        <div className="flex flex-col items-center justify-center text-center">
-            <p className="text-2xl font-black tabular-nums text-slate-500">
-                {hour12}
-                <span className="ml-1 text-xs font-bold text-slate-400">{period}</span>
-            </p>
-            <p className={`mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${bn ? 'font-bengali normal-case' : ''}`}>
-                {labels.upcomingStatus}
-            </p>
-        </div>
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 280 200" preserveAspectRatio="xMidYMid slice" aria-hidden>
+            <defs>
+                <radialGradient id="hourly-celestial-glow" cx={glowCx} cy={glowCy} r="42%">
+                    {isMoon ? (
+                        <>
+                            <stop offset="0%" stopColor={pos.sleep ? '#e0e7ff' : '#fef9c3'} stopOpacity="0.4" />
+                            <stop offset="55%" stopColor={pos.sleep ? '#6366f1' : '#a5b4fc'} stopOpacity="0.12" />
+                            <stop offset="100%" stopColor="#1e1b4b" stopOpacity="0" />
+                        </>
+                    ) : (
+                        <>
+                            <stop offset="0%" stopColor="#fef08a" stopOpacity="0.9" />
+                            <stop offset="45%" stopColor={phase === 'dusk' ? '#fb923c' : phase === 'dawn' ? '#fdba74' : '#38bdf8'} stopOpacity="0.35" />
+                            <stop offset="100%" stopColor={phase === 'dusk' ? '#a78bfa' : '#7dd3fc'} stopOpacity="0" />
+                        </>
+                    )}
+                </radialGradient>
+            </defs>
+            <rect width="280" height="200" fill="url(#hourly-celestial-glow)" />
+
+            {!isMoon && (
+                <>
+                    <ellipse cx="55" cy="78" rx="36" ry="13" fill="#fff" opacity="0.28" />
+                    <ellipse cx="110" cy="58" rx="28" ry="11" fill="#fff" opacity="0.22" />
+                </>
+            )}
+            {isMoon && (
+                <>
+                    {/* Blinking stars — keep clear of center title band */}
+                    <g className="hourly-night-stars" fill="#fff">
+                        <circle className="hourly-star hourly-star--a" cx="36" cy="52" r="1.35" />
+                        <circle className="hourly-star hourly-star--b" cx="58" cy="78" r="1.05" />
+                        <circle className="hourly-star hourly-star--c" cx="88" cy="44" r="1.2" />
+                        <circle className="hourly-star hourly-star--d" cx="118" cy="68" r="0.9" />
+                        <circle className="hourly-star hourly-star--a" cx="148" cy="38" r="1.15" />
+                        <circle className="hourly-star hourly-star--b" cx="176" cy="72" r="1" />
+                        <circle className="hourly-star hourly-star--c" cx="208" cy="48" r="1.25" />
+                        <circle className="hourly-star hourly-star--d" cx="238" cy="66" r="0.95" />
+                        <circle className="hourly-star hourly-star--a" cx="258" cy="92" r="1.1" />
+                        <circle className="hourly-star hourly-star--b" cx="24" cy="108" r="0.85" />
+                        <circle className="hourly-star hourly-star--c" cx="262" cy="128" r="1" />
+                        <circle className="hourly-star hourly-star--d" cx="96" cy="118" r="0.8" />
+                    </g>
+
+                    {/* Soft night clouds — lower edges, under moon path */}
+                    <g className="hourly-night-clouds" fill="#c7d2fe" opacity="0.22">
+                        <g className="hourly-night-cloud hourly-night-cloud--a">
+                            <ellipse cx="52" cy="158" rx="34" ry="11" />
+                            <ellipse cx="34" cy="154" rx="16" ry="9" />
+                            <ellipse cx="70" cy="152" rx="18" ry="10" />
+                        </g>
+                        <g className="hourly-night-cloud hourly-night-cloud--b" opacity="0.85">
+                            <ellipse cx="210" cy="168" rx="40" ry="12" />
+                            <ellipse cx="188" cy="164" rx="18" ry="9" />
+                            <ellipse cx="232" cy="162" rx="20" ry="11" />
+                        </g>
+                        <g className="hourly-night-cloud hourly-night-cloud--c" opacity="0.7">
+                            <ellipse cx="130" cy="178" rx="28" ry="9" />
+                            <ellipse cx="114" cy="175" rx="14" ry="7" />
+                            <ellipse cx="146" cy="174" rx="15" ry="8" />
+                        </g>
+                    </g>
+                </>
+            )}
+
+            <g
+                className="hourly-celestial-body"
+                style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+            >
+                {isMoon ? (
+                    <g opacity="0.88">
+                        <circle r={18} fill={pos.sleep ? '#f8fafc' : '#fefce8'} />
+                        <circle cx={-7} cy={-4} r={14} fill={pos.sleep ? '#312e81' : '#4338ca'} opacity="0.42" />
+                    </g>
+                ) : (
+                    <g className="hourly-sky-sun">
+                        <circle r={phase === 'dawn' || phase === 'dusk' ? 24 : 20} fill={phase === 'dusk' ? '#fb923c' : '#facc15'} />
+                        <g stroke={phase === 'dusk' ? '#fdba74' : '#fde047'} strokeWidth="2.2" strokeLinecap="round" opacity="0.85">
+                            <path d="M0 -32v5M0 27v5M32 0h-5M-27 0h-5M22 -22l-3.5 3.5M-18.5 18.5l-3.5 3.5M22 22l-3.5 -3.5M-18.5 -18.5l-3.5 -3.5" />
+                        </g>
+                    </g>
+                )}
+            </g>
+        </svg>
     );
+}
+
+function skyCardClass(phase, status) {
+    const base = {
+        dawn: 'hourly-sky-card--dawn text-amber-950',
+        day: 'hourly-sky-card--day text-sky-950',
+        dusk: 'hourly-sky-card--dusk text-white',
+        night: 'hourly-sky-card--night text-indigo-50',
+        sleep: 'hourly-sky-card--sleep text-indigo-50',
+    }[phase] || 'hourly-sky-card--day text-sky-950';
+
+    if (status === 'missed') return `${base} opacity-80`;
+    if (status === 'played') return `${base} hourly-sky-card--done`;
+    if (status === 'live' || status === 'open') return `${base} hourly-sky-card--playable`;
+    return base;
+}
+
+function StatusMark({ status, sleepHour = false }) {
+    if (status === 'played') {
+        return (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+                <circle cx="8" cy="8" r="7" fill="#34d399" />
+                <path d="M4.8 8.2l2.1 2.1 4.3-4.4" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+        );
+    }
+    if (status === 'live') {
+        return (
+            <svg className="hourly-strip-live-mark h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+                <circle cx="8" cy="8" r="7" fill="#f97316" />
+                <circle cx="8" cy="8" r="2.5" fill="#fff" />
+            </svg>
+        );
+    }
+    if (status === 'open') {
+        return (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+                <circle cx="8" cy="8" r="6.25" fill="#fbbf24" stroke="#d97706" strokeWidth="1.25" />
+            </svg>
+        );
+    }
+    if (sleepHour) {
+        return <SleepMark />;
+    }
+    if (status === 'upcoming-next') {
+        return (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+                <circle cx="8" cy="8" r="6.25" fill="#fde68a" stroke="#f59e0b" strokeWidth="1.25" />
+            </svg>
+        );
+    }
+    if (status === 'missed') {
+        return (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+                <circle cx="8" cy="8" r="6.25" fill="#e2e8f0" />
+                <path d="M5 8h6" stroke="#94a3b8" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+        );
+    }
+    return (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" aria-hidden>
+            <circle cx="8" cy="8" r="5.75" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+        </svg>
+    );
+}
+
+function cellTone(status, selected, sleepHour = false) {
+    if (selected) {
+        if (status === 'live') return 'bg-orange-500 text-white';
+        if (status === 'open') return 'bg-amber-400 text-amber-950';
+        if (status === 'played') return 'bg-emerald-500 text-white';
+        if (status === 'upcoming-next') return 'bg-amber-200 text-amber-950';
+        if (sleepHour) return 'bg-indigo-500 text-indigo-50';
+        if (status === 'missed') return 'bg-slate-300 text-slate-700';
+        return 'bg-white text-slate-800';
+    }
+    if (status === 'live') return 'bg-orange-100 text-orange-800';
+    if (status === 'open') return 'bg-amber-50 text-amber-900';
+    if (status === 'played') return 'bg-emerald-50 text-emerald-800';
+    if (status === 'upcoming-next') return 'bg-amber-50/80 text-amber-800';
+    if (sleepHour) return 'bg-indigo-50 text-indigo-700';
+    if (status === 'missed') return 'bg-slate-100 text-slate-400';
+    return 'bg-white/70 text-slate-400';
 }
 
 export default function HourlyDayRing({
@@ -230,12 +274,28 @@ export default function HourlyDayRing({
     onReview,
     lastNightSlot = null,
 }) {
+    const bn = language === 'bn';
     const liveSlot = slots.find((s) => s.status === 'live');
     const openSlot = slots.find((s) => s.status === 'open');
     const nextSlot = slots.find((s) => s.status === 'upcoming-next');
     const defaultHour = liveSlot?.hour ?? openSlot?.hour ?? nextSlot?.hour ?? slots.find((s) => s.status === 'played')?.hour ?? 12;
 
     const [selectedHour, setSelectedHour] = useState(null);
+    const stripRef = useRef(null);
+    const cellRefs = useRef({});
+    const stripJumping = useRef(false);
+    const LOOP_COPIES = 3;
+    const MID_COPY = 1;
+
+    const loopedSlots = useMemo(() => {
+        const out = [];
+        for (let copy = 0; copy < LOOP_COPIES; copy += 1) {
+            slots.forEach((slot) => {
+                out.push({ ...slot, _copy: copy, _key: `${copy}-${slot.hour}` });
+            });
+        }
+        return out;
+    }, [slots]);
 
     useEffect(() => {
         setSelectedHour(null);
@@ -243,14 +303,6 @@ export default function HourlyDayRing({
 
     const activeHour = selectedHour ?? defaultHour;
     const activeSlot = slots.find((s) => s.hour === activeHour) || liveSlot || nextSlot || slots[0];
-    const playedCount = useMemo(() => slots.filter((s) => s.status === 'played').length, [slots]);
-    const missedCount = useMemo(() => slots.filter((s) => s.status === 'missed').length, [slots]);
-    const openTodayCount = useMemo(
-        () => slots.filter((s) => s.status === 'open').length,
-        [slots]
-    );
-    const openCount = openTodayCount + (lastNightSlot ? 1 : 0);
-    const pendingCount = Math.max(0, slots.length - playedCount - missedCount - openTodayCount);
 
     const latestReviewable = useMemo(() => {
         const played = slots.filter((s) => s.status === 'played' && s.quizId);
@@ -270,13 +322,78 @@ export default function HourlyDayRing({
         if (activeSlot?.status === 'played' && labels.reviewHour) {
             return labels.reviewHour.replace('%s', reviewTarget.label || '');
         }
-        return labels.reviewLast || labels.reviewAnswers || (language === 'en' ? 'Review answers' : 'উত্তর দেখুন');
+        return labels.reviewLast || labels.reviewAnswers || (language === 'en' ? 'Review' : 'রিভিউ');
     })();
+
+    const scrollStripToHour = (hour, { smooth = true } = {}) => {
+        const el = cellRefs.current[`${MID_COPY}-${hour}`] || cellRefs.current[hour];
+        const strip = stripRef.current;
+        if (!el || !strip) return;
+        const target = el.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2;
+        strip.scrollTo({ left: Math.max(0, target), behavior: smooth ? 'smooth' : 'auto' });
+    };
+
+    const normalizeStripLoop = () => {
+        const strip = stripRef.current;
+        if (!strip || stripJumping.current) return;
+        const setWidth = strip.scrollWidth / LOOP_COPIES;
+        if (setWidth <= 0) return;
+        if (strip.scrollLeft < setWidth * 0.45) {
+            stripJumping.current = true;
+            strip.scrollLeft += setWidth;
+            stripJumping.current = false;
+        } else if (strip.scrollLeft > setWidth * 1.55) {
+            stripJumping.current = true;
+            strip.scrollLeft -= setWidth;
+            stripJumping.current = false;
+        }
+    };
+
+    const syncHourFromStripCenter = () => {
+        const strip = stripRef.current;
+        if (!strip) return;
+        const center = strip.scrollLeft + strip.clientWidth / 2;
+        let bestHour = null;
+        let bestDist = Infinity;
+        Object.keys(cellRefs.current).forEach((key) => {
+            if (!key.includes('-')) return;
+            const el = cellRefs.current[key];
+            if (!el) return;
+            const mid = el.offsetLeft + el.offsetWidth / 2;
+            const dist = Math.abs(mid - center);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestHour = Number(key.split('-')[1]);
+            }
+        });
+        if (bestHour != null && Number.isFinite(bestHour) && bestHour !== activeHour) {
+            setSelectedHour(bestHour);
+        }
+    };
+
+    const onStripScroll = () => {
+        normalizeStripLoop();
+        syncHourFromStripCenter();
+    };
+
+    useLayoutEffect(() => {
+        if (loading) return undefined;
+        const strip = stripRef.current;
+        if (!strip) return undefined;
+
+        const place = () => {
+            scrollStripToHour(activeHour, { smooth: false });
+        };
+        place();
+        const t = window.setTimeout(place, 40);
+        return () => window.clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading, slots.length]);
 
     if (loading) {
         return (
             <div
-                className="mx-auto flex min-h-[min(60vh,420px)] w-full max-w-sm flex-col items-center justify-center py-8"
+                className="flex min-h-0 flex-1 flex-col items-center justify-center py-8"
                 role="status"
                 aria-live="polite"
                 aria-busy="true"
@@ -289,303 +406,182 @@ export default function HourlyDayRing({
         );
     }
 
-    const contentWidth = 'w-full max-w-[min(82vw,300px)]';
-    const liveMidDeg = liveSlot ? liveSlot.hour * SEG + SEG / 2 - 90 : null;
-    const liveMarker = liveMidDeg != null ? polar(CX, CY, (R_OUT + R_IN) / 2, liveMidDeg) : null;
+    const { hour12, period } = slotTimeParts(activeSlot?.hour ?? 0);
+    const canPlay = activeSlot?.status === 'live' || activeSlot?.status === 'open';
+    const netScore = getSlotNetScore(activeSlot);
+    const skyPhase = skyPhaseForHour(activeSlot?.hour ?? 12);
+    const isSleep = skyPhase === 'sleep';
+    const isDarkSky = isSleep || skyPhase === 'night' || skyPhase === 'dusk';
+
+    let heroTitle = labels.upcomingStatus;
+    let heroSub = '';
+
+    if (activeSlot?.status === 'live') {
+        heroTitle = language === 'en' ? 'Play' : 'খেলুন';
+        heroSub = timeLeft || '';
+    } else if (activeSlot?.status === 'open') {
+        heroTitle = language === 'en' ? 'Play' : 'খেলুন';
+        heroSub = Number.isFinite(Number(activeSlot.closesInMin))
+            ? (bn ? `${activeSlot.closesInMin} মি` : `${activeSlot.closesInMin}m`)
+            : '';
+    } else if (activeSlot?.status === 'upcoming-next') {
+        heroTitle = labels.nextChallengeLabel;
+        heroSub = timeLeft || '';
+    } else if (activeSlot?.status === 'played') {
+        heroTitle = formatSignedScore(netScore);
+        heroSub = bn ? 'সম্পন্ন' : 'Done';
+    } else if (isSleep) {
+        heroTitle = bn ? 'ঘুমানোর সময়' : 'Time to sleep';
+        heroSub = '';
+    } else if (activeSlot?.status === 'missed') {
+        heroTitle = bn ? 'মিস' : 'Missed';
+        heroSub = '';
+    }
+
+    const cardClass = `hourly-sky-card ${skyCardClass(skyPhase, activeSlot?.status)}`;
+    const subClass = `mt-2 text-xl font-bold tabular-nums leading-none ${
+        isDarkSky ? 'text-white/85' : 'opacity-80'
+    }`;
+
+    const heroInner = (
+        <>
+            <SkyDecor phase={skyPhase} hour={activeSlot?.hour ?? 12} />
+            <div className="hourly-sky-card__rim" aria-hidden />
+            <div className="hourly-sky-card__content relative z-[1] flex flex-col items-center justify-center px-5 text-center">
+                <span className={`hourly-sky-card__time tabular-nums ${isDarkSky ? 'text-white/90' : 'text-black/45'}`}>
+                    {hour12}
+                    <span className="ml-1 text-[0.7em] font-bold">{period}</span>
+                </span>
+                {isSleep && !canPlay && activeSlot?.status !== 'played' ? (
+                    <span className="mt-3 text-indigo-100">
+                        <SleepFigure className="h-[4.25rem] w-[4.25rem]" />
+                    </span>
+                ) : null}
+                <span className={`mt-2 text-3xl font-bold leading-none tracking-tight sm:text-4xl ${bn ? 'font-bengali' : ''}`}>
+                    {heroTitle}
+                </span>
+                {heroSub ? <span className={subClass}>{heroSub}</span> : null}
+                {canPlay ? (
+                    <span
+                        className={`mt-5 flex h-12 w-12 items-center justify-center rounded-full ${
+                            isDarkSky ? 'bg-white/20 text-white' : 'bg-black/10'
+                        }`}
+                        aria-hidden
+                    >
+                        <svg className="ml-0.5 h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </span>
+                ) : null}
+                {isSleep && canPlay ? (
+                    <span className="mt-3 text-indigo-100/90">
+                        <SleepFigure className="h-10 w-10" />
+                    </span>
+                ) : null}
+            </div>
+        </>
+    );
 
     return (
-        <div className="mx-auto flex w-full max-w-sm flex-col items-center">
-            <div className={`relative aspect-square ${contentWidth}`}>
-                <div
-                    className="pointer-events-none absolute inset-[6%] rounded-full bg-gradient-to-b from-white via-orange-50/40 to-amber-50/30 shadow-[0_12px_40px_-12px_rgba(249,115,22,0.28)]"
-                    aria-hidden
-                />
-                {liveSlot && (
+        <div className="flex min-h-0 w-full flex-1 flex-col">
+            {/* Hero */}
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-1">
+                {canPlay ? (
+                    <button
+                        type="button"
+                        id="node-live"
+                        disabled={hourlyQuizRefreshBusy}
+                        onClick={() => { void onPlaySlot?.(activeSlot.slot || activeSlot); }}
+                        className={`${cardClass} disabled:opacity-60`}
+                    >
+                        {heroInner}
+                    </button>
+                ) : (
                     <div
-                        className="hourly-ring-aura pointer-events-none absolute inset-[4%] rounded-full"
-                        aria-hidden
-                    />
-                )}
-
-                <svg
-                    viewBox="0 0 280 280"
-                    className="relative z-[1] h-full w-full"
-                    role="img"
-                    aria-label={language === 'en' ? '24 hour day progress' : '২৪ ঘণ্টার দিনের অগ্রগতি'}
-                >
-                    <defs>
-                        <radialGradient id="hourly-hub" cx="50%" cy="45%" r="55%">
-                            <stop offset="0%" stopColor="#ffffff" />
-                            <stop offset="100%" stopColor="#fff7ed" />
-                        </radialGradient>
-                    </defs>
-
-                    <circle cx={CX} cy={CY} r={(R_OUT + R_IN) / 2} fill="none" stroke="#e2e8f0" strokeWidth={R_OUT - R_IN + 2} />
-
-                    {slots.map((slot) => {
-                        const isSelected = slot.hour === activeHour;
-                        const isLive = slot.status === 'live';
-                        const isOpen = slot.status === 'open';
-                        const grow = isSelected ? 4 : isLive ? 2.5 : isOpen ? 1.8 : 0;
-                        const startDeg = slot.hour * SEG + PAD - 90;
-                        const endDeg = (slot.hour + 1) * SEG - PAD - 90;
-                        const theme = THEME[slot.status] || THEME.upcoming;
-                        return (
-                            <path
-                                key={slot.hour}
-                                d={donutSegmentPath(CX, CY, R_OUT + grow, R_IN - grow * 0.35, startDeg, endDeg)}
-                                fill={theme.fill}
-                                stroke={isSelected ? '#ea580c' : 'none'}
-                                strokeWidth={isSelected ? 2 : 0}
-                                opacity={slot.status === 'upcoming' ? 0.55 : isSelected ? 1 : 0.92}
-                                className={`cursor-pointer outline-none transition-[opacity] duration-200 ease-out focus:outline-none focus-visible:outline-none ${
-                                    isLive ? 'hourly-ring-live' : 'hover:opacity-100'
-                                }`}
-                                style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
-                                onClick={(e) => {
-                                    setSelectedHour(slot.hour);
-                                    e.currentTarget.blur();
-                                }}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        setSelectedHour(slot.hour);
-                                    }
-                                }}
-                                aria-label={`${slotTimeParts(slot.hour).hour12} ${slotTimeParts(slot.hour).period} ${slot.status}`}
-                            />
-                        );
-                    })}
-
-                    {[0, 6, 12, 18].map((h) => {
-                        const outer = hourLabelPos(h, R_OUT + 14);
-                        const { hour12 } = slotTimeParts(h);
-                        return (
-                            <text
-                                key={h}
-                                x={outer.x}
-                                y={outer.y}
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                fill="#94a3b8"
-                                fontSize="9"
-                                fontWeight="700"
-                            >
-                                {hour12}
-                            </text>
-                        );
-                    })}
-
-                    {liveMarker && (
-                        <g transform={`translate(${liveMarker.x}, ${liveMarker.y})`}>
-                            <circle
-                                r="5.5"
-                                fill="#fff"
-                                stroke="#ea580c"
-                                strokeWidth="2.5"
-                                className="hourly-ring-live-bead origin-center"
-                                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-                            />
-                        </g>
-                    )}
-
-                    <circle cx={CX} cy={CY} r={R_IN - 8} fill="url(#hourly-hub)" stroke="#fed7aa" strokeWidth="1" />
-                </svg>
-
-                <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
-                    <div className="flex h-[46%] w-[46%] items-center justify-center rounded-full">
-                        <RingCenterFocus
-                            activeSlot={activeSlot}
-                            language={language}
-                            timeLeft={timeLeft}
-                            labels={labels}
-                            hourlyQuizRefreshBusy={hourlyQuizRefreshBusy}
-                        />
+                        id={activeSlot?.status === 'upcoming-next' ? 'node-upcoming-next' : undefined}
+                        className={cardClass}
+                    >
+                        {heroInner}
                     </div>
-                </div>
-            </div>
-
-            <div className={`mt-3 flex items-center justify-center gap-1.5 ${contentWidth}`}>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700">
-                    <span className="tabular-nums">{playedCount}</span>
-                    {language === 'en' ? 'done' : 'শেষ'}
-                </span>
-                {openCount > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-800">
-                        <span className="tabular-nums">{openCount}</span>
-                        {language === 'en' ? 'open' : 'খোলা'}
-                    </span>
                 )}
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
-                    <span className="tabular-nums">{missedCount}</span>
-                    {language === 'en' ? 'miss' : 'মিস'}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold text-orange-700">
-                    <span className="tabular-nums">{pendingCount}</span>
-                    {language === 'en' ? 'left' : 'বাকি'}
-                </span>
-            </div>
 
-            {lastNightSlot && typeof onPlaySlot === 'function' && (
-                <button
-                    type="button"
-                    disabled={hourlyQuizRefreshBusy}
-                    onClick={() => { void onPlaySlot(lastNightSlot); }}
-                    className={`mt-3 flex min-h-[48px] w-full items-center justify-between gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-left shadow-sm ${contentWidth} ${language === 'bn' ? 'font-bengali' : ''}`}
-                >
-                    <span>
-                        <span className="block text-sm font-black text-indigo-950">
-                            {language === 'en' ? 'Last night 11 PM' : 'গত রাত ১১টা'}
-                        </span>
-                        <span className="mt-0.5 block text-[11px] font-semibold text-indigo-700">
-                            {language === 'en' ? '5 questions · still open' : '৫টি প্রশ্ন · এখনও খোলা'}
-                        </span>
-                    </span>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white">
-                        <svg className="ml-0.5 h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M8 5v14l11-7z" /></svg>
-                    </span>
-                </button>
-            )}
-
-            <div
-                id={activeSlot?.status === 'live' || activeSlot?.status === 'open' ? 'node-live' : activeSlot?.status === 'upcoming-next' ? 'node-upcoming-next' : undefined}
-                className={`mt-3 flex min-h-[72px] items-stretch sm:mt-4 sm:min-h-[84px] ${contentWidth}`}
-            >
-                {activeSlot?.status === 'live' || activeSlot?.status === 'open' ? (
+                {lastNightSlot && typeof onPlaySlot === 'function' && (
                     <button
                         type="button"
                         disabled={hourlyQuizRefreshBusy}
-                        onClick={() => { void onPlaySlot?.(activeSlot.slot || activeSlot); }}
-                        className="live-card-glow group w-full overflow-hidden rounded-2xl border border-orange-200/80 bg-white p-0 text-left shadow-md shadow-orange-500/10 transition-all hover:shadow-lg active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
+                        onClick={() => { void onPlaySlot(lastNightSlot); }}
+                        className={`mt-3 text-sm font-bold text-indigo-700 underline-offset-2 hover:underline disabled:opacity-50 ${bn ? 'font-bengali' : ''}`}
                     >
-                        <div className="relative z-10 flex items-stretch">
-                            <div className={`flex shrink-0 items-center border-r border-slate-200/80 px-2.5 py-2.5 sm:px-3 ${activeSlot.status === 'open' ? 'bg-amber-50' : 'bg-orange-50'}`}>
-                                <HourlyTimeBadge hour={activeSlot.hour} variant={activeSlot.status === 'open' ? 'open' : 'live'} />
-                            </div>
-                            <div className="flex min-w-0 flex-1 items-center justify-between gap-2 px-3 py-2.5">
-                                <div className="min-w-0">
-                                    <p className={`text-sm font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {language === 'en' ? 'Play now' : 'এখন খেলুন'}
-                                    </p>
-                                    <p className={`mt-0.5 text-[11px] font-semibold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {activeSlot.status === 'open'
-                                            ? (language === 'en'
-                                                ? `5 questions · closes in ${activeSlot.closesInMin || 0}m`
-                                                : `৫টি প্রশ্ন · ${activeSlot.closesInMin || 0} মি বাকি`)
-                                            : (
-                                                <>
-                                                    {labels.liveNow}
-                                                    {timeLeft ? ` · ${timeLeft}` : ''}
-                                                    {' · '}
-                                                    {language === 'en' ? '5 questions' : '৫টি প্রশ্ন'}
-                                                </>
-                                            )}
-                                    </p>
-                                </div>
-                                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-md transition-transform group-hover:scale-105 ${activeSlot.status === 'open' ? 'bg-amber-500 shadow-amber-500/35' : 'bg-orange-500 shadow-orange-500/35'}`}>
-                                    <svg className="ml-0.5 h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M8 5v14l11-7z" /></svg>
-                                </div>
-                            </div>
-                        </div>
+                        {bn ? 'গত রাত ১১টা' : 'Last night 11 PM'}
                     </button>
-                ) : activeSlot?.status === 'upcoming-next' && openCount === 0 ? (
-                    <div className="w-full overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 via-[#fffdf7] to-white p-0 shadow-sm">
-                        <div className="flex h-full items-stretch">
-                            <div className="flex shrink-0 items-center border-r border-slate-200/80 bg-white px-2.5 py-2.5 sm:px-3">
-                                <HourlyTimeBadge hour={activeSlot.hour} variant="next" />
-                            </div>
-                            <div className="flex min-w-0 flex-1 items-center justify-between gap-3 px-3 py-2.5">
-                                <div className="min-w-0">
-                                    <p className={`text-sm font-black text-amber-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                        {labels.nextChallengeLabel}
-                                    </p>
-                                    {timeLeft && (
-                                        <p className="mt-0.5 text-xl font-black tabular-nums leading-none text-slate-900">
-                                            {timeLeft}
-                                        </p>
-                                    )}
-                                </div>
-                                <div
-                                    className="hourly-wait-clock flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-amber-700 sm:h-11 sm:w-11"
-                                    aria-hidden
-                                >
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <circle cx="12" cy="12" r="9" />
-                                        <path strokeLinecap="round" d="M12 7v5l3 2" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : activeSlot?.status === 'played' ? (
-                    <div className="w-full overflow-hidden rounded-2xl border border-emerald-200/80 bg-emerald-50 p-0 shadow-sm">
-                        <div className="flex items-stretch">
-                            <div className="flex shrink-0 items-center border-r border-slate-200/80 bg-white px-2.5 py-2.5 sm:px-3">
-                                <HourlyTimeBadge hour={activeSlot.hour} variant="played" />
-                            </div>
-                            <div className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5">
-                                <p className={`min-w-0 flex-1 text-sm font-black text-emerald-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {language === 'en' ? 'Completed' : 'সম্পন্ন'}
-                                </p>
-                                <ScoreBlock
-                                    label={language === 'en' ? 'Net score' : 'নেট স্কোর'}
-                                    value={formatSignedScore(getSlotNetScore(activeSlot))}
-                                    suffix={activeSlot.penalty > 0
-                                        ? `${language === 'en' ? 'Penalty ' : 'পেনাল্টি '}−${activeSlot.penalty}`
-                                        : null}
-                                    accent="emerald"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ) : activeSlot?.status === 'missed' ? (
-                    <div className="w-full overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-0">
-                        <div className="flex h-full items-stretch">
-                            <div className="flex shrink-0 items-center border-r border-dashed border-slate-300 bg-white px-2.5 py-2.5 sm:px-3">
-                                <HourlyTimeBadge hour={activeSlot.hour} variant="missed" />
-                            </div>
-                            <div className="flex min-w-0 flex-1 items-center justify-between gap-2 px-3 py-2.5">
-                                <p className={`text-sm font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {language === 'en' ? 'Missed slot' : 'মিস হয়েছে'}
-                                </p>
-                                <ScoreBlock label={language === 'en' ? 'Score' : 'স্কোর'} value="0" accent="slate" />
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="w-full overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-white p-0 shadow-sm">
-                        <div className="flex h-full items-stretch">
-                            <div className="flex shrink-0 items-center border-r border-dashed border-slate-300 bg-slate-50 px-2.5 py-2.5 sm:px-3">
-                                <HourlyTimeBadge hour={activeSlot?.hour ?? 0} variant="upcoming" />
-                            </div>
-                            <div className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5">
-                                <p className={`text-sm font-bold text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {labels.upcomingStatus}
-                                </p>
-                                <div className="ml-auto flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-slate-300 text-slate-400">
-                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                )}
+
+                {reviewTarget?.quizId && typeof onReview === 'function' && (
+                    <button
+                        type="button"
+                        id="hourly-review-last"
+                        onClick={() => onReview(reviewTarget.quizId)}
+                        className={`mt-3 text-sm font-bold text-emerald-700 underline-offset-2 hover:underline ${bn ? 'font-bengali' : ''}`}
+                    >
+                        {reviewButtonLabel}
+                    </button>
                 )}
             </div>
 
-            {reviewTarget?.quizId && typeof onReview === 'function' && (
-                <button
-                    type="button"
-                    id="hourly-review-last"
-                    onClick={() => onReview(reviewTarget.quizId)}
-                    className={`mt-2 flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.99] ${contentWidth} ${language === 'bn' ? 'font-bengali' : ''}`}
+            {/* Horizontal day strip — infinite loop */}
+            <div className="hourly-strip-wrap shrink-0">
+                <div
+                    ref={stripRef}
+                    className="hourly-strip-scroll flex snap-x snap-mandatory gap-2.5 overflow-x-auto"
+                    role="listbox"
+                    aria-label={language === 'en' ? 'Hours today' : 'আজকের ঘণ্টা'}
+                    onScroll={onStripScroll}
                 >
-                    <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.25" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 012-2z" />
-                    </svg>
-                    <span>{reviewButtonLabel}</span>
-                </button>
-            )}
+                    {loopedSlots.map((slot) => {
+                        const selected = slot.hour === activeHour;
+                        const parts = slotTimeParts(slot.hour);
+                        const sleepHour = isNightSleepSlotHour(slot.hour);
+                        return (
+                            <button
+                                key={slot._key}
+                                type="button"
+                                role="option"
+                                aria-selected={selected}
+                                ref={(node) => {
+                                    if (!node) return;
+                                    cellRefs.current[slot._key] = node;
+                                    if (slot._copy === MID_COPY) {
+                                        cellRefs.current[slot.hour] = node;
+                                    }
+                                }}
+                                onClick={() => {
+                                    setSelectedHour(slot.hour);
+                                    window.requestAnimationFrame(() => {
+                                        scrollStripToHour(slot.hour, { smooth: true });
+                                    });
+                                }}
+                                className={`hourly-strip-cell flex w-[3.35rem] shrink-0 snap-center flex-col items-center justify-center gap-1 rounded-2xl py-2.5 ${
+                                    selected ? 'hourly-strip-cell--selected' : ''
+                                } ${cellTone(slot.status, selected, sleepHour)}`}
+                            >
+                                <span className="text-lg font-bold leading-none tabular-nums">{parts.hour12}</span>
+                                <span className="text-[0.6rem] font-bold leading-none opacity-70">{parts.period}</span>
+                                <StatusMark status={slot.status} sleepHour={sleepHour} />
+                            </button>
+                        );
+                    })}
+                </div>
+                <svg className="mx-auto mt-0.5 h-2 w-[min(100%,20rem)]" viewBox="0 0 320 8" aria-hidden>
+                    <defs>
+                        <linearGradient id="hourly-strip-rail" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#fdba74" stopOpacity="0.15" />
+                            <stop offset="50%" stopColor="#fb923c" stopOpacity="0.55" />
+                            <stop offset="100%" stopColor="#fdba74" stopOpacity="0.15" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="2.5" width="320" height="3" rx="1.5" fill="url(#hourly-strip-rail)" />
+                </svg>
+            </div>
         </div>
     );
 }

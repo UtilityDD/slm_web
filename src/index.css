@@ -6422,6 +6422,214 @@ body,
     outline: none;
   }
 
+  .hourly-strip-wrap {
+    padding: 0.35rem 0 0.15rem;
+  }
+
+  .hourly-strip-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0.55rem 1rem 0.7rem;
+    scroll-padding-inline: 1rem;
+  }
+
+  .hourly-strip-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hourly-strip-cell {
+    position: relative;
+    z-index: 0;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+  }
+
+  .hourly-strip-cell--selected {
+    z-index: 2;
+    border-color: rgba(249, 115, 22, 0.95);
+    box-shadow: 0 4px 12px -4px rgba(61, 48, 36, 0.28);
+  }
+
+  .hourly-strip-live-mark {
+    animation: hourly-strip-live-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes hourly-strip-live-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.18); opacity: 0.85; }
+  }
+
+  /* Shared sky-window silhouette — shape/rim identical for every phase */
+  .hourly-sky-card {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    width: min(100%, 17.25rem);
+    aspect-ratio: 4 / 5;
+    max-height: min(46vh, 22.5rem);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 0;
+    border-radius: 2.35rem;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.55) inset,
+      0 22px 44px -22px rgba(61, 48, 36, 0.38),
+      0 8px 18px -12px rgba(61, 48, 36, 0.2);
+    transition: transform 160ms ease, box-shadow 200ms ease;
+  }
+
+  .hourly-sky-card:active {
+    transform: scale(0.985);
+  }
+
+  div.hourly-sky-card {
+    cursor: default;
+  }
+
+  .hourly-sky-card__rim {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 0 0 2.5px rgba(255, 253, 247, 0.88),
+      inset 0 10px 24px rgba(255, 255, 255, 0.18);
+  }
+
+  .hourly-sky-card__time {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  .hourly-sky-card__content {
+    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+  }
+
+  .hourly-sky-card--night .hourly-sky-card__content,
+  .hourly-sky-card--sleep .hourly-sky-card__content,
+  .hourly-sky-card--dusk .hourly-sky-card__content {
+    text-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.55),
+      0 0 12px rgba(15, 23, 42, 0.35);
+  }
+
+  .hourly-sky-card--dawn {
+    background: linear-gradient(168deg, #ffe4e6 0%, #fdba74 44%, #fef3c7 100%);
+  }
+
+  .hourly-sky-card--day {
+    background: linear-gradient(168deg, #e0f2fe 0%, #7dd3fc 40%, #fef08a 100%);
+  }
+
+  .hourly-sky-card--dusk {
+    background: linear-gradient(168deg, #fdba74 0%, #f97316 46%, #a78bfa 100%);
+  }
+
+  .hourly-sky-card--night {
+    background: linear-gradient(168deg, #3730a3 0%, #1e1b4b 48%, #0f172a 100%);
+  }
+
+  .hourly-sky-card--sleep {
+    background: linear-gradient(168deg, #4338ca 0%, #312e81 46%, #0f172a 100%);
+  }
+
+  .hourly-sky-card--night .hourly-sky-card__rim,
+  .hourly-sky-card--sleep .hourly-sky-card__rim {
+    box-shadow:
+      inset 0 0 0 2.5px rgba(226, 232, 240, 0.28),
+      inset 0 10px 24px rgba(255, 255, 255, 0.06);
+  }
+
+  .hourly-sleep-zzz {
+    animation: hourly-sleep-zzz 2.4s ease-in-out infinite;
+  }
+
+  @keyframes hourly-sleep-zzz {
+    0%, 100% { opacity: 0.45; transform: translateY(0); }
+    50% { opacity: 0.95; transform: translateY(-2px); }
+  }
+
+  .hourly-sky-card--playable {
+    animation: hourly-sky-breathe 2.8s ease-in-out infinite;
+  }
+
+  .hourly-sky-card--done {
+    filter: saturate(0.92);
+  }
+
+  @keyframes hourly-sky-breathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+
+  .hourly-celestial-body {
+    transition: transform 0.55s cubic-bezier(0.33, 1, 0.68, 1);
+    will-change: transform;
+  }
+
+  .hourly-star {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hourly-star-blink 2.8s ease-in-out infinite;
+  }
+
+  .hourly-star--a { animation-delay: 0s; }
+  .hourly-star--b { animation-delay: 0.7s; animation-duration: 3.4s; }
+  .hourly-star--c { animation-delay: 1.4s; animation-duration: 2.2s; }
+  .hourly-star--d { animation-delay: 2.1s; animation-duration: 3.8s; }
+
+  @keyframes hourly-star-blink {
+    0%, 100% { opacity: 0.25; }
+    40% { opacity: 1; }
+    60% { opacity: 0.55; }
+  }
+
+  .hourly-night-cloud {
+    animation: hourly-cloud-drift 14s ease-in-out infinite;
+  }
+
+  .hourly-night-cloud--a { animation-duration: 16s; }
+  .hourly-night-cloud--b { animation-duration: 20s; animation-delay: -4s; }
+  .hourly-night-cloud--c { animation-duration: 18s; animation-delay: -8s; }
+
+  @keyframes hourly-cloud-drift {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
+  }
+
+  .hourly-sky-sun {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hourly-sky-sun-spin 28s linear infinite;
+  }
+
+  @keyframes hourly-sky-sun-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hourly-sky-sun,
+    .hourly-strip-live-mark,
+    .hourly-sky-card--playable,
+    .hourly-sleep-zzz,
+    .hourly-star,
+    .hourly-night-cloud {
+      animation: none;
+    }
+
+    .hourly-star {
+      opacity: 0.75;
+    }
+  }
+
   .hourly-ring-aura {
     background: radial-gradient(circle, rgba(249, 115, 22, 0.18) 0%, rgba(249, 115, 22, 0.06) 45%, transparent 70%);
     animation: hourly-ring-aura-pulse 2.4s ease-in-out infinite;

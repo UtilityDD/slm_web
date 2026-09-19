@@ -16,10 +16,15 @@ export function getIstHour(now = new Date()) {
     return toIst(now).getUTCHours();
 }
 
+/** True for hour-of-day values in the sleep window (11 PM–5 AM IST). */
+export function isNightSleepSlotHour(hour) {
+    const h = ((Number(hour) % 24) + 24) % 24;
+    return h >= NIGHT_SLEEP_START_HOUR || h < NIGHT_SLEEP_END_HOUR;
+}
+
 /** True from 11:00 PM until 5:59 AM IST. */
 export function isNightSleepHour(now = new Date()) {
-    const hour = getIstHour(now);
-    return hour >= NIGHT_SLEEP_START_HOUR || hour < NIGHT_SLEEP_END_HOUR;
+    return isNightSleepSlotHour(getIstHour(now));
 }
 
 /**
