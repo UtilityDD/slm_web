@@ -14,7 +14,7 @@ function gridCopy(language) {
             score: 'Score',
         }
         : {
-            ask: 'কোনটা?',
+            ask: 'কোনটা',
             right: 'ঠিক',
             wrong: 'ভুল',
             score: 'স্কোর',

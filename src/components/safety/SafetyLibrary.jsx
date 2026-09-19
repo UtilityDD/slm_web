@@ -852,7 +852,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             relatedOpenAriaPrefix: '',
             backPreviousAria: 'পিছনে',
             closeAria: 'বন্ধ',
-            quitTitle: 'পরখ বন্ধ করবেন?',
+            quitTitle: 'বন্ধ করবেন?',
             quitStay: 'থাকুন',
             quitLeave: 'বন্ধ করুন',
         }

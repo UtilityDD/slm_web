@@ -468,7 +468,7 @@ export default function Home({
 
   const iconClass = 'home-3d-tile__glyph';
   const adminCards = [
-    ...(isAdmin
+    ...(isAdmin || isSafetyMitra
       ? [
           {
             id: 'porichalona',
@@ -485,6 +485,10 @@ export default function Home({
               </svg>
             ),
           },
+        ]
+      : []),
+    ...(isAdmin
+      ? [
           {
             id: 'safety-culture',
             tone: 'survey',

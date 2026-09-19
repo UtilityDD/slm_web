@@ -21,7 +21,7 @@ function practiceCopy(language) {
         }
         : {
             prompt: 'নাম কী?',
-            empty: 'পরখ করার মতো ছবি নেই',
+            empty: 'চেনার মতো ছবি নেই',
             right: 'ঠিক',
             wrong: 'ভুল',
             score: 'স্কোর',

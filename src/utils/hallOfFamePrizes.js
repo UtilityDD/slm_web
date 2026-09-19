@@ -14,8 +14,112 @@ import {
 } from './monthlyEncouragementBoards';
 
 export const HOF_PRIZE_VIEW_STORAGE_KEY = 'slm_hof_prize_view';
+/** Persist last browsed Hall of Fame month: `{ year, month }`. */
+export const HOF_PRIZE_MONTH_STORAGE_KEY = 'slm_hof_prize_month';
 /** User-facing modes: by month (detailed cards) or by winner. Legacy `compact` maps to detailed. */
 export const HOF_VIEW_MODES = ['detailed', 'by_user'];
+
+const BN_MONTH_SHORT = ['জানু', 'ফেব', 'মার্চ', 'এপ্রি', 'মে', 'জুন', 'জুল', 'আগ', 'সেপ্ট', 'অক্টো', 'নভে', 'ডিসে'];
+const EN_MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Sort key YYYY-MM for chronological compare. */
+export function hofMonthKey(year, month) {
+    return `${Number(year)}-${String(Number(month)).padStart(2, '0')}`;
+}
+
+/** Distinct years in archive, newest first. */
+export function listHofYears(hallOfFameData = []) {
+    const years = new Set();
+    for (const entry of hallOfFameData) {
+        if (entry?.year != null) years.add(Number(entry.year));
+    }
+    return [...years].sort((a, b) => b - a);
+}
+
+/**
+ * Months present for a year (objects with month + shortLabel), newest month first.
+ */
+export function listHofMonthsForYear(hallOfFameData = [], year, language = 'bn') {
+    const y = Number(year);
+    const months = new Set();
+    for (const entry of hallOfFameData) {
+        if (Number(entry?.year) === y && entry?.month != null) {
+            months.add(Number(entry.month));
+        }
+    }
+    const short = language === 'bn' ? BN_MONTH_SHORT : EN_MONTH_SHORT;
+    return [...months]
+        .sort((a, b) => b - a)
+        .map((month) => ({
+            month,
+            shortLabel: short[month - 1] || String(month),
+        }));
+}
+
+/** Archive sorted newest → oldest. */
+export function sortHofArchiveNewestFirst(hallOfFameData = []) {
+    return [...(hallOfFameData || [])].sort((a, b) =>
+        hofMonthKey(b.year, b.month).localeCompare(hofMonthKey(a.year, a.month))
+    );
+}
+
+export function findHofEntry(hallOfFameData = [], year, month) {
+    const y = Number(year);
+    const m = Number(month);
+    return (hallOfFameData || []).find((e) => Number(e.year) === y && Number(e.month) === m) || null;
+}
+
+/**
+ * Resolve a valid { year, month } from saved preference or latest archive entry.
+ */
+export function resolveHofBrowseMonth(hallOfFameData = [], saved = null) {
+    const sorted = sortHofArchiveNewestFirst(hallOfFameData);
+    if (sorted.length === 0) return null;
+
+    if (saved?.year != null && saved?.month != null) {
+        const hit = findHofEntry(sorted, saved.year, saved.month);
+        if (hit) return { year: Number(hit.year), month: Number(hit.month) };
+    }
+
+    return { year: Number(sorted[0].year), month: Number(sorted[0].month) };
+}
+
+/**
+ * Step ±1 through the archive (newest-first index). Returns next { year, month } or null.
+ */
+export function stepHofBrowseMonth(hallOfFameData = [], year, month, delta) {
+    const sorted = sortHofArchiveNewestFirst(hallOfFameData);
+    if (sorted.length === 0) return null;
+    const key = hofMonthKey(year, month);
+    const idx = sorted.findIndex((e) => hofMonthKey(e.year, e.month) === key);
+    const nextIdx = (idx < 0 ? 0 : idx) + delta;
+    if (nextIdx < 0 || nextIdx >= sorted.length) return null;
+    const entry = sorted[nextIdx];
+    return { year: Number(entry.year), month: Number(entry.month) };
+}
+
+export function readStoredHofBrowseMonth() {
+    try {
+        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(HOF_PRIZE_MONTH_STORAGE_KEY) : null;
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed?.year != null && parsed?.month != null) {
+            return { year: Number(parsed.year), month: Number(parsed.month) };
+        }
+    } catch {
+        /* ignore */
+    }
+    return null;
+}
+
+export function writeStoredHofBrowseMonth(year, month) {
+    try {
+        if (typeof localStorage === 'undefined') return;
+        localStorage.setItem(HOF_PRIZE_MONTH_STORAGE_KEY, JSON.stringify({ year: Number(year), month: Number(month) }));
+    } catch {
+        /* ignore */
+    }
+}
 
 const PRIZE_IMAGE_EXTENSIONS = ['webp', 'jpg', 'jpeg', 'png'];
 
@@ -194,6 +298,9 @@ export function getHallOfFamePrizeViewCopy(language = 'bn') {
             sponsorPrefix: 'Courtesy of',
             prizeChip: 'Prize',
             noPrizeInfo: 'Prize details for this month are not added yet.',
+            yearAll: 'All years',
+            prevMonth: 'Previous month',
+            nextMonth: 'Next month',
         };
     }
     return {
@@ -206,6 +313,9 @@ export function getHallOfFamePrizeViewCopy(language = 'bn') {
         sponsorPrefix: 'সৌজন্যে',
         prizeChip: 'পুরস্কার',
         noPrizeInfo: 'এই মাসের পুরস্কারের তথ্য এখনও যোগ হয়নি।',
+        yearAll: 'সব বছর',
+        prevMonth: 'আগের মাস',
+        nextMonth: 'পরের মাস',
     };
 }
 

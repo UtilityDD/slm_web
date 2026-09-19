@@ -57,11 +57,10 @@ function PrizeFocusCard({
     );
     const [resolvedImageUrl, setResolvedImageUrl] = useState(null);
     const hasPrizeImage = imageCandidates.length > 0;
+    const bn = language === 'bn';
 
     return (
-        <article
-            className={`flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm transition-transform hover:-translate-y-0.5 ${style.ring} ring-1 ring-offset-1 ring-offset-[#fffdf7]`}
-        >
+        <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70">
             <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
                 {hasPrizeImage ? (
                     <button
@@ -71,36 +70,39 @@ function PrizeFocusCard({
                             title: prize.title || '',
                             subtitle: rankLabel,
                         })}
-                        className="group/img absolute inset-0 flex items-center justify-center p-2 sm:p-2.5"
+                        className="absolute inset-0 flex items-center justify-center p-2"
                     >
                         <HallOfFamePrizeImage
                             key={imageCandidates.join('|') || 'empty'}
                             candidates={imageCandidates}
                             alt={prize.imageAlt || prize.title || ''}
-                            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"
+                            className="max-h-full max-w-full object-contain"
                             onResolved={setResolvedImageUrl}
                         />
                     </button>
                 ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-amber-50 text-3xl" aria-hidden>
-                        🎁
+                    <div className="flex h-full w-full items-center justify-center bg-slate-50 text-2xl text-slate-300" aria-hidden>
+                        ★
                     </div>
                 )}
-                <div className={`pointer-events-none absolute left-2 top-2 z-10 flex h-10 min-w-10 items-center justify-center rounded-full px-1.5 shadow-md ${style.header}`}>
-                    <span className="text-2xl leading-none" aria-hidden>{getRankMedal(medalRank)}</span>
-                </div>
+                <span
+                    className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-lg leading-none shadow-sm ring-1 ring-black/5"
+                    aria-label={rankLabel}
+                >
+                    {getRankMedal(medalRank)}
+                </span>
             </div>
 
-            <div className="flex flex-1 flex-col px-2.5 pb-2.5 pt-2">
+            <div className="flex flex-1 flex-col gap-0.5 px-2.5 pb-2.5 pt-2">
                 <button
                     type="button"
                     onClick={() => (onViewUserPrizes ? onViewUserPrizes(winner.user_id) : onOpenUserProgress(winner.user_id))}
-                    className={`truncate text-left text-[13px] font-black leading-tight text-slate-900 hover:text-orange-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}
+                    className={`truncate text-left text-[13px] font-bold leading-tight text-slate-900 hover:text-orange-600 ${bn ? 'font-bengali' : ''}`}
                 >
                     {winner.full_name || 'Anonymous'}
                 </button>
-                {prize.title && (
-                    <h4 className={`mt-0.5 line-clamp-2 text-xs font-bold leading-snug text-slate-700 sm:text-[13px] ${language === 'bn' ? 'font-bengali' : ''}`}>
+                {prize.title ? (
+                    <h4 className={`line-clamp-1 text-[11px] font-semibold leading-snug text-slate-600 ${bn ? 'font-bengali' : ''}`}>
                         {prize.title}
                         {prize.caution ? (
                             <>
@@ -109,14 +111,12 @@ function PrizeFocusCard({
                             </>
                         ) : null}
                     </h4>
-                )}
-                {prize.sponsor && (
-                    <p className={`mt-auto pt-1.5 text-[10px] font-semibold leading-tight text-amber-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
-                        <span className="font-bold text-amber-600">{language === 'en' ? 'Sponsor' : 'স্পনসর'}</span>
-                        {' · '}
+                ) : null}
+                {prize.sponsor ? (
+                    <p className={`mt-auto pt-1 text-[10px] font-medium leading-tight text-slate-400 ${bn ? 'font-bengali' : ''}`}>
                         {prize.sponsor}
                     </p>
-                )}
+                ) : null}
             </div>
         </article>
     );
