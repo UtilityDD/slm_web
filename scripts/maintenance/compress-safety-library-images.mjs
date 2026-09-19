@@ -80,7 +80,17 @@ async function compressFile(abs) {
         };
     }
 
-    fs.renameSync(tmp, destWebp);
+    // Windows: rename can EPERM if Vite/antivirus holds the target — copy then unlink.
+    try {
+        fs.renameSync(tmp, destWebp);
+    } catch (err) {
+        if (err && (err.code === 'EPERM' || err.code === 'EEXIST')) {
+            fs.copyFileSync(tmp, destWebp);
+            fs.unlinkSync(tmp);
+        } else {
+            throw err;
+        }
+    }
     if (path.resolve(abs) !== path.resolve(destWebp) && fs.existsSync(abs)) {
         fs.unlinkSync(abs);
     }

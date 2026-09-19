@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/icon-192.png" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#fffdf7" />
@@ -43,6 +44,22 @@
     }
   </style>
   <title>SmartLineman</title>
+  <script>
+    // Local Vite: unregister SW + clear caches (no forced reload — that fights HMR).
+    (function () {
+      var host = location.hostname;
+      var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+      if (!isLocal || !('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        return Promise.all(regs.map(function (r) { return r.unregister(); }));
+      }).catch(function () {});
+      if (typeof caches !== 'undefined') {
+        caches.keys().then(function (keys) {
+          return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+        }).catch(function () {});
+      }
+    })();
+  </script>
   <script>
     // Capture the install prompt as early as possible: Chrome often fires
     // beforeinstallprompt before the React bundle mounts its listener.
@@ -197,9 +214,8 @@
           }
         } catch (e) { /* ignore */ }
         var ua = navigator.userAgent || '';
-        var host = (window.location && window.location.hostname) || '';
-        // Capacitor Android WebView
-        if (/Android/i.test(ua) && (/; wv\)/i.test(ua) || /localhost/i.test(host))) {
+        // Capacitor Android WebView only — never treat Vite desktop localhost as native.
+        if (/Android/i.test(ua) && /; wv\)/i.test(ua)) {
           return true;
         }
         return false;
@@ -243,12 +259,22 @@
 
       window.__hideStaticShell = function () {
         if (!shell) return;
+        if (shell.getAttribute('data-hidden') === 'true') return;
+        shell.setAttribute('data-hidden', 'true');
         shell.classList.add('static-shell-hide');
         shell.setAttribute('aria-busy', 'false');
         window.setTimeout(function () {
           if (shell && shell.parentNode) shell.parentNode.removeChild(shell);
         }, isNative ? 320 : 220);
       };
+
+      // Failsafe: never leave the cream spinner forever if JS stalls.
+      window.setTimeout(function () {
+        if (!shell || shell.getAttribute('data-hidden') === 'true') return;
+        if (typeof window.__hideStaticShell === 'function') {
+          window.__hideStaticShell();
+        }
+      }, 12000);
     })();
   </script>
   <script type="module" src="/src/main.jsx"></script>

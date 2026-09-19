@@ -36,6 +36,17 @@ const RegisterSW = () => {
   useEffect(() => {
     if (!('serviceWorker' in navigator) || isNativeCapacitorPlatform()) return undefined;
 
+    // Vite HMR + cached `/` from public/sw.js breaks localhost (blank / endless reload).
+    if (import.meta.env.DEV) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => reg.unregister());
+      }).catch(() => {});
+      if (typeof caches !== 'undefined') {
+        caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))).catch(() => {});
+      }
+      return undefined;
+    }
+
     let cancelled = false;
     let updateTimer;
 

@@ -116,7 +116,7 @@ export default function AppUpdateModal({
             {subtitle}
           </p>
           {notes ? (
-            <p className={`mt-4 w-full rounded-2xl bg-orange-50 px-4 py-3 text-sm font-bold leading-snug text-orange-900 ${bn ? 'font-bengali' : ''}`}>
+            <p className={`mt-4 w-full whitespace-pre-line rounded-2xl bg-orange-50 px-4 py-3 text-left text-sm font-bold leading-snug text-orange-900 ${bn ? 'font-bengali' : ''}`}>
               {notes}
             </p>
           ) : null}

@@ -20,7 +20,7 @@ This folder holds **maintainer-focused** documentation: architecture notes, inte
 | [Shell interrupts](./shell-interrupts.md) | Overlay queue, one-per-open soft budget, `hourlyQuizPlaying` blocks ads/nudges during the pack timer |
 | [Hourly Visual Quiz — Image Generation](./hourly-visual-quiz-generation.md) | Spot-the-mistake illustrations, WebP size, option length / near-correct anti-cheat, draft review before sheet paste |
 | [Monthly encouragement boards](./monthly-encouragement-boards.md) | Four monthly tabs (champion / new / improved / learner), Hall of Fame v11, prizes, `monthlyEncouragementBoards.js` |
-| [Safety Library](./safety-library.md) | `SafetyLibrary.jsx`, grid, detail modal, Drive image helper |
+| [Safety Library](./safety-library.md) | Identify (`SafetyLibrary.jsx`): Bangla chips, search, recents, detail modal |
 | [Training lesson reader](./training-lesson-reader.md) | `Training.jsx` journal slides, guided section cards, advance lock, alert/chime, scroll + text scale |
 | [Training lesson images](./training-lesson-images.md) | Poster generation (WebP, Bengali headers), JSON `image_name`, loader/faq paths, Supabase migrations |
 | [Life Skill / supplementary modules](./life-skills-supplementary.md) | `supplementary_modules.json`, `lesson_10_*.json`, GitHub or `/audio/` listen URLs, `LS` codes, `supplementaryProgressStorage.js` |

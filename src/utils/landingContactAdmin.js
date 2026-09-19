@@ -25,6 +25,7 @@ export function topicShortLabel(topic, isEn) {
   if (/training|প্রশিক্ষণ/i.test(text)) return isEn ? 'Train' : 'প্রশিক্ষণ';
   if (/advertise|বিজ্ঞাপন/i.test(text)) return isEn ? 'Ad' : 'বিজ্ঞাপন';
   if (/prize|sponsor|পুরস্কার|স্পনসর/i.test(text)) return isEn ? 'Prize' : 'পুরস্কার';
+  if (/identify|পরিচিতি|missing item|নেই এমন/i.test(text)) return isEn ? 'Identify' : 'পরিচিতি';
   return isEn ? 'Other' : 'অন্যান্য';
 }
 

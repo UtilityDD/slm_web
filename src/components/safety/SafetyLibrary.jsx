@@ -1,10 +1,83 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { createPortal } from 'react-dom';
 import { libraryService } from '../../utils/libraryService';
 import { storageUtils } from '../../utils/storageUtils';
 import {
     toSafetyLibraryDisplayUrl,
     handleSafetyLibraryImageError,
 } from '../../utils/safetyLibraryImageUrl';
+import { pushIdentifyRecent, readIdentifyRecents } from '../../utils/safetyLibraryRecents';
+import { readIdentifyPracticeScore } from '../../utils/safetyLibraryPractice';
+import { getIdentifyChartPage, hasIdentifyChartPage } from '../../data/identifyCharts';
+import IdentifyPractice from './IdentifyPractice';
+import IdentifyChartPage from './IdentifyChartPage';
+import IdentifyChartThumb from './IdentifyChartThumb';
+import { getChartTopic } from './identifyChartIcons';
+
+const CATEGORY_ORDER = ['PPE', 'Tools', 'Insulators', 'AB Cable Items', 'Charts', 'Others'];
+const VIDEO_NUDGE_AFTER_MS = 60_000;
+const VIDEO_NUDGE_HOLD_MS = 16_000;
+const VIDEO_NUDGE_FADE_MS = 2400;
+
+const CATEGORY_LABELS = {
+    All: { bn: 'সব', en: 'All' },
+    PPE: { bn: 'পিপিই', en: 'PPE' },
+    Tools: { bn: 'টুলস', en: 'Tools' },
+    Insulators: { bn: 'ইনসুলেটর', en: 'Insulators' },
+    Charts: { bn: 'চার্ট', en: 'Charts' },
+    'AB Cable Items': { bn: 'এবি কেবল সরঞ্জাম', en: 'AB cable accessories' },
+    Others: { bn: 'অন্যান্য', en: 'Others' },
+};
+
+function categoryLabel(catId, language) {
+    const row = CATEGORY_LABELS[catId];
+    if (!row) return catId || '';
+    return language === 'en' ? row.en : row.bn;
+}
+
+function chartPageSearchText(itemId) {
+    const page = getIdentifyChartPage(itemId);
+    if (!page) return '';
+    const bits = [page.kicker, page.intro, page.tip, page.warning];
+    for (const step of page.steps || []) {
+        bits.push(step.title, step.ok, step.bad);
+    }
+    if (page.compare) {
+        bits.push(page.compare.wrong?.title, ...(page.compare.wrong?.points || []));
+        bits.push(page.compare.right?.title, ...(page.compare.right?.points || []));
+    }
+    for (const table of page.tables || []) {
+        bits.push(table.title, table.note, ...(table.headers || []));
+        for (const row of table.rows || []) bits.push(...row);
+    }
+    for (const card of page.cards || []) {
+        bits.push(card.title, ...(card.points || []));
+    }
+    for (const section of page.sections || []) {
+        bits.push(section.title, ...(section.points || []));
+    }
+    if (page.flow) bits.push(...page.flow);
+    return bits.filter(Boolean).join(' ');
+}
+
+function itemMatchesSearch(item, rawQuery, language) {
+    const q = String(rawQuery || '').trim().toLowerCase();
+    if (!q) return true;
+    const hay = [
+        item.name_bn,
+        item.function_bn,
+        item.guide_bn,
+        item.category,
+        categoryLabel(item.category, 'bn'),
+        categoryLabel(item.category, 'en'),
+        categoryLabel(item.category, language),
+        chartPageSearchText(item.id),
+    ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+    return hay.includes(q);
+}
 
 const SearchIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -17,20 +90,6 @@ const ShieldCheckIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
         <path d="m9 12 2 2 4-4"></path>
-    </svg>
-);
-
-const WrenchIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-    </svg>
-);
-
-const TreeIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m12 19 7-7 3 3-7 7-3-3z"></path>
-        <path d="m18 13-1.5-7.5L12 2l-4.5 3.5L6 13"></path>
-        <path d="M12 19V5"></path>
     </svg>
 );
 
@@ -99,7 +158,8 @@ const ImageSlider = forwardRef(function ImageSlider(
         /** Fill a sized parent (e.g. 2/3 viewport) — image scales up/down with object-contain. */
         fillFrame = false,
         /** Auto-rotate slides every 3s when multiple images (off in detail modal). */
-        autoAdvance = true
+        autoAdvance = true,
+        emptyLabel = 'No photo',
     },
     ref
 ) {
@@ -406,7 +466,7 @@ const ImageSlider = forwardRef(function ImageSlider(
                 <svg className="mb-2 h-8 w-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
+                <span className="text-[10px] font-bold opacity-40">{emptyLabel}</span>
             </div>
         );
     }
@@ -563,8 +623,8 @@ const SkeletonShimmer = ({ className = '' }) => (
 const SafetyLibraryLoadingView = ({ language }) => {
     const copy =
         language === 'bn'
-            ? { line: 'তথ্য লোড হচ্ছে…', sub: 'স্প্রেডশিট থেকে লাইব্রেরি আসছে' }
-            : { line: 'Loading library…', sub: 'Fetching items from the sheet' };
+            ? { line: 'ছবি আসছে…', sub: 'একটু দাঁড়ান' }
+            : { line: 'Loading photos…', sub: 'Just a moment' };
 
     return (
         <div className="max-w-7xl mx-auto p-3 sm:p-8" aria-busy="true" aria-live="polite">
@@ -578,17 +638,6 @@ const SafetyLibraryLoadingView = ({ language }) => {
                 </div>
             </div>
 
-            <div className="mb-4 sm:mb-6 h-[4.5rem] sm:h-[4.75rem] overflow-hidden nb-card bg-white relative">
-                <SkeletonShimmer />
-                <div className="absolute left-4 top-1/2 flex -translate-y-1/2 items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 border-2 border-slate-900 bg-slate-200 shadow-[2px_2px_0_#0f172a]" />
-                    <div className="space-y-2">
-                        <div className="h-3.5 w-36 bg-slate-200 border border-slate-900 sm:w-48" />
-                        <div className="h-2.5 w-24 bg-slate-100 border border-slate-300" />
-                    </div>
-                </div>
-            </div>
-
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 {Array.from({ length: 8 }, (_, i) => (
                     <div
@@ -598,7 +647,6 @@ const SafetyLibraryLoadingView = ({ language }) => {
                     >
                         <div className="relative aspect-square overflow-hidden bg-slate-100">
                             <SkeletonShimmer className="opacity-90" />
-                            <div className="absolute left-2 top-2 h-4 w-14 bg-slate-300 border border-slate-900" />
                         </div>
                         <div className="space-y-2 p-2.5 sm:p-4">
                             <div className="mx-auto h-3 w-[88%] bg-slate-200 border border-slate-300" />
@@ -611,7 +659,7 @@ const SafetyLibraryLoadingView = ({ language }) => {
     );
 };
 
-const GridImage = ({ images, alt }) => {
+const GridImage = ({ images, alt, language }) => {
     const [randomImage] = useState(() => {
         if (!images || images.length === 0) return null;
         const randomIndex = Math.floor(Math.random() * images.length);
@@ -622,7 +670,9 @@ const GridImage = ({ images, alt }) => {
     if (!randomImage || failed) {
         return (
             <div className="flex h-full w-full flex-col items-center justify-center bg-slate-100 p-4 text-slate-400">
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Image</span>
+                <span className={`text-[10px] font-bold opacity-40 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    {language === 'en' ? 'No photo' : 'ছবি নেই'}
+                </span>
             </div>
         );
     }
@@ -651,7 +701,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const [activeCategory, setActiveCategory] = useState('PPE');
     const [selectedItem, setSelectedItem] = useState(null);
     const [categories, setCategories] = useState([]);
-    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [recentIds, setRecentIds] = useState(() => readIdentifyRecents());
+    const [practiceOpen, setPracticeOpen] = useState(false);
+    const [practiceScore, setPracticeScore] = useState(() => readIdentifyPracticeScore());
+    const [scoreSheetOpen, setScoreSheetOpen] = useState(false);
+    const [quitConfirmOpen, setQuitConfirmOpen] = useState(false);
+    const [videoNudge, setVideoNudge] = useState('');
+    const videoNudgeDoneRef = useRef(false);
+    const videoDwellLeftRef = useRef(VIDEO_NUDGE_AFTER_MS);
     const tabsRef = useRef(null);
     const detailSliderRef = useRef(null);
     const [detailZoomLevel, setDetailZoomLevel] = useState(1);
@@ -661,6 +718,43 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     useEffect(() => {
         setDetailZoomLevel(1);
     }, [selectedItem?.id]);
+
+    useEffect(() => {
+        if (
+            loading
+            || practiceOpen
+            || videoNudge
+            || videoNudgeDoneRef.current
+            || typeof setCurrentView !== 'function'
+        ) {
+            return undefined;
+        }
+        const started = Date.now();
+        const timer = window.setTimeout(() => {
+            setVideoNudge('in');
+        }, videoDwellLeftRef.current);
+        return () => {
+            window.clearTimeout(timer);
+            videoDwellLeftRef.current = Math.max(0, videoDwellLeftRef.current - (Date.now() - started));
+        };
+    }, [loading, practiceOpen, videoNudge, setCurrentView]);
+
+    useEffect(() => {
+        if (videoNudge !== 'in') return undefined;
+        const hide = window.setTimeout(() => {
+            setVideoNudge('out');
+        }, VIDEO_NUDGE_HOLD_MS);
+        return () => window.clearTimeout(hide);
+    }, [videoNudge]);
+
+    useEffect(() => {
+        if (videoNudge !== 'out') return undefined;
+        const gone = window.setTimeout(() => {
+            setVideoNudge('');
+            videoNudgeDoneRef.current = true;
+        }, VIDEO_NUDGE_FADE_MS);
+        return () => window.clearTimeout(gone);
+    }, [videoNudge]);
 
     useEffect(() => {
         if (!selectedItem) setModalBrowseStack([]);
@@ -707,48 +801,60 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         }
     }, [categories.length]);
 
-    const getCategoryMetadata = (catId) => {
-        const metadata = {
-            'PPE': { icon: <ShieldCheckIcon className="w-4 h-4" /> },
-            'Tools': { icon: <WrenchIcon className="w-4 h-4" /> },
-            'Insulators': { icon: <TreeIcon className="w-4 h-4" /> },
-            'Charts': { icon: <LineChartIcon className="w-4 h-4" /> },
-            'AB Cable Items': { icon: <WrenchIcon className="w-4 h-4" /> },
-            'Others': { icon: <InfoIcon className="w-4 h-4" /> }
-        };
-        return metadata[catId] || { icon: <InfoIcon className="w-4 h-4" /> };
-    };
-
     const t = {
         en: {
             title: 'Identify',
-            searchPlaceholder: 'Search...',
-            noResults: 'No items found',
+            searchPlaceholder: 'Helmet, gloves…',
+            noResults: 'Nothing like that here',
             priceLabel: 'Price:',
-            guideLabel: 'Usage Guide',
-            aboutLabel: 'About',
-            retry: 'Retry',
+            guideLabel: 'Remember',
+            aboutLabel: 'What this is',
+            recentsLabel: 'Just now',
+            videoGuides: 'Videos',
+            practiceCta: 'Try',
+            practiceBadgeAria: 'Familiarity',
+            scoreAll: 'All time',
+            relatedWithLabel: 'Also',
+            allCategory: 'All',
+            retry: 'Try again',
             details: 'Details',
-            zoomInAria: 'Zoom in',
-            zoomOutAria: 'Zoom out',
-            zoomToolbarAria: 'Image zoom controls',
-            relatedOpenAriaPrefix: 'Open related item:',
-            backPreviousAria: 'Previous item',
+            noPhoto: 'No photo',
+            zoomInAria: 'Bigger',
+            zoomOutAria: 'Smaller',
+            zoomToolbarAria: 'Make the picture bigger or smaller',
+            relatedOpenAriaPrefix: 'Open',
+            backPreviousAria: 'Go back',
+            closeAria: 'Close',
+            quitTitle: 'Leave practice?',
+            quitStay: 'Stay',
+            quitLeave: 'Leave',
         },
         bn: {
             title: 'পরিচিতি',
-            searchPlaceholder: 'খুঁজুন...',
-            noResults: 'কিছু পাওয়া যায়নি',
+            searchPlaceholder: 'হেলমেট, গ্লাভস…',
+            noResults: 'এমন কিছু নেই',
             priceLabel: 'মূল্য:',
-            guideLabel: 'দরকারি টিপ',
-            aboutLabel: 'সম্পর্কে',
-            retry: 'আবার চেষ্টা করুন',
+            guideLabel: 'খেয়াল রাখুন',
+            aboutLabel: 'এটা কী',
+            recentsLabel: 'এইমাত্র',
+            videoGuides: 'ভিডিও',
+            practiceCta: 'কতটা চেনেন?',
+            practiceBadgeAria: 'চেনা',
+            scoreAll: 'মোট',
+            relatedWithLabel: 'এগুলোও',
+            allCategory: 'সব',
+            retry: 'আবার',
             details: 'বিস্তারিত',
+            noPhoto: 'ছবি নেই',
             zoomInAria: 'বড় করুন',
             zoomOutAria: 'ছোট করুন',
-            zoomToolbarAria: 'ছবির জুম নিয়ন্ত্রণ',
-            relatedOpenAriaPrefix: 'খুলুন:',
-            backPreviousAria: 'আগের আইটেমে ফিরুন',
+            zoomToolbarAria: 'ছবি বড় বা ছোট করুন',
+            relatedOpenAriaPrefix: '',
+            backPreviousAria: 'পিছনে',
+            closeAria: 'বন্ধ',
+            quitTitle: 'পরখ বন্ধ করবেন?',
+            quitStay: 'থাকুন',
+            quitLeave: 'বন্ধ করুন',
         }
     }[language];
 
@@ -760,6 +866,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const openItemDetail = useCallback((item) => {
         setModalBrowseStack([]);
         setSelectedItem(item);
+        if (item?.id) setRecentIds(pushIdentifyRecent(item.id));
     }, []);
 
     const goToRelatedLibraryItem = useCallback(
@@ -768,6 +875,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             if (!full) return;
             setModalBrowseStack((prev) => (selectedItem ? [...prev, selectedItem] : prev));
             setSelectedItem(full);
+            setRecentIds(pushIdentifyRecent(full.id));
         },
         [items, selectedItem]
     );
@@ -789,12 +897,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             if (!data || data.length === 0) throw new Error("No data found");
             setItems(data);
             setFilteredItems(data);
-            const uniqueCats = [...new Set(data.map(item => item.category))].filter(Boolean);
-            const dynamicCategories = uniqueCats.map(cat => ({
-                id: cat,
-                label: cat,
-                ...getCategoryMetadata(cat)
-            }));
+            const uniqueCats = [...new Set(data.map((item) => item.category))].filter(Boolean);
+            uniqueCats.sort((a, b) => {
+                const ia = CATEGORY_ORDER.indexOf(a);
+                const ib = CATEGORY_ORDER.indexOf(b);
+                return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+            });
+            const dynamicCategories = uniqueCats.map((cat) => ({ id: cat }));
             setCategories(dynamicCategories);
             if (dynamicCategories.length > 0 && !activeCategory) {
                 setActiveCategory(dynamicCategories[0].id);
@@ -809,84 +918,137 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     useEffect(() => { fetchLibrary(); }, []);
 
     useEffect(() => {
-        const filtered = items.filter(item => {
-            const matchesSearch = (item.name_bn || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const filtered = items.filter((item) => {
+            const matchesSearch = itemMatchesSearch(item, searchQuery, language);
             const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
             return matchesSearch && matchesCategory;
         });
         setFilteredItems(filtered);
-    }, [searchQuery, activeCategory, items]);
+    }, [searchQuery, activeCategory, items, language]);
 
     const chartRelatedForModal = useMemo(() => {
         if (!selectedItem?.related_items?.length) return [];
         return selectedItem.related_items.filter((r) => r.category === 'Charts');
     }, [selectedItem]);
 
+    const nonChartRelatedForModal = useMemo(() => {
+        if (!selectedItem?.related_items?.length) return [];
+        return selectedItem.related_items.filter((r) => r.category !== 'Charts');
+    }, [selectedItem]);
+
+    const recentItems = useMemo(() => {
+        if (!recentIds.length || !items.length) return [];
+        const byId = new Map(items.map((item) => [item.id, item]));
+        return recentIds.map((id) => byId.get(id)).filter(Boolean);
+    }, [recentIds, items]);
+
+    const selectedChartPage = useMemo(
+        () => (selectedItem ? getIdentifyChartPage(selectedItem.id) : null),
+        [selectedItem]
+    );
+
+    const chipCategories = useMemo(
+        () => [{ id: 'All' }, ...categories],
+        [categories]
+    );
+
+    const categoryCounts = useMemo(() => {
+        const counts = { All: items.length };
+        for (const item of items) {
+            if (!item.category) continue;
+            counts[item.category] = (counts[item.category] || 0) + 1;
+        }
+        return counts;
+    }, [items]);
+
+    const showRecents = !loading && !searchQuery.trim() && recentItems.length > 0;
+
     const searchAndCategories = (
         <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b border-slate-200/80' : ''}`}>
             <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8 py-3' : 'py-4 px-4 sm:px-8'}`}>
-                <div className="flex items-center justify-between gap-3">
-                    {!isSearchExpanded ? (
-                        <>
-                            <h1
-                                className={`min-w-0 flex-1 text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${
-                                    language === 'bn' ? 'font-bengali' : ''
-                                }`}
-                            >
-                                {t.title}
-                            </h1>
-                            <div className="flex shrink-0 items-center gap-2">
-                                <button
-                                    type="button"
-                                    disabled={loading}
-                                    onClick={() => !loading && setIsSearchExpanded(true)}
-                                    className="sm:hidden flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-40"
-                                >
-                                    <SearchIcon className="w-5 h-5" />
-                                </button>
-
-                                {loading ? (
-                                    <div className="relative hidden h-10 w-full min-w-[200px] max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm sm:block">
-                                        <SkeletonShimmer />
-                                    </div>
-                                ) : (
-                                    <div className="hidden sm:block relative max-w-md w-full min-w-[200px]">
-                                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
-                                        <input
-                                            type="text"
-                                            placeholder={t.searchPlaceholder}
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="nb-input !min-h-[40px] py-2 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex flex-1 items-center gap-2">
-                            <div className="relative flex-1">
-                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10" />
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    placeholder={t.searchPlaceholder}
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="nb-input py-2.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm"
-                                />
-                            </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <h1
+                            className={`min-w-0 truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${
+                                language === 'bn' ? 'font-bengali' : ''
+                            }`}
+                        >
+                            {t.title}
+                        </h1>
+                        {practiceScore ? (
                             <button
                                 type="button"
-                                onClick={() => { setIsSearchExpanded(false); setSearchQuery(''); }}
-                                className={`rounded-full px-3 py-2 text-sm font-bold text-orange-600 transition-colors hover:bg-orange-50 active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                onClick={() => setScoreSheetOpen(true)}
+                                className={`identify-familiarity-badge shrink-0 rounded-full bg-orange-500 px-2 py-0.5 text-[11px] font-black tabular-nums text-white shadow-sm sm:text-xs ${
+                                    language === 'bn' ? 'font-bengali' : ''
+                                }`}
+                                title={`${t.practiceBadgeAria} ${practiceScore.lifePercent}%`}
+                                aria-label={`${t.practiceBadgeAria} ${practiceScore.lifePercent}%`}
                             >
-                                {language === 'en' ? 'Cancel' : 'বন্ধ'}
+                                {practiceScore.lifePercent}%
                             </button>
-                        </div>
-                    )}
+                        ) : null}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                        {practiceOpen ? (
+                            <button
+                                type="button"
+                                onClick={() => setQuitConfirmOpen(true)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
+                                aria-label={t.closeAria}
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        ) : (
+                            <div className="relative shrink-0">
+                                {!loading ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setPracticeOpen(true)}
+                                        className={`identify-try-btn inline-flex items-center gap-1 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-black text-white shadow-sm sm:text-sm ${
+                                            language === 'bn' ? 'font-bengali' : ''
+                                        }`}
+                                    >
+                                        <span>{t.practiceCta.replace(/\?$/, '')}</span>
+                                        <span className="identify-try-mark" aria-hidden="true">?</span>
+                                    </button>
+                                ) : null}
+                                {typeof setCurrentView === 'function' && videoNudge ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentView('video-guide')}
+                                        className={`identify-video-nudge absolute right-0 top-[calc(100%+0.4rem)] z-20 whitespace-nowrap rounded-full bg-orange-500 px-3 py-1.5 text-xs font-black text-white shadow-sm sm:text-sm ${
+                                            videoNudge === 'out' ? 'identify-video-nudge--out' : ''
+                                        } ${language === 'bn' ? 'font-bengali' : ''}`}
+                                    >
+                                        {t.videoGuides}
+                                    </button>
+                                ) : null}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
+                {practiceOpen ? null : loading ? (
+                    <div className="relative h-11 w-full overflow-hidden rounded-full border border-slate-200/80 bg-white shadow-sm">
+                        <SkeletonShimmer />
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <SearchIcon className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                        <input
+                            type="search"
+                            placeholder={t.searchPlaceholder}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className={`nb-input w-full !min-h-[44px] py-2.5 pl-9 pr-3 text-sm !rounded-full !border-slate-200 !shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}
+                        />
+                    </div>
+                )}
+
+                {practiceOpen ? null : (
                 <div ref={tabsRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5 scroll-smooth">
                     {loading ? (
                         <>
@@ -901,22 +1063,34 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             ))}
                         </>
                     ) : (
-                        categories.map((cat) => (
+                        chipCategories.map((cat) => (
                             <button
                                 key={cat.id}
                                 type="button"
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-center text-[10px] font-bold shadow-sm transition-all active:scale-95 sm:text-xs ${
+                                className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-center text-[11px] font-bold shadow-sm transition-all active:scale-95 sm:text-xs ${
+                                    language === 'bn' ? 'font-bengali' : ''
+                                } ${
                                     activeCategory === cat.id
                                         ? 'bg-orange-500 text-white shadow-orange-500/25'
                                         : 'border border-slate-200/80 bg-white text-slate-700 hover:bg-orange-50'
                                 }`}
                             >
-                                {cat.label}
+                                <span>{categoryLabel(cat.id, language)}</span>
+                                <span
+                                    className={`tabular-nums ${
+                                        activeCategory === cat.id
+                                            ? 'text-white/85'
+                                            : 'text-slate-400'
+                                    }`}
+                                >
+                                    {categoryCounts[cat.id] ?? 0}
+                                </span>
                             </button>
                         ))
                     )}
                 </div>
+                )}
             </div>
         </div>
     );
@@ -924,68 +1098,96 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const libraryContent = (
         <div className={`max-w-7xl mx-auto p-3 sm:p-8 ${embedded ? 'pb-24' : ''}`}>
 
-                {loading ? (
+                {practiceOpen ? (
+                    <IdentifyPractice
+                        language={language}
+                        items={items}
+                        score={practiceScore}
+                        onClose={() => setQuitConfirmOpen(true)}
+                        onOpenItem={openItemDetail}
+                        onScoreSaved={setPracticeScore}
+                    />
+                ) : null}
+
+                {practiceOpen || !loading ? null : (
                     <SafetyLibraryLoadingView language={language} />
-                ) : (
-                    <div
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setCurrentView('video-guide')}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                setCurrentView('video-guide');
-                            }
-                        }}
-                        className="mb-4 flex cursor-pointer items-center justify-between rounded-2xl border border-orange-200/80 bg-gradient-to-r from-orange-500 to-amber-500 p-4 text-white shadow-md shadow-orange-500/20 transition-all hover:shadow-lg active:scale-[0.99] sm:mb-6"
-                    >
-                        <div className="flex items-center gap-3.5">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white text-orange-600 shadow-sm">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
-                            <div>
-                                <h3 className={`text-sm font-black leading-tight sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
-                                    {language === 'en' ? 'Watch Video Guides' : 'ভিডিও গাইড দেখুন'}
-                                </h3>
-                            </div>
-                        </div>
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                    </div>
                 )}
 
-                {!loading && filteredItems.length > 0 ? (
+                {!practiceOpen && showRecents ? (
+                    <div className="mb-4 sm:mb-6">
+                        <p className={`mb-2 text-[11px] font-bold text-slate-500 sm:text-xs ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {t.recentsLabel}
+                        </p>
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                            {recentItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => openItemDetail(item)}
+                                    className="w-[4.75rem] shrink-0 text-left sm:w-20"
+                                >
+                                    <div className="aspect-square overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                                        {hasIdentifyChartPage(item.id) ? (
+                                            <IdentifyChartThumb
+                                                chartId={item.id}
+                                                name={item.name_bn}
+                                                language={language}
+                                                kind={getIdentifyChartPage(item.id)?.kind}
+                                                compact
+                                            />
+                                        ) : (
+                                            <GridImage images={item.images} alt={item.name_bn} language={language} />
+                                        )}
+                                    </div>
+                                    <span className={`mt-1.5 line-clamp-2 text-center text-[10px] font-bold leading-tight text-slate-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {hasIdentifyChartPage(item.id) ? getChartTopic(item.id).shortBn : item.name_bn}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
+
+                {!practiceOpen && !loading && filteredItems.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {filteredItems.map((item) => (
+                        {filteredItems.map((item) => {
+                            const isChart = hasIdentifyChartPage(item.id);
+                            return (
                             <div
                                 key={item.id}
                                 onClick={() => openItemDetail(item)}
                                 className="group flex h-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
                             >
-                                <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-slate-50">
+                                <div className={`relative w-full shrink-0 overflow-hidden bg-slate-50 ${isChart ? 'aspect-[4/5]' : 'aspect-square'}`}>
                                     <div className="absolute inset-0">
-                                        <GridImage images={item.images} alt={item.name_bn} />
-                                    </div>
-                                    <div className="absolute top-2 left-2 z-10">
-                                        <span className="rounded-full border border-orange-200/80 bg-orange-50 px-2 py-0.5 text-[8px] font-bold text-orange-800 shadow-sm">
-                                            {item.category}
-                                        </span>
+                                        {isChart ? (
+                                            <IdentifyChartThumb
+                                                chartId={item.id}
+                                                name={item.name_bn}
+                                                language={language}
+                                                kind={getIdentifyChartPage(item.id)?.kind}
+                                            />
+                                        ) : (
+                                            <GridImage images={item.images} alt={item.name_bn} language={language} />
+                                        )}
                                     </div>
                                 </div>
+                                {isChart ? null : (
                                 <div className="flex h-[3.25rem] shrink-0 items-center justify-center bg-white px-2 py-2 sm:h-[3.75rem] sm:px-3">
-                                    <h3 className="line-clamp-2 text-center text-[11px] font-black leading-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-sm">
+                                    <h3 className={`line-clamp-2 text-center text-[11px] font-black leading-tight text-slate-900 transition-colors group-hover:text-orange-600 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
                                         {item.name_bn}
                                     </h3>
                                 </div>
+                                )}
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
-                ) : !loading ? (
+                ) : !practiceOpen && !loading ? (
                     <div className="flex min-h-[300px] flex-col items-center justify-center">
                         <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-sm">
                             <LineChartIcon className="mx-auto mb-3 h-12 w-12 text-slate-300" />
-                            <p className="text-sm font-black text-slate-600">{t.noResults}</p>
+                            <p className={`text-sm font-black text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>{t.noResults}</p>
                         </div>
                     </div>
                 ) : null}
@@ -1010,46 +1212,50 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                             <ChevronLeftIcon className="h-4 w-4" />
                                         </button>
                                     )}
-                                    <span className="shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-2 py-1 text-[8px] font-bold text-orange-800 shadow-sm">
-                                        {selectedItem.category}
+                                    <span className={`shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-2 py-1 text-[8px] font-bold text-orange-800 shadow-sm ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {categoryLabel(selectedItem.category, language)}
                                     </span>
                                     <h2
-                                        className="min-w-0 flex-1 truncate text-left text-[13px] font-black leading-snug tracking-tight text-slate-900 sm:text-sm"
+                                        className={`min-w-0 flex-1 truncate text-left text-[13px] font-black leading-snug tracking-tight text-slate-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}
                                         title={selectedItem.name_bn}
                                     >
                                         {selectedItem.name_bn}
                                     </h2>
                                 </div>
-                                <div
-                                    role="toolbar"
-                                    aria-label={t.zoomToolbarAria}
-                                    data-zoom-ui
-                                    className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-sm"
-                                >
-                                    <button
-                                        type="button"
-                                        onClick={() => detailSliderRef.current?.zoomOut()}
-                                        disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
-                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                                        aria-label={t.zoomOutAria}
+                                {selectedChartPage ? (
+                                    <span className="justify-self-center" aria-hidden />
+                                ) : (
+                                    <div
+                                        role="toolbar"
+                                        aria-label={t.zoomToolbarAria}
+                                        data-zoom-ui
+                                        className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5 shadow-sm"
                                     >
-                                        <MagnifierMinusIcon className="h-[15px] w-[15px]" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => detailSliderRef.current?.zoomIn()}
-                                        disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
-                                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                                        aria-label={t.zoomInAria}
-                                    >
-                                        <MagnifierPlusIcon className="h-[15px] w-[15px]" />
-                                    </button>
-                                </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => detailSliderRef.current?.zoomOut()}
+                                            disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
+                                            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                                            aria-label={t.zoomOutAria}
+                                        >
+                                            <MagnifierMinusIcon className="h-[15px] w-[15px]" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => detailSliderRef.current?.zoomIn()}
+                                            disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
+                                            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                                            aria-label={t.zoomInAria}
+                                        >
+                                            <MagnifierPlusIcon className="h-[15px] w-[15px]" />
+                                        </button>
+                                    </div>
+                                )}
                                 <button
                                     type="button"
                                     onClick={closeDetailModal}
                                     className="flex h-9 w-9 shrink-0 items-center justify-center justify-self-end rounded-full border border-slate-200/80 bg-white text-slate-900 shadow-sm transition-all hover:bg-slate-50 active:scale-95"
-                                    aria-label={language === 'en' ? 'Close' : 'বন্ধ করুন'}
+                                    aria-label={t.closeAria}
                                 >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M6 18L18 6M6 6l12 12" />
@@ -1057,46 +1263,60 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 </button>
                             </div>
 
-                            {chartRelatedForModal.length > 0 && (
-                                <div className="flex shrink-0 flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-amber-100 bg-amber-50/90 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-6 sm:py-2">
-                                    {chartRelatedForModal.map((chart) => (
-                                        <button
-                                            key={chart.id}
-                                            type="button"
-                                            onClick={() => goToRelatedLibraryItem(chart)}
-                                            className="inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-0 pl-1.5 pr-2.5 text-left text-[10px] font-bold leading-tight text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-[14rem]"
-                                            aria-label={`${t.relatedOpenAriaPrefix} ${chart.name_bn}`}
-                                        >
-                                            <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
-                                            <span className="min-w-0 truncate">{chart.name_bn}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-
-                            {selectedItem.related_items?.some((rel) => rel.category !== 'Charts') && (
-                                <div className="flex shrink-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden border-b border-slate-200/80 bg-white px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
-                                    {selectedItem.related_items
-                                        .filter((rel) => rel.category !== 'Charts')
-                                        .map((rel) => (
-                                        <button
-                                            key={rel.id}
-                                            type="button"
-                                            onClick={() => goToRelatedLibraryItem(rel)}
-                                            className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-1.5 pl-3 pr-2 text-left text-[11px] font-bold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-full"
-                                            aria-label={`${t.relatedOpenAriaPrefix} ${rel.name_bn}`}
-                                        >
-                                            <span className="min-w-0 flex-1 truncate">{rel.name_bn}</span>
-                                            <span className="shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-800">
-                                                {rel.category}
-                                            </span>
-                                            <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden />
-                                        </button>
-                                        ))}
+                            {(chartRelatedForModal.length > 0 || nonChartRelatedForModal.length > 0) && (
+                                <div className="shrink-0 border-b border-slate-200/80 bg-[#fffdf7]">
+                                    <p className={`px-3 pt-2 text-[11px] font-bold text-slate-500 sm:px-6 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                        {t.relatedWithLabel}
+                                    </p>
+                                    {chartRelatedForModal.length > 0 && (
+                                        <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto overflow-y-hidden bg-amber-50/90 px-3 py-1.5 no-scrollbar [-webkit-overflow-scrolling:touch] sm:px-6 sm:py-2">
+                                            {chartRelatedForModal.map((chart) => (
+                                                <button
+                                                    key={chart.id}
+                                                    type="button"
+                                                    onClick={() => goToRelatedLibraryItem(chart)}
+                                                    className={`inline-flex h-8 max-w-[min(100%,12rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-0 pl-1.5 pr-2.5 text-left text-[10px] font-bold leading-tight text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-[14rem] ${language === 'bn' ? 'font-bengali' : ''}`}
+                                                    aria-label={[t.relatedOpenAriaPrefix, chart.name_bn].filter(Boolean).join(' ')}
+                                                >
+                                                    <LineChartIcon className="h-3.5 w-3.5 shrink-0 text-slate-600" aria-hidden />
+                                                    <span className="min-w-0 truncate">{chart.name_bn}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {nonChartRelatedForModal.length > 0 && (
+                                        <div className="flex flex-nowrap gap-2 overflow-x-auto overflow-y-hidden bg-white px-3 py-2 no-scrollbar [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-x-visible sm:px-6 sm:py-3">
+                                            {nonChartRelatedForModal.map((rel) => (
+                                                <button
+                                                    key={rel.id}
+                                                    type="button"
+                                                    onClick={() => goToRelatedLibraryItem(rel)}
+                                                    className="inline-flex max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white py-1.5 pl-3 pr-2 text-left text-[11px] font-bold text-slate-800 shadow-sm transition-all hover:bg-orange-50 active:scale-95 sm:max-w-full"
+                                                    aria-label={[t.relatedOpenAriaPrefix, rel.name_bn].filter(Boolean).join(' ')}
+                                                >
+                                                    <span className={`min-w-0 flex-1 truncate ${language === 'bn' ? 'font-bengali' : ''}`}>{rel.name_bn}</span>
+                                                    <span className={`shrink-0 rounded-full border border-orange-200/80 bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-orange-800 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                                        {categoryLabel(rel.category, language)}
+                                                    </span>
+                                                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-orange-600" aria-hidden />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
                             <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
+                                {selectedChartPage ? (
+                                    <div className="sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:no-scrollbar">
+                                        <IdentifyChartPage
+                                            page={selectedChartPage}
+                                            language={language}
+                                            title={selectedItem.name_bn}
+                                            chartId={selectedItem.id}
+                                        />
+                                    </div>
+                                ) : (
                                 <div className="sm:grid sm:h-full sm:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] sm:items-stretch">
                                 <div className="group/modal-img relative flex h-[66dvh] w-full max-h-[66dvh] shrink-0 items-center justify-center bg-white sm:h-[66dvh] sm:max-h-[66dvh] sm:border-r sm:border-slate-200/80">
                                     <ImageSlider
@@ -1111,39 +1331,38 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         onZoomChange={setDetailZoomLevel}
                                         fillFrame
                                         autoAdvance={false}
+                                        emptyLabel={t.noPhoto}
                                     />
                                 </div>
 
                                 <div className="space-y-6 p-6 pb-32 sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:p-8 sm:pb-14 sm:pl-7 sm:pr-8 sm:no-scrollbar">
-                                    <div className="space-y-3 border-b border-slate-200/80 pb-6">
-                                        {selectedItem.approx_price_inr !== '---' && (
-                                            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-1 text-emerald-800 shadow-sm">
-                                                <span className="text-[10px]">₹</span>
-                                                <span className="text-xs font-black tabular-nums">{selectedItem.approx_price_inr}</span>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {selectedItem.approx_price_inr && selectedItem.approx_price_inr !== '---' && (
+                                        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-1 text-emerald-800 shadow-sm">
+                                            <span className="text-[10px]">₹</span>
+                                            <span className="text-xs font-black tabular-nums">{selectedItem.approx_price_inr}</span>
+                                        </div>
+                                    )}
 
-                                    {selectedItem.category !== 'Charts' && selectedItem.function_bn && (
+                                    {selectedItem.function_bn && (
                                         <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
                                             <div className="flex items-center gap-1.5 text-slate-500">
                                                 <InfoIcon className="h-3.5 w-3.5" />
-                                                <span className={`text-[10px] font-bold uppercase tracking-wider ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>{t.aboutLabel}</span>
+                                                <span className={`text-[10px] font-bold ${language === 'bn' ? 'font-bengali' : ''}`}>{t.aboutLabel}</span>
                                             </div>
-                                            <p className="text-[14px] font-semibold leading-relaxed text-slate-700 sm:text-base">
+                                            <p className={`text-[14px] font-semibold leading-relaxed text-slate-700 sm:text-base ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 {selectedItem.function_bn}
                                             </p>
                                         </div>
                                     )}
 
-                                    {selectedItem.category !== 'Charts' && selectedItem.guide_bn && (
+                                    {selectedItem.guide_bn && (
                                         <div className="space-y-2 rounded-2xl border border-amber-100 bg-amber-50/90 p-4 shadow-sm sm:p-5">
-                                            <div className={`flex items-center gap-2 text-[10px] font-black text-orange-700 ${language === 'bn' ? 'font-bengali' : 'uppercase tracking-wider'}`}>
+                                            <div className={`flex items-center gap-2 text-[10px] font-black text-orange-700 ${language === 'bn' ? 'font-bengali' : ''}`}>
                                                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                                                 {t.guideLabel}
                                             </div>
-                                            <p className="text-xs font-bold italic leading-relaxed text-slate-700 sm:text-sm">
-                                                "{selectedItem.guide_bn}"
+                                            <p className={`text-xs font-bold italic leading-relaxed text-slate-700 sm:text-sm ${language === 'bn' ? 'font-bengali not-italic' : ''}`}>
+                                                {selectedItem.guide_bn}
                                             </p>
                                         </div>
                                     )}
@@ -1151,12 +1370,72 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
                                 </div>
                                 </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 )}
         </div>
     );
+
+    const quitSheet = quitConfirmOpen && typeof document !== 'undefined' ? createPortal(
+        <div className="fixed inset-0 z-[12100] flex items-center justify-center p-4 animate-fade-in">
+            <div className="absolute inset-0 bg-slate-900/45" onClick={() => setQuitConfirmOpen(false)} aria-hidden="true" />
+            <div className="relative w-full max-w-sm rounded-3xl border border-slate-200/80 bg-[#fffdf7] px-5 py-5 shadow-2xl">
+                <h2 className={`text-center text-base font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    {t.quitTitle}
+                </h2>
+                <div className="mt-4 flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setQuitConfirmOpen(false)}
+                        className={`min-h-[48px] flex-1 rounded-full border border-slate-200/80 bg-white text-sm font-black text-slate-700 shadow-sm active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                    >
+                        {t.quitStay}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setQuitConfirmOpen(false);
+                            setPracticeOpen(false);
+                        }}
+                        className={`min-h-[48px] flex-1 rounded-full bg-orange-500 text-sm font-black text-white shadow-sm active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
+                    >
+                        {t.quitLeave}
+                    </button>
+                </div>
+            </div>
+        </div>,
+        document.body
+    ) : null;
+
+    const scoreSheet = scoreSheetOpen && practiceScore && typeof document !== 'undefined' ? createPortal(
+        <div className="fixed inset-0 z-[12000] flex items-center justify-center p-4 animate-fade-in">
+            <div className="absolute inset-0 bg-slate-900/45" onClick={() => setScoreSheetOpen(false)} aria-hidden="true" />
+            <div className="relative w-full max-w-xs rounded-3xl border border-slate-200/80 bg-[#fffdf7] px-6 pb-7 pt-5 shadow-2xl">
+                <button
+                    type="button"
+                    onClick={() => setScoreSheetOpen(false)}
+                    className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-slate-400"
+                    aria-label={t.closeAria}
+                >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <p className={`text-center text-xs font-black uppercase tracking-wide text-slate-500 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
+                    {t.scoreAll}
+                </p>
+                <p className="mt-2 text-center text-6xl font-black tabular-nums leading-none text-orange-600">
+                    {practiceScore.lifePercent}%
+                </p>
+                <p className="mt-3 text-center text-lg font-black tabular-nums text-slate-900">
+                    {practiceScore.lifeCorrect}/{practiceScore.lifeTotal}
+                </p>
+            </div>
+        </div>,
+        document.body
+    ) : null;
 
     if (embedded) {
         return (
@@ -1165,6 +1444,8 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
                     {libraryContent}
                 </div>
+                {scoreSheet}
+                {quitSheet}
             </div>
         );
     }
@@ -1175,6 +1456,8 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 {searchAndCategories}
             </div>
             {libraryContent}
+            {scoreSheet}
+            {quitSheet}
         </div>
     );
 }
