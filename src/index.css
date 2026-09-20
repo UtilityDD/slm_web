@@ -4445,6 +4445,7 @@ body,
   }
 
   .home-3d-board {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
@@ -12146,4 +12147,431 @@ html.native-android .lesson-reader-root {
 }
 .sponsor-strip-reduce .sponsor-strip-headline {
   transition: none;
+}
+
+/* Identify gift — cross of top 4 Home tiles; zoom → lid → counter → quiz */
+.identify-gift-x {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 50%;
+  width: 4.6rem;
+  height: 4.6rem;
+  margin: -2.3rem 0 0 -2.3rem;
+  pointer-events: none;
+}
+
+.identify-gift-x__halo {
+  position: absolute;
+  inset: -0.35rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 247, 237, 0.98) 0%, rgba(255, 237, 213, 0.92) 42%, rgba(255, 237, 213, 0) 72%);
+  box-shadow:
+    0 0 0 1px rgba(251, 146, 60, 0.35),
+    0 10px 22px rgba(194, 65, 12, 0.18);
+  pointer-events: none;
+}
+
+.identify-gift-x__plate {
+  position: absolute;
+  left: 50%;
+  bottom: 0.15rem;
+  width: 3.1rem;
+  height: 0.7rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(124, 45, 18, 0.22) 0%, rgba(124, 45, 18, 0) 72%);
+  pointer-events: none;
+}
+
+.identify-gift-x__hit {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.55rem;
+  height: 3.55rem;
+  margin: -1.9rem 0 0 -1.775rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: identify-gift-jerk 2.4s infinite;
+  z-index: 2;
+}
+
+.identify-gift-x__box {
+  position: absolute;
+  inset: 0;
+  display: block;
+  filter: drop-shadow(0 6px 10px rgba(154, 52, 18, 0.34));
+}
+
+.identify-gift-x__body {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 10%;
+  height: 48%;
+  border-radius: 0.28rem 0.28rem 0.38rem 0.38rem;
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 72%, #c2410c 100%);
+  overflow: hidden;
+}
+
+.identify-gift-x__ribbon-v {
+  position: absolute;
+  inset: 0 auto 0 50%;
+  width: 18%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+}
+
+.identify-gift-x__ribbon-h {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 38%;
+  height: 18%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b 50%, #fbbf24);
+}
+
+.identify-gift-x__lid {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 52%;
+  height: 26%;
+  transform-origin: 8% 100%;
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1.15);
+  z-index: 3;
+}
+
+.identify-gift-x__lid-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.26rem 0.26rem 0.1rem 0.1rem;
+  background: linear-gradient(180deg, #fdba74, #f97316);
+  box-shadow: 0 2px 0 rgba(154, 52, 18, 0.22);
+}
+
+.identify-gift-x__lid-face::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 18%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+}
+
+.identify-gift-x__bow {
+  position: absolute;
+  left: 50%;
+  top: -0.38rem;
+  width: 0.95rem;
+  height: 0.55rem;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+.identify-gift-x__bow::before,
+.identify-gift-x__bow::after {
+  content: '';
+  position: absolute;
+  top: 0.06rem;
+  width: 0.48rem;
+  height: 0.38rem;
+  border-radius: 50% 50% 40% 40%;
+  background: #f59e0b;
+}
+
+.identify-gift-x__bow::before {
+  left: 0;
+  transform: rotate(-28deg);
+}
+
+.identify-gift-x__bow::after {
+  right: 0;
+  transform: rotate(28deg);
+}
+
+.identify-gift-x__counter {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  z-index: 5;
+  transform: translate(-50%, 0);
+  min-width: 4.5ch;
+  text-align: center;
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #9a3412;
+  text-shadow: 0 1px 0 #fff7ed;
+  opacity: 0;
+}
+
+.identify-gift-x__dismiss {
+  pointer-events: auto;
+  position: absolute;
+  top: 0.05rem;
+  right: 0.05rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  z-index: 7;
+}
+
+.identify-gift-x__dismiss::before,
+.identify-gift-x__dismiss::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.42rem;
+  height: 1.5px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+.identify-gift-x__dismiss::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.identify-gift-x__dismiss::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.identify-gift-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.identify-gift-stage__shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 25, 23, 0.45);
+  animation: identify-gift-shade-in 0.28s ease-out both;
+}
+
+.identify-gift-stage__focus {
+  position: relative;
+  z-index: 1;
+  width: 9.5rem;
+  height: 9.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: identify-gift-zoom-in 0.38s cubic-bezier(0.2, 1.15, 0.3, 1) both;
+}
+
+.identify-gift-stage__focus .identify-gift-x__box {
+  position: relative;
+  width: 7.25rem;
+  height: 7.25rem;
+  inset: auto;
+}
+
+.identify-gift-stage--lid .identify-gift-x__lid,
+.identify-gift-stage--count .identify-gift-x__lid {
+  transform: rotate(-62deg) translate(-6px, -14px);
+}
+
+.identify-gift-stage--count .identify-gift-x__counter {
+  top: 0.15rem;
+  min-width: 5.5ch;
+  font-size: 3rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #ea580c;
+  text-shadow:
+    0 2px 0 #fff7ed,
+    0 8px 24px rgba(234, 88, 12, 0.35);
+  opacity: 1;
+  transform: translate(-50%, 0);
+  animation: none;
+}
+
+.identify-gift-stage__hint {
+  margin-top: 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff7ed;
+}
+
+@keyframes identify-gift-jerk {
+  0%, 82%, 100% { transform: translate(0, 0) rotate(0deg); }
+  84% { transform: translate(2px, -3px) rotate(-4deg); }
+  88% { transform: translate(-3px, 1px) rotate(5deg); }
+  92% { transform: translate(2px, 2px) rotate(-2deg); }
+  96% { transform: translate(0, -2px) rotate(1deg); }
+}
+
+@keyframes identify-gift-shade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes identify-gift-zoom-in {
+  from { transform: scale(0.42); opacity: 0.7; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Identify header gift — compact twin of Home surprise gift */
+.identify-header-gift {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 38%, #fff7ed 0%, #ffedd5 55%, #fed7aa 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 3px 10px rgba(194, 65, 12, 0.16);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.identify-header-gift:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.identify-header-gift--off {
+  border-color: rgba(168, 162, 158, 0.45);
+  background: radial-gradient(circle at 50% 38%, #fafaf9 0%, #e7e5e4 100%);
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.identify-header-gift__box {
+  position: relative;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(154, 52, 18, 0.28));
+}
+
+.identify-header-gift__body {
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 8%;
+  height: 48%;
+  border-radius: 0.16rem 0.16rem 0.22rem 0.22rem;
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 72%, #c2410c 100%);
+  overflow: hidden;
+}
+
+.identify-header-gift__ribbon-v {
+  position: absolute;
+  inset: 0 auto 0 50%;
+  width: 22%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+}
+
+.identify-header-gift__ribbon-h {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  height: 22%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b 50%, #fbbf24);
+}
+
+.identify-header-gift__lid {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 50%;
+  height: 34%;
+  z-index: 1;
+}
+
+.identify-header-gift__lid-face {
+  position: absolute;
+  inset: 28% 0 0;
+  border-radius: 0.12rem 0.12rem 0.06rem 0.06rem;
+  background: linear-gradient(180deg, #fdba74, #f97316);
+}
+
+.identify-header-gift__lid-face::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 22%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+}
+
+.identify-header-gift__bow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 0.42rem;
+  height: 0.42rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(circle at 40% 35%, #fde68a, #f59e0b 70%);
+  z-index: 2;
+}
+
+.identify-header-gift__bow::before,
+.identify-header-gift__bow::after {
+  content: '';
+  position: absolute;
+  top: 18%;
+  width: 0.38rem;
+  height: 0.28rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fde68a, #f59e0b 75%);
+}
+
+.identify-header-gift__bow::before {
+  right: 55%;
+  transform: rotate(-28deg);
+}
+
+.identify-header-gift__bow::after {
+  left: 55%;
+  transform: rotate(28deg);
+}
+
+.identify-header-gift--off .identify-header-gift__body,
+.identify-header-gift--off .identify-header-gift__lid-face {
+  background: linear-gradient(180deg, #d6d3d1, #a8a29e);
+}
+
+.identify-header-gift--off .identify-header-gift__ribbon-v,
+.identify-header-gift--off .identify-header-gift__ribbon-h,
+.identify-header-gift--off .identify-header-gift__lid-face::after,
+.identify-header-gift--off .identify-header-gift__bow,
+.identify-header-gift--off .identify-header-gift__bow::before,
+.identify-header-gift--off .identify-header-gift__bow::after {
+  background: #e7e5e4;
+}
+
+.identify-header-gift--off .identify-header-gift__box {
+  filter: grayscale(0.35);
 }

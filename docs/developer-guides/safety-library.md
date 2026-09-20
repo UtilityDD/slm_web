@@ -16,9 +16,13 @@
 | `src/utils/safetyLibraryImageUrl.js` | Resolves `/assets/safety/...` for web and native. |
 | `src/utils/safetyLibraryRecents.js` | Last 8 opened item ids in `localStorage` (`slm_identify_recents_v1`). |
 | `src/utils/safetyLibraryPractice.js` | Practice pool (all except Charts); mixed **name** / **grid** / **clue** questions; same type cannot run 3 times in a row; one cumulative count+% in `slm_identify_practice_v1`. |
-| `src/components/safety/IdentifyPractice.jsx` | Practice overlay on Identify (no type tabs; randomizes নাম কী? / ছবি বাছুন / নিচের বর্ণনা…). |
+| `src/components/safety/IdentifyPractice.jsx` | Practice **or** real overlay (no type tabs; randomizes নাম কী? / ছবি বাছুন / নিচের বর্ণনা…). |
 | `src/components/safety/IdentifyGridPractice.jsx` | 2×2 photo pick (name ask or description clue); right/wrong flash only. |
+| `src/utils/identifyRealScore.js` | Real-mode timers, daily gate helpers, submit/status RPCs. |
+| `src/components/IdentifyScoreGiftFab.jsx` | Home surprise gift → launches real Identify. |
 | `src/SmartLinemanUI.jsx` | Lazy-loads `SafetyLibrary` when `currentView === 'safety-library'`. |
+
+**Real score / gift / daily limit:** see **[Identify real score](./identify-real-score.md)** (do not duplicate that guide here).
 
 Identify does **not** fetch the published Google Sheet at runtime. Hourly visual quiz still uses its own sheet tab.
 
@@ -49,8 +53,8 @@ Identify does **not** fetch the published Google Sheet at runtime. Hourly visual
 
 - **Search** is always on (not behind a mobile icon). It matches `name_bn`, `function_bn`, `guide_bn`, Bangla/English category labels, and **chart page body text** (tables, steps, tips).
 - **Chips** use Bangla labels only (no icons), with item counts: সব, পিপিই, টুলস, ইনসুলেটর, চার্ট, এবি কেবল সরঞ্জাম, অন্যান্য (only categories present in the catalog). Default chip stays **পিপিই**.
-- **Video guides** is not always in the Identify header. After about a minute of browsing (practice time does not count), an orange **ভিডিও** pill fades in under **কতটা চেনেন?** (absolute, so the header does not shift), stays ~16s, then fades out. It stays available on More. Do not put the orange video banner back on this page.
-- **কতটা চেনেন?** is an orange pill in the title row; the **?** wiggles (no button breathe/scale pulse). While practice is open it is replaced by an **X** on the right. The X asks **বন্ধ করবেন?** in a centered body portal (not a bottom sheet). There are **no type tabs**. Each question is randomly **নাম কী?** (photo → name), **ছবি বাছুন** (name → photo), or a clue round (**নিচের বর্ণনা কোন পিপিই/টুল/ইনসুলেটরকে চেনা যায়?** — generic **আইটেম** for other categories; clue from `function_bn` / `guide_bn` → photo), from all catalog items except Charts. Clue rounds only use items with usable descriptive text. The same type never three times in a row. Play continues until they confirm quit. Both auto-advance with ঠিক/ভুল only. Score is one running total in `localStorage` (`slm_identify_practice_v1`) — count + percent. The header `%` badge updates after every answer; tap it for a clean all-time card (bold % + count only). The **4-grid** board is sized in JS to `min(fitWidth, fitHeight)` so tiles stay on-screen with no horizontal overflow.
+- **Video guides** is not always in the Identify header. After about a minute of browsing (practice time does not count), an orange **ভিডিও** pill fades in under the header gift (absolute, so the header does not shift), stays ~16s, then fades out. It stays available on More. Do not put the orange video banner back on this page.
+- **Header:** **Practice** pill always opens local practice. Real score is a **Home surprise gift** only (personal IST reward window) — see [identify-real-score.md](./identify-real-score.md). While practice/real is open the pill is replaced by an **X**. The X asks **বন্ধ করবেন?** in a centered body portal (not a bottom sheet). There are **no type tabs**. Each question is randomly **নাম কী?** (photo → name), **ছবি বাছুন** (name → photo), or a clue round (**নিচের বর্ণনা…** — clue from `function_bn` / `guide_bn` → photo), from all catalog items except Charts. Clue rounds only use items with usable descriptive text. The same type never three times in a row. **Practice** continues until quit; score is one running total in `localStorage` (`slm_identify_practice_v1`) — count + percent. The header `%` badge tracks practice; tap it for practice + DB real score. The **4-grid** board is sized in JS to `min(fitWidth, fitHeight)` so tiles stay on-screen with no horizontal overflow.
 - **Grid cards** are square photo + Bangla name in a **2-column** mobile grid (3 on `sm`, 4 on `lg`) — no English category badge. Cards use `min-w-0` / `overflow-hidden` so they cannot push past the viewport.
 - **Recents** (`এইমাত্র`) show when search is empty: last 8 opened ids, local only. Compact horizontal strip in a light slate panel so it reads separate from the main catalog grid.
 - There is **no** Identify → আমার পিপিই shortcut on this page.

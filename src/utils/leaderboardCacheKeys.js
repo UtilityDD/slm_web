@@ -1,5 +1,6 @@
 import { cacheHelper } from './cacheHelper';
 import { HOF_GALLERY_CACHE_KEY } from './hallOfFameSnapshots';
+import { ANNUAL_CYCLE } from './dailyActivityService';
 
 /**
  * Persistent leaderboard caches use slm_cache_* via requestManager/cacheHelper.
@@ -10,6 +11,7 @@ export function invalidateLeaderboardCaches(userId) {
     cacheHelper.clear('leaderboard_top_10_all_time_rdg');
     cacheHelper.clear('leaderboard_full_all_time');
     cacheHelper.clear('leaderboard_full_all_time_rdg');
+    cacheHelper.clear(`annual_grand_trophy_leaderboard_${ANNUAL_CYCLE.start}`);
     cacheHelper.clear('hall_of_fame_gallery_v3');
     cacheHelper.clear('hall_of_fame_gallery_v4');
     cacheHelper.clear('hall_of_fame_gallery_v5');

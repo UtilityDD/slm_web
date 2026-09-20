@@ -8,7 +8,7 @@ import SafetyLibrary from './SafetyLibrary';
  * Shell for one safety view at a time: My PPE (`my_ppe`) or Identify (`safety-library`).
  * Each is its own page — no shared top tabs.
  */
-export default function SafetyTabsPage({ activeTab, setCurrentView, language, user, userProfile }) {
+export default function SafetyTabsPage({ activeTab, setCurrentView, language, user, userProfile, refreshProfile = null }) {
     const isPpe = activeTab === 'my_ppe';
 
     useEffect(() => {
@@ -51,6 +51,9 @@ export default function SafetyTabsPage({ activeTab, setCurrentView, language, us
                     <SafetyLibrary
                         language={language}
                         setCurrentView={setCurrentView}
+                        user={user}
+                        userProfile={userProfile}
+                        refreshProfile={refreshProfile}
                         embedded
                     />
                 )}

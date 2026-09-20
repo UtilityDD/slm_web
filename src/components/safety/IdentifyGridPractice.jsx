@@ -29,6 +29,13 @@ export default function IdentifyGridPractice({
     onAdvance,
     /** When set, show description clue instead of the item name. */
     clueText = '',
+    persistLocalScore = true,
+    /** Real-mode: parent owns advance; called once with correct boolean. */
+    onAnswered,
+    headerExtra = null,
+    hideDefaultScore = false,
+    /** When controlled by parent (timeout), lock tiles. */
+    externalAnswered,
 }) {
     const t = gridCopy(language);
     const bn = language === 'bn';
@@ -37,7 +44,7 @@ export default function IdentifyGridPractice({
     const [boardPx, setBoardPx] = useState(0);
     const fitRef = useRef(null);
     const advanceTimer = useRef(0);
-    const answered = Boolean(pickedId);
+    const answered = Boolean(pickedId) || Boolean(externalAnswered);
     const liveCorrect = score?.lifeCorrect ?? 0;
     const liveTotal = score?.lifeTotal ?? 0;
     const livePercent = score?.lifePercent ?? 0;
@@ -78,7 +85,13 @@ export default function IdentifyGridPractice({
         const ok = choiceId === question.itemId;
         setPickedId(choiceId);
         setFlash(ok ? 'right' : 'wrong');
-        onScoreSaved?.(recordIdentifyPracticeAnswer(ok));
+        if (persistLocalScore) {
+            onScoreSaved?.(recordIdentifyPracticeAnswer(ok));
+        }
+        if (typeof onAnswered === 'function') {
+            onAnswered(ok);
+            return;
+        }
         window.clearTimeout(advanceTimer.current);
         advanceTimer.current = window.setTimeout(() => onAdvance?.(question.itemId), 900);
     };
@@ -88,11 +101,14 @@ export default function IdentifyGridPractice({
     return (
         <div className="identify-grid-quiz mx-auto flex h-full min-h-0 w-full max-w-lg min-w-0 flex-col overflow-hidden px-2 pt-1 sm:px-3">
             <div className="mb-1.5 shrink-0">
-                <div className="mb-1 flex justify-end">
-                    <p className={`identify-quiz-score rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-black tabular-nums text-white shadow-sm ${bn ? 'font-bengali' : ''}`}>
-                        {livePercent}% · {liveCorrect}/{liveTotal}
-                    </p>
-                </div>
+                {headerExtra}
+                {!hideDefaultScore ? (
+                    <div className="mb-1 flex justify-end">
+                        <p className={`identify-quiz-score rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-black tabular-nums text-white shadow-sm ${bn ? 'font-bengali' : ''}`}>
+                            {livePercent}% · {liveCorrect}/{liveTotal}
+                        </p>
+                    </div>
+                ) : null}
                 {isClue ? (
                     <div className="space-y-1.5">
                         <p className={`text-xs font-bold leading-snug text-slate-800 sm:text-sm ${bn ? 'font-bengali' : ''}`}>{clueAsk}</p>

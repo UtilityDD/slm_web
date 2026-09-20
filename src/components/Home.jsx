@@ -22,6 +22,9 @@ import {
   shouldShowSleepNudge,
 } from '../utils/hourlyNightWindow';
 import HomePrimaryActionCards from './HomePrimaryActionCards';
+import IdentifyScoreGiftFab from './IdentifyScoreGiftFab';
+import { canStartIdentifyReal, fetchIdentifyScoreStatus } from '../utils/identifyRealScore';
+import { isIdentifyGiftInRewardWindow } from '../utils/identifyGiftSchedule';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
 import LanguageSwitch from './LanguageSwitch';
@@ -111,6 +114,8 @@ export default function Home({
   const bn = language === 'bn';
   const isAdmin = userProfile?.role === 'admin';
   const isSafetyMitra = userProfile?.role === 'safety mitra';
+  /** Admin only: always show Home gift for testing (0 points). Safety Mitra uses normal window. */
+  const identifyGiftStaffPreview = isAdmin;
   const canViewResponses = canViewContactResponses(userProfile);
   const [loading, setLoading] = useState(!userProfile && !!user);
   const [homeTip, setHomeTip] = useState(null);
@@ -124,7 +129,51 @@ export default function Home({
   const [learningTopic, setLearningTopic] = useState(null);
   const [contactPending, setContactPending] = useState(0);
   const [contactPendingReady, setContactPendingReady] = useState(false);
+  /** Home gift: can_play today AND inside personal reward window (admin always in-window). */
+  const [identifyGiftEligible, setIdentifyGiftEligible] = useState(false);
+  const [identifyGiftInWindow, setIdentifyGiftInWindow] = useState(false);
   const avatarSrc = useCachedAvatar(user?.id, userProfile?.avatar_url, !!userProfile);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id || isGuestUser(userProfile)) {
+      setIdentifyGiftEligible(false);
+      return undefined;
+    }
+    if (identifyGiftStaffPreview) {
+      setIdentifyGiftEligible(true);
+      return undefined;
+    }
+    const refreshGate = async () => {
+      // Cache-first: avoid a Home status RPC when session already knows today's gate.
+      const status = await fetchIdentifyScoreStatus({ force: false, userId: user.id });
+      if (cancelled) return;
+      const gate = canStartIdentifyReal({ user, userProfile, status });
+      setIdentifyGiftEligible(Boolean(gate.ok));
+    };
+    void refreshGate();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, userProfile, identifyGiftStaffPreview]);
+
+  useEffect(() => {
+    if (!user?.id || isGuestUser(userProfile)) {
+      setIdentifyGiftInWindow(false);
+      return undefined;
+    }
+    const tick = () => {
+      setIdentifyGiftInWindow(
+        isIdentifyGiftInRewardWindow({
+          userId: user.id,
+          forceAdmin: identifyGiftStaffPreview,
+        })
+      );
+    };
+    tick();
+    const timer = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(timer);
+  }, [user?.id, userProfile, identifyGiftStaffPreview]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -682,6 +731,15 @@ export default function Home({
               </button>
             ))}
           </div>
+          {user?.id && !isGuestUser(userProfile) ? (
+            <IdentifyScoreGiftFab
+              language={language}
+              alwaysShow={identifyGiftStaffPreview}
+              eligible={identifyGiftStaffPreview || (identifyGiftEligible && identifyGiftInWindow)}
+              visible
+              onOpen={() => go('safety-library')}
+            />
+          ) : null}
         </div>
 
         {isAdmin || isSafetyMitra ? (

@@ -8,6 +8,13 @@ import {
 } from '../../utils/safetyLibraryImageUrl';
 import { pushIdentifyRecent, readIdentifyRecents } from '../../utils/safetyLibraryRecents';
 import { readIdentifyPracticeScore } from '../../utils/safetyLibraryPractice';
+import {
+    fetchIdentifyScoreStatus,
+    canStartIdentifyReal,
+    isIdentifyAdmin,
+} from '../../utils/identifyRealScore';
+import { consumeIdentifyRealLaunch } from '../../utils/identifyGiftLaunch';
+import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { getIdentifyChartPage, hasIdentifyChartPage } from '../../data/identifyCharts';
 import IdentifyPractice from './IdentifyPractice';
 import IdentifyChartPage from './IdentifyChartPage';
@@ -692,7 +699,7 @@ const GridImage = ({ images, alt, language }) => {
     );
 };
 
-export default function SafetyLibrary({ language, setCurrentView, embedded = false }) {
+export default function SafetyLibrary({ language, setCurrentView, embedded = false, user = null, userProfile = null, refreshProfile = null }) {
     const [items, setItems] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -703,7 +710,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const [categories, setCategories] = useState([]);
     const [recentIds, setRecentIds] = useState(() => readIdentifyRecents());
     const [practiceOpen, setPracticeOpen] = useState(false);
+    const [practiceScoringMode, setPracticeScoringMode] = useState('practice');
+    /** Practice opened from real-score rules → quit returns to rules info. */
+    const [practiceFromRules, setPracticeFromRules] = useState(false);
+    const [modeGateOpen, setModeGateOpen] = useState(false);
     const [practiceScore, setPracticeScore] = useState(() => readIdentifyPracticeScore());
+    const [identifyStatus, setIdentifyStatus] = useState(null);
+    const [modeGateMessage, setModeGateMessage] = useState('');
     const [scoreSheetOpen, setScoreSheetOpen] = useState(false);
     const [quitConfirmOpen, setQuitConfirmOpen] = useState(false);
     const [videoNudge, setVideoNudge] = useState('');
@@ -718,6 +731,31 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     useEffect(() => {
         setDetailZoomLevel(1);
     }, [selectedItem?.id]);
+
+    /** Home gift FAB: open straight into real mode (UI launch flag). */
+    useEffect(() => {
+        if (!consumeIdentifyRealLaunch()) return;
+        setPracticeScoringMode('real');
+        setPracticeFromRules(false);
+        setPracticeOpen(true);
+        setModeGateOpen(false);
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        if (!user?.id) {
+            setIdentifyStatus(null);
+            return undefined;
+        }
+        (async () => {
+            // Cache-first; only hits network when session has no today’s status.
+            const status = await fetchIdentifyScoreStatus({ force: false, userId: user.id });
+            if (!cancelled) setIdentifyStatus(status);
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [user?.id]);
 
     useEffect(() => {
         if (
@@ -814,6 +852,9 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             practiceCta: 'Try',
             practiceBadgeAria: 'Familiarity',
             scoreAll: 'All time',
+            scorePractice: 'Practice',
+            scoreReal: 'Real score',
+            scoreRealEmpty: 'Not set yet',
             relatedChartLabel: 'Chart',
             allCategory: 'All',
             retry: 'Try again',
@@ -828,6 +869,17 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             quitTitle: 'Leave practice?',
             quitStay: 'Stay',
             quitLeave: 'Leave',
+            modeGateTitle: 'How well do you know?',
+            modePractice: 'Practice',
+            modePracticeHint: 'Local score only — no leaderboard',
+            modeReal: 'Real score',
+            modeRealHint: 'Endless · clue 8s · others 5s · 1 try / day',
+            modeRealAdminHint: 'Admin preview — play anytime',
+            modeRealPlayed: 'Already played today — come back tomorrow',
+            modeRealLogin: 'Sign in to play real score',
+            modeRealGuest: 'Guest accounts cannot save real score',
+            modeCancel: 'Cancel',
+            identifyScoreLabel: 'Identify score',
         },
         bn: {
             title: 'পরিচিতি',
@@ -841,6 +893,9 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             practiceCta: 'কতটা চেনেন?',
             practiceBadgeAria: 'চেনা',
             scoreAll: 'মোট',
+            scorePractice: 'প্র্যাকটিস',
+            scoreReal: 'আসল স্কোর',
+            scoreRealEmpty: 'এখনো নেই',
             relatedChartLabel: 'চার্ট',
             allCategory: 'সব',
             retry: 'আবার',
@@ -855,8 +910,22 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             quitTitle: 'বন্ধ করবেন?',
             quitStay: 'থাকুন',
             quitLeave: 'বন্ধ করুন',
+            modeGateTitle: 'কতটা চেনেন?',
+            modePractice: 'প্র্যাকটিস',
+            modePracticeHint: 'শুধু স্থানীয় স্কোর — লিডারবোর্ডে নয়',
+            modeReal: 'আসল স্কোর',
+            modeRealHint: 'অন্তহীন · বর্ণনা ৮ সেকেন্ড · অন্যান্য ৫ · দিনে ১ বার',
+            modeRealAdminHint: 'অ্যাডমিন প্রিভিউ — যেকোনো সময় খেলুন',
+            modeRealPlayed: 'আজকের সুযোগ শেষ — কাল আসুন',
+            modeRealLogin: 'আসল স্কোরের জন্য লগইন করুন',
+            modeRealGuest: 'গেস্ট অ্যাকাউন্টে আসল স্কোর জমা হয় না',
+            modeCancel: 'বাতিল',
+            identifyScoreLabel: 'পরিচিতি স্কোর',
         }
     }[language];
+
+    const isAdmin = isIdentifyAdmin(userProfile);
+    const savedIdentifyScore = identifyStatus?.score;
 
     const closeDetailModal = useCallback(() => {
         setModalBrowseStack([]);
@@ -961,6 +1030,31 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
     const showRecents = !loading && !searchQuery.trim() && recentItems.length > 0;
 
+    const startPracticeMode = useCallback(async (mode) => {
+        setModeGateMessage('');
+        if (mode === 'real') {
+            let status = identifyStatus;
+            if (user?.id) {
+                status = await fetchIdentifyScoreStatus({ userId: user.id });
+                setIdentifyStatus(status);
+            }
+            const gate = canStartIdentifyReal({ user, userProfile, status });
+            if (!gate.ok) {
+                const msg = gate.reason === 'login'
+                    ? t.modeRealLogin
+                    : gate.reason === 'guest'
+                        ? t.modeRealGuest
+                        : t.modeRealPlayed;
+                setModeGateMessage(msg);
+                return;
+            }
+        }
+        setPracticeScoringMode(mode);
+        setPracticeFromRules(false);
+        setModeGateOpen(false);
+        setPracticeOpen(true);
+    }, [identifyStatus, user, userProfile, t.modeRealLogin, t.modeRealGuest, t.modeRealPlayed]);
+
     const searchAndCategories = (
         <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b border-slate-200/80' : ''}`}>
             <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8 py-3' : 'py-4 px-4 sm:px-8'}`}>
@@ -973,17 +1067,24 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         >
                             {t.title}
                         </h1>
-                        {practiceScore ? (
+                        {(practiceScore || user?.id) ? (
                             <button
                                 type="button"
-                                onClick={() => setScoreSheetOpen(true)}
+                                onClick={() => {
+                                    setScoreSheetOpen(true);
+                                    if (user?.id) {
+                                        void fetchIdentifyScoreStatus({ force: true, userId: user.id }).then((status) => {
+                                            setIdentifyStatus(status);
+                                        });
+                                    }
+                                }}
                                 className={`identify-familiarity-badge shrink-0 rounded-full bg-orange-500 px-2 py-0.5 text-[11px] font-black tabular-nums text-white shadow-sm sm:text-xs ${
                                     language === 'bn' ? 'font-bengali' : ''
                                 }`}
-                                title={`${t.practiceBadgeAria} ${practiceScore.lifePercent}%`}
-                                aria-label={`${t.practiceBadgeAria} ${practiceScore.lifePercent}%`}
+                                title={t.scoreAll}
+                                aria-label={t.scoreAll}
                             >
-                                {practiceScore.lifePercent}%
+                                {practiceScore ? `${practiceScore.lifePercent}%` : (savedIdentifyScore != null ? savedIdentifyScore : '—')}
                             </button>
                         ) : null}
                     </div>
@@ -1000,17 +1101,19 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 </svg>
                             </button>
                         ) : (
-                            <div className="relative shrink-0">
+                            <div className="relative flex shrink-0 items-center gap-2">
                                 {!loading ? (
                                     <button
                                         type="button"
-                                        onClick={() => setPracticeOpen(true)}
-                                        className={`identify-try-btn inline-flex items-center gap-1 rounded-full bg-orange-500 px-3 py-1.5 text-xs font-black text-white shadow-sm sm:text-sm ${
+                                        onClick={() => {
+                                            void startPracticeMode('practice');
+                                        }}
+                                        className={`rounded-full border border-slate-200/80 bg-white px-2.5 py-1.5 text-[11px] font-black text-slate-800 shadow-sm transition-all hover:bg-slate-50 active:scale-95 sm:px-3 sm:text-xs ${
                                             language === 'bn' ? 'font-bengali' : ''
                                         }`}
+                                        aria-label={t.practiceCta}
                                     >
-                                        <span>{t.practiceCta.replace(/\?$/, '')}</span>
-                                        <span className="identify-try-mark" aria-hidden="true">?</span>
+                                        {t.practiceCta}
                                     </button>
                                 ) : null}
                                 {typeof setCurrentView === 'function' && videoNudge ? (
@@ -1105,12 +1208,43 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 {practiceOpen ? (
                     <div className="flex h-full min-h-0 w-full flex-col">
                         <IdentifyPractice
+                            key={practiceScoringMode}
                             language={language}
                             items={items}
                             score={practiceScore}
-                            onClose={() => setQuitConfirmOpen(true)}
-                            onOpenItem={openItemDetail}
+                            scoringMode={practiceScoringMode}
+                            canReplayReal={isAdmin}
+                            userId={user?.id || null}
+                            onRequestPracticeMode={() => {
+                                setPracticeFromRules(true);
+                                setPracticeScoringMode('practice');
+                            }}
                             onScoreSaved={setPracticeScore}
+                            onIdentifySubmitResult={(result) => {
+                                if (result?.ok) {
+                                    setIdentifyStatus((prev) => ({
+                                        ...(prev || {}),
+                                        ok: true,
+                                        score: result.score,
+                                        asked: result.asked,
+                                        mistakes: result.mistakes,
+                                        played_on: result.played_on,
+                                        played_today: true,
+                                        can_play: Boolean(result.preview || isAdmin),
+                                        is_admin: Boolean(result.preview || isAdmin),
+                                        points_awarded: result.points_awarded ?? 0,
+                                    }));
+                                    if (
+                                        typeof refreshProfile === 'function'
+                                        && user
+                                        && !result.preview
+                                        && Number(result.points_awarded) > 0
+                                    ) {
+                                        invalidateLeaderboardCaches(user.id);
+                                        void refreshProfile(user, true);
+                                    }
+                                }
+                            }}
                         />
                     </div>
                 ) : null}
@@ -1382,7 +1516,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         type="button"
                         onClick={() => {
                             setQuitConfirmOpen(false);
+                            if (practiceFromRules && practiceScoringMode === 'practice') {
+                                setPracticeFromRules(false);
+                                setPracticeScoringMode('real');
+                                return;
+                            }
+                            setPracticeFromRules(false);
                             setPracticeOpen(false);
+                            setPracticeScoringMode('practice');
                         }}
                         className={`min-h-[48px] flex-1 rounded-full bg-orange-500 text-sm font-black text-white shadow-sm active:scale-[0.98] ${language === 'bn' ? 'font-bengali' : ''}`}
                     >
@@ -1394,10 +1535,61 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         document.body
     ) : null;
 
-    const scoreSheet = scoreSheetOpen && practiceScore && typeof document !== 'undefined' ? createPortal(
+    const modeGateSheet = modeGateOpen && typeof document !== 'undefined' ? createPortal(
+        <div className="fixed inset-0 z-[12100] flex items-center justify-center p-4 animate-fade-in">
+            <div className="absolute inset-0 bg-slate-900/45" onClick={() => { setModeGateOpen(false); setModeGateMessage(''); }} aria-hidden="true" />
+            <div className="relative w-full max-w-sm rounded-3xl border border-slate-200/80 bg-[#fffdf7] px-5 py-5 shadow-2xl">
+                <h2 className={`text-center text-base font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                    {t.modeGateTitle}
+                </h2>
+                {savedIdentifyScore != null ? (
+                    <p className={`mt-2 text-center text-xs font-bold tabular-nums text-orange-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {t.identifyScoreLabel}: {savedIdentifyScore}
+                    </p>
+                ) : null}
+                <div className="mt-4 flex flex-col gap-2.5">
+                    <button
+                        type="button"
+                        onClick={() => startPracticeMode('practice')}
+                        className={`rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-left shadow-sm active:scale-[0.99] ${language === 'bn' ? 'font-bengali' : ''}`}
+                    >
+                        <span className="block text-sm font-black text-slate-900">{t.modePractice}</span>
+                        <span className="mt-0.5 block text-[11px] font-semibold leading-snug text-slate-500">{t.modePracticeHint}</span>
+                    </button>
+                    {isAdmin ? (
+                        <button
+                            type="button"
+                            onClick={() => startPracticeMode('real')}
+                            className={`rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-left shadow-sm active:scale-[0.99] ${language === 'bn' ? 'font-bengali' : ''}`}
+                        >
+                            <span className="block text-sm font-black text-orange-700">{t.modeReal}</span>
+                            <span className="mt-0.5 block text-[11px] font-semibold leading-snug text-orange-700/70">
+                                {t.modeRealAdminHint}
+                            </span>
+                        </button>
+                    ) : null}
+                    {modeGateMessage ? (
+                        <p className={`text-center text-[11px] font-bold text-rose-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {modeGateMessage}
+                        </p>
+                    ) : null}
+                    <button
+                        type="button"
+                        onClick={() => { setModeGateOpen(false); setModeGateMessage(''); }}
+                        className={`mt-1 min-h-[44px] rounded-full border border-slate-200/80 bg-white text-sm font-bold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}
+                    >
+                        {t.modeCancel}
+                    </button>
+                </div>
+            </div>
+        </div>,
+        document.body
+    ) : null;
+
+    const scoreSheet = scoreSheetOpen && typeof document !== 'undefined' ? createPortal(
         <div className="fixed inset-0 z-[12000] flex items-center justify-center p-4 animate-fade-in">
             <div className="absolute inset-0 bg-slate-900/45" onClick={() => setScoreSheetOpen(false)} aria-hidden="true" />
-            <div className="relative w-full max-w-xs rounded-3xl border border-slate-200/80 bg-[#fffdf7] px-6 pb-7 pt-5 shadow-2xl">
+            <div className="relative w-full max-w-xs rounded-3xl border border-slate-200/80 bg-[#fffdf7] px-5 pb-6 pt-5 shadow-2xl">
                 <button
                     type="button"
                     onClick={() => setScoreSheetOpen(false)}
@@ -1411,12 +1603,41 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 <p className={`text-center text-xs font-black uppercase tracking-wide text-slate-500 ${language === 'bn' ? 'font-bengali normal-case tracking-normal' : ''}`}>
                     {t.scoreAll}
                 </p>
-                <p className="mt-2 text-center text-6xl font-black tabular-nums leading-none text-orange-600">
-                    {practiceScore.lifePercent}%
-                </p>
-                <p className="mt-3 text-center text-lg font-black tabular-nums text-slate-900">
-                    {practiceScore.lifeCorrect}/{practiceScore.lifeTotal}
-                </p>
+
+                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white px-4 py-4">
+                    <p className={`text-center text-[11px] font-black text-slate-500 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {t.scorePractice}
+                    </p>
+                    {practiceScore ? (
+                        <>
+                            <p className="mt-1.5 text-center text-4xl font-black tabular-nums leading-none text-orange-600">
+                                {practiceScore.lifePercent}%
+                            </p>
+                            <p className="mt-2 text-center text-base font-black tabular-nums text-slate-900">
+                                {practiceScore.lifeCorrect}/{practiceScore.lifeTotal}
+                            </p>
+                        </>
+                    ) : (
+                        <p className={`mt-2 text-center text-sm font-semibold text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {t.scoreRealEmpty}
+                        </p>
+                    )}
+                </div>
+
+                <div className="mt-3 rounded-2xl border border-orange-100 bg-orange-50/70 px-4 py-4">
+                    <p className={`text-center text-[11px] font-black text-orange-700/80 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {t.scoreReal}
+                    </p>
+                    {savedIdentifyScore != null ? (
+                        <p className="mt-1.5 text-center text-4xl font-black tabular-nums leading-none text-orange-700">
+                            {savedIdentifyScore}
+                        </p>
+                    ) : (
+                        <p className={`mt-2 text-center text-sm font-semibold text-orange-700/50 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {t.scoreRealEmpty}
+                        </p>
+                    )}
+                </div>
             </div>
         </div>,
         document.body
@@ -1435,6 +1656,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 </div>
                 {scoreSheet}
                 {quitSheet}
+                {modeGateSheet}
             </div>
         );
     }
@@ -1447,6 +1669,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             {libraryContent}
             {scoreSheet}
             {quitSheet}
+            {modeGateSheet}
         </div>
     );
 }

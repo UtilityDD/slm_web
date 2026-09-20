@@ -1641,6 +1641,7 @@ export default function SmartLinemanUI() {
               language={language}
               user={user}
               userProfile={userProfile}
+              refreshProfile={fetchProfile}
             />
           );
         case 'my_tools':
