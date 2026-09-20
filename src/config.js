@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.168";
+export const CURRENT_APP_VERSION = "1.3.169";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "• New Identify photos — bushings, clamps, tools\n• Charts open as in-app pages (not posters)\n• Icon-led chart cards for faster spotting\n• “How well do you know?” practice (name / photo)",
-  bn: "• পরিচিতিতে নতুন ছবি — বুশিং, ক্ল্যাম্প, টুল\n• চার্ট এখন অ্যাপের ভিতরে পাতা (পোস্টার নয়)\n• আইকন দিয়ে চার্ট চিনুন — দ্রুত খুঁজে পাওয়া\n• «কতটা চেনেন?» — ছবি/নাম দিয়ে অনুশীলন",
+  en: "• Home surprise gift — Identify real score\n• Timed run · once a day · up to +100 points\n• Points count for Monthly and Lineman Day Rank\n• Practice on Parichiti regularly for a better score",
+  bn: "• হোমে কখনো কখনো সারপ্রাইজ গিফট — পরিচিতির আসল খেলা\n• সময় বেঁধে খেলুন · দিনে একবারই · সর্বোচ্চ +১০০\n• পয়েন্ট যাবে চলতি মাস ও লাইনম্যান দিবস র্যাঙ্কে\n• ভালো স্কোর করতে পরিচিতি পেজে নিয়মিত প্র্যাকটিস করুন",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
@@ -20,7 +20,7 @@ export const SUPPORT_EMAIL = "support@smartlineman.in";
  * Live android-latest.json stays on the last hosted APK until a signed build is copied to
  * public/downloads/smartlineman.apk (do not raise version_code without that APK).
  */
-export const ANDROID_VERSION_CODE = 160;
+export const ANDROID_VERSION_CODE = 161;
 /** Absolute URL so the APK checks the live site, not bundled localhost assets. */
 export const ANDROID_LATEST_MANIFEST_URL = `${WEBSITE_ORIGIN_WWW}/android-latest.json`;
 export const ANDROID_DOWNLOAD_PAGE_URL = `${WEBSITE_ORIGIN_WWW}/download`;
