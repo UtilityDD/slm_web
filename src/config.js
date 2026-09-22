@@ -2,11 +2,11 @@
 export const APP_NAME = "SmartLineman.in";
 export const API_URL = import.meta.env.VITE_SUPABASE_URL;
 /** Bump on each release — web clients compare this to prompt refresh when stale. */
-export const CURRENT_APP_VERSION = "1.3.169";
+export const CURRENT_APP_VERSION = "1.3.170";
 /** Shown in the update modal when CURRENT_APP_VERSION changes. */
 export const CURRENT_APP_RELEASE_NOTES = {
-  en: "• Home surprise gift — Identify real score\n• Timed run · once a day · up to +100 points\n• Points count for Monthly and Lineman Day Rank\n• Practice on Parichiti regularly for a better score",
-  bn: "• হোমে কখনো কখনো সারপ্রাইজ গিফট — পরিচিতির আসল খেলা\n• সময় বেঁধে খেলুন · দিনে একবারই · সর্বোচ্চ +১০০\n• পয়েন্ট যাবে চলতি মাস ও লাইনম্যান দিবস র্যাঙ্কে\n• ভালো স্কোর করতে পরিচিতি পেজে নিয়মিত প্র্যাকটিস করুন",
+  en: "• Hear SAFE HOME and সবাই ফিরো on the 8 Mantra card\n• Identify and hourly clocks wait until the picture is on screen\n• Hourly Next and Prev stay clear of the bottom nav",
+  bn: "• ৮ মন্ত্র কার্ডে SAFE HOME ও সবাই ফিরো শুনুন\n• পরিচিতি ও ঘণ্টার ঘড়ি ছবি এলে তবেই চলবে\n• ঘণ্টার Next / Prev নিচের ন্যাভের নিচে চাপা পড়বে না",
 };
 export const WEBSITE_URL = "https://smartlineman.in";
 /** Prefer www for Android update fetches — apex 308-redirects and breaks some native downloads. */
