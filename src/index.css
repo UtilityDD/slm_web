@@ -4466,7 +4466,7 @@ body,
     --tile-icon-face: #ffd6b8;
     --tile-icon-ink: #c2410c;
     --tile-icon-edge: #fb8a4a;
-    --tile-depth: 9px;
+    --tile-depth: 5px;
     position: relative;
     display: flex;
     min-height: 0;
@@ -4487,8 +4487,8 @@ body,
       0 2px 0 rgba(255, 255, 255, 0.95) inset,
       0 -4px 7px rgba(28, 25, 23, 0.08) inset,
       1px var(--tile-depth) 0 var(--tile-edge),
-      2px calc(var(--tile-depth) + 2px) 0 color-mix(in srgb, var(--tile-edge) 62%, #6b4423),
-      3px 16px 12px -8px rgba(28, 25, 23, 0.22);
+      2px calc(var(--tile-depth) + 1px) 0 color-mix(in srgb, var(--tile-edge) 62%, #6b4423),
+      2px 8px 8px -6px rgba(28, 25, 23, 0.16);
     -webkit-tap-highlight-color: transparent;
     transform: translateY(0);
     transition:
@@ -4773,7 +4773,7 @@ body,
     min-height: 5.55rem;
     --tile-face: #ffe4e6;
     --tile-edge: #e11d48;
-    --tile-depth: 10px;
+    --tile-depth: 6px;
   }
 
   .more-3d-tile.home-3d-tile--sos .home-3d-tile__label {
@@ -5096,13 +5096,13 @@ body,
   }
 
   .home-3d-tile:active {
-    transform: translateY(6px);
+    transform: translateY(3px);
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.7) inset,
       0 -2px 5px rgba(28, 25, 23, 0.1) inset,
-      0 2px 0 var(--tile-edge),
-      1px 4px 0 color-mix(in srgb, var(--tile-edge) 62%, #6b4423),
-      2px 8px 8px -6px rgba(28, 25, 23, 0.18);
+      0 1px 0 var(--tile-edge),
+      1px 2px 0 color-mix(in srgb, var(--tile-edge) 62%, #6b4423),
+      1px 4px 6px -4px rgba(28, 25, 23, 0.14);
   }
 
   .home-3d-tile__icon,
@@ -6079,7 +6079,6 @@ body,
     box-sizing: border-box;
     pointer-events: none;
     container-type: size;
-    animation: homeTipBoardRise 0.4s ease both;
   }
 
   .home-tip-stage__embed-text {
@@ -6088,15 +6087,26 @@ body,
     max-height: 100%;
     overflow: hidden;
     text-align: center;
-    color: #2c2114;
-    font-weight: 800;
-    line-height: 1.32;
-    letter-spacing: 0.005em;
+    color: #4a3118;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    line-height: 1.38;
+    letter-spacing: 0.01em;
     text-wrap: balance;
-    text-shadow: 0 0.5px 0 rgba(255, 255, 255, 0.4);
+    /* Ink soaks into the plywood — no white halo / sticker lift */
+    mix-blend-mode: multiply;
+    opacity: 0.9;
+    transform: rotate(-0.55deg);
+    text-shadow: 0.35px 0.55px 0 rgba(62, 38, 16, 0.18);
     /* Keep Bengali matras / first-line ascenders inside the clip */
     padding-top: 0.15em;
     box-sizing: border-box;
+  }
+
+  .home-tip-stage__embed-text.is-bn {
+    font-family: 'Noto Serif Bengali', 'Hind Siliguri', serif;
+    font-weight: 600;
+    letter-spacing: 0;
   }
 
   /* Scale type from the board box so it fills and stays centered */
@@ -6134,20 +6144,8 @@ body,
     font-size: clamp(0.64rem, 12cqh, 0.86rem);
   }
 
-  @keyframes homeTipBoardRise {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .home-tip-board--card,
-    .home-tip-stage__embed {
+    .home-tip-board--card {
       animation: none !important;
       transition: none !important;
     }

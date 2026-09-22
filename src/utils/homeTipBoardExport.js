@@ -266,17 +266,18 @@ export async function composeHomeTipBoardImage({ text, language = 'bn' } = {}) {
   const bn = language === 'bn';
   const fontFamily = bn
     ? '"Noto Serif Bengali", "Hind Siliguri", serif'
-    : 'Inter, system-ui, sans-serif';
+    : 'Georgia, "Times New Roman", serif';
   let fontSize = tipFontSize(text, boardH, bn);
-  const lineHeight = bn ? 1.32 : 1.3;
+  const lineHeight = bn ? 1.38 : 1.36;
 
-  ctx.fillStyle = '#2c2114';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = 'rgba(74, 49, 24, 0.9)';
 
   let lines = [];
   for (let attempt = 0; attempt < 8; attempt += 1) {
-    ctx.font = `800 ${fontSize}px ${fontFamily}`;
+    ctx.font = `600 ${fontSize}px ${fontFamily}`;
     lines = wrapLines(ctx, text, textMaxW);
     const blockH = lines.length * fontSize * lineHeight;
     if (blockH <= textMaxH || fontSize <= 18) break;
@@ -285,11 +286,16 @@ export async function composeHomeTipBoardImage({ text, language = 'bn' } = {}) {
 
   const blockH = lines.length * fontSize * lineHeight;
   let y = textTop + Math.max(0, (textMaxH - blockH) / 2);
-  ctx.font = `800 ${fontSize}px ${fontFamily}`;
+  ctx.save();
+  ctx.font = `600 ${fontSize}px ${fontFamily}`;
+  ctx.translate(textX + textMaxW / 2, y);
+  ctx.rotate((-0.55 * Math.PI) / 180);
+  ctx.translate(-(textX + textMaxW / 2), -y);
   for (const line of lines) {
     ctx.fillText(line, textX + textMaxW / 2, y);
     y += fontSize * lineHeight;
   }
+  ctx.restore();
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(

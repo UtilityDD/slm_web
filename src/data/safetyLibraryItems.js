@@ -1302,6 +1302,126 @@ export const SAFETY_LIBRARY_ITEMS = [
     ]
   },
   {
+    "id": "Tools:লং নোজ প্লায়ার্স",
+    "category": "Tools",
+    "name_bn": "লং নোজ প্লায়ার্স",
+    "function_bn": "সরু জায়গায় তার ধরা, বাঁকানো আর লুপ করা।",
+    "images": [
+      "/assets/safety/library/tools/Long_Nose_Pliers.webp"
+    ],
+    "approx_price_inr": "350",
+    "guide_bn": "নাক দিয়ে বোল্ট বা মোটা কন্ডাক্টর মোচড়াবেন না — বাঁকবে। হ্যান্ডেল ইনসুলেটেড থাকুক।",
+    "related_items": [
+      {
+        "id": "Tools:কম্বিনেশন প্লায়ার্স",
+        "category": "Tools",
+        "name_bn": "কম্বিনেশন প্লায়ার্স"
+      },
+      {
+        "id": "Tools:ইনসুলেটেড স্ক্রুড্রাইভার",
+        "category": "Tools",
+        "name_bn": "ইনসুলেটেড স্ক্রুড্রাইভার"
+      }
+    ]
+  },
+  {
+    "id": "Tools:পাইপ রেঞ্চ",
+    "category": "Tools",
+    "name_bn": "পাইপ রেঞ্চ",
+    "function_bn": "গোল পাইপ, কন্ডুইট বা মোটা নাট ধরে ঘোরায়।",
+    "images": [
+      "/assets/safety/library/tools/Pipe_Wrench.webp"
+    ],
+    "approx_price_inr": "550",
+    "guide_bn": "দাঁত পরিষ্কার রাখুন। ইনসুলেটর বা পাতলা বোল্টে লাগাবেন না — পিছলে ক্ষত।",
+    "related_items": [
+      {
+        "id": "Tools:অ্যাডজাস্টেবল স্প্যানার",
+        "category": "Tools",
+        "name_bn": "অ্যাডজাস্টেবল স্প্যানার"
+      },
+      {
+        "id": "Tools:কম্বিনেশন স্প্যানার",
+        "category": "Tools",
+        "name_bn": "কম্বিনেশন স্প্যানার"
+      }
+    ]
+  },
+  {
+    "id": "Tools:হ্যাকস",
+    "category": "Tools",
+    "name_bn": "হ্যাকস",
+    "function_bn": "বোল্ট, ছোট পাইপ বা মৃত কেবল করাত দিয়ে কাটে।",
+    "images": [
+      "/assets/safety/library/tools/Hacksaw.webp"
+    ],
+    "approx_price_inr": "280",
+    "guide_bn": "ব্লেড টানটান লাগান। লাইভ তার কাটবেন না। ব্লেড ভাঙলে হাত কেটে যেতে পারে।",
+    "related_items": [
+      {
+        "id": "Tools:হাইড্রোলিক কেবল কাটার",
+        "category": "Tools",
+        "name_bn": "হাইড্রোলিক কেবল কাটার"
+      },
+      {
+        "id": "Tools:কম্বিনেশন প্লায়ার্স",
+        "category": "Tools",
+        "name_bn": "কম্বিনেশন প্লায়ার্স"
+      }
+    ]
+  },
+  {
+    "id": "Tools:কেবল ফল্ট লোকেটার",
+    "category": "Tools",
+    "name_bn": "কেবল ফল্ট লোকেটার",
+    "function_bn": "মাটির নিচের কেবলে কোথায় ওপেন বা শর্ট — সেটা খুঁজে।",
+    "images": [
+      "/assets/safety/library/tools/Cable_Fault_Locator.webp"
+    ],
+    "approx_price_inr": "35000",
+    "guide_bn": "টেস্টের আগে লাইন আইসোলেট ও ডিসচার্জ করুন। লিড সঠিক জোড়ায় লাগান।",
+    "related_items": [
+      {
+        "id": "Tools:মেগার (ইনসুলেশন টেস্টার)",
+        "category": "Tools",
+        "name_bn": "মেগার (ইনসুলেশন টেস্টার)"
+      },
+      {
+        "id": "Tools:ডিজিটাল মাল্টিমিটার",
+        "category": "Tools",
+        "name_bn": "ডিজিটাল মাল্টিমিটার"
+      }
+    ]
+  },
+  {
+    "id": "Tools:টর্ক রেঞ্চ",
+    "category": "Tools",
+    "name_bn": "টর্ক রেঞ্চ",
+    "function_bn": "এবি লাইনের আইপিসি, সাসপেনশন ও ডেড-এন্ড ক্ল্যাম্পের বোল্ট মেকারের নিউটন-মিটারে শক্ত করে।",
+    "images": [
+      "/assets/safety/library/tools/Torque_Wrench.webp"
+    ],
+    "approx_price_inr": "2200",
+    "guide_bn": "আইপিসিতে মেকারের টর্ক সেট করুন — কম হলে কন্টাক্ট গরম হয়, বেশি হলে কন্ডাক্টর পিষ্ট বা ইনসুলেশন ফাটে। শিয়ার হেড থাকলে সেটা নিজে ভাঙুক; না থাকলে ক্লিক শুনে থামুন। সাসপেনশন ও ডেড-এন্ডের ইউ-বোল্টও একই নিয়ম — সাধারণ স্প্যানার দিয়ে আর টানবেন না।",
+    "related_items": [
+      {
+        "id": "AB Cable Items:আইপিসি (IPC)",
+        "category": "AB Cable Items",
+        "name_bn": "আইপিসি (IPC)"
+      },
+      {
+        "id": "AB Cable Items:সাসপেনশন ক্ল্যাম্প",
+        "category": "AB Cable Items",
+        "name_bn": "সাসপেনশন ক্ল্যাম্প"
+      },
+      {
+        "id": "AB Cable Items:ডেড-এন্ড ক্ল্যাম্প",
+        "category": "AB Cable Items",
+        "name_bn": "ডেড-এন্ড ক্ল্যাম্প"
+      }
+    ]
+  },
+  {
     "id": "AB Cable Items:সাসপেনশন ক্ল্যাম্প",
     "category": "AB Cable Items",
     "name_bn": "সাসপেনশন ক্ল্যাম্প",
