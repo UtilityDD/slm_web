@@ -12151,37 +12151,77 @@ html.native-android .lesson-reader-root {
 
 /* Identify gift — cross of top 4 Home tiles; zoom → lid → counter → quiz */
 .identify-gift-x {
+  --gift-w: 3.35rem;
+  --gift-h: 2.28rem;
+  --gift-d: 3.35rem;
+  --lid-w: 3.85rem;
+  --lid-h: 0.56rem;
+  --lid-d: 3.85rem;
   position: absolute;
-  z-index: 6;
+  z-index: 8;
   left: 50%;
   top: 50%;
-  width: 4.6rem;
-  height: 4.6rem;
-  margin: -2.3rem 0 0 -2.3rem;
+  width: 8.2rem;
+  height: 8.6rem;
+  margin: -4.5rem 0 0 -4.1rem;
   pointer-events: none;
 }
 
 .identify-gift-x__halo {
   position: absolute;
-  inset: -0.35rem;
+  inset: -1.1rem;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(255, 247, 237, 0.98) 0%, rgba(255, 237, 213, 0.92) 42%, rgba(255, 237, 213, 0) 72%);
-  box-shadow:
-    0 0 0 1px rgba(251, 146, 60, 0.35),
-    0 10px 22px rgba(194, 65, 12, 0.18);
+  background: radial-gradient(circle, rgba(255, 247, 237, 0.88) 0%, rgba(253, 186, 116, 0.42) 36%, rgba(251, 146, 60, 0.16) 58%, transparent 76%);
+  box-shadow: 0 0 34px 14px rgba(251, 146, 60, 0.32);
   pointer-events: none;
+  animation: identify-gift-halo 1.35s ease-in-out infinite;
+}
+
+.identify-gift-x__spark {
+  position: absolute;
+  width: 0.52rem;
+  height: 0.52rem;
+  border-radius: 1px;
+  background: #fde68a;
+  box-shadow: 0 0 10px 2px rgba(253, 224, 71, 0.85);
+  pointer-events: none;
+  z-index: 3;
+  animation: identify-gift-spark 1.7s ease-in-out infinite;
+}
+
+.identify-gift-x__spark--a {
+  left: 0.2rem;
+  top: 0.55rem;
+  animation-delay: 0s;
+}
+
+.identify-gift-x__spark--b {
+  right: 0.15rem;
+  top: 1.15rem;
+  width: 0.32rem;
+  height: 0.32rem;
+  animation-delay: 0.45s;
+}
+
+.identify-gift-x__spark--c {
+  left: 1.15rem;
+  bottom: 0.35rem;
+  width: 0.28rem;
+  height: 0.28rem;
+  animation-delay: 0.9s;
 }
 
 .identify-gift-x__plate {
   position: absolute;
   left: 50%;
-  bottom: 0.15rem;
-  width: 3.1rem;
+  bottom: 0.2rem;
+  width: 3.4rem;
   height: 0.7rem;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: radial-gradient(ellipse at center, rgba(124, 45, 18, 0.22) 0%, rgba(124, 45, 18, 0) 72%);
+  background: radial-gradient(ellipse at center, rgba(124, 45, 18, 0.28) 0%, rgba(124, 45, 18, 0) 72%);
   pointer-events: none;
+  animation: identify-gift-plate 2.8s ease-in-out infinite;
 }
 
 .identify-gift-x__hit {
@@ -12189,15 +12229,15 @@ html.native-android .lesson-reader-root {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 3.55rem;
-  height: 3.55rem;
-  margin: -1.9rem 0 0 -1.775rem;
+  width: 6rem;
+  height: 6rem;
+  margin: -3.15rem 0 0 -3rem;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  animation: identify-gift-jerk 2.4s infinite;
+  animation: identify-gift-float 2.8s ease-in-out infinite;
   z-index: 2;
 }
 
@@ -12205,26 +12245,142 @@ html.native-android .lesson-reader-root {
   position: absolute;
   inset: 0;
   display: block;
-  filter: drop-shadow(0 6px 10px rgba(154, 52, 18, 0.34));
+  filter: drop-shadow(0 10px 16px rgba(154, 52, 18, 0.48));
+}
+
+.identify-gift-x__scene {
+  position: absolute;
+  inset: 0;
+  perspective: 520px;
+  perspective-origin: 50% 40%;
+  transform-style: preserve-3d;
+}
+
+.identify-gift-x__spin {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: var(--gift-w);
+  height: var(--gift-h);
+  margin: calc(var(--gift-h) / -2) 0 0 calc(var(--gift-w) / -2);
+  transform-style: preserve-3d;
+  transform-origin: 50% 60%;
+}
+
+.identify-gift-x--idle .identify-gift-x__spin {
+  animation: identify-gift-spin 3.1s linear infinite;
+}
+
+.identify-gift-x--idle .identify-gift-x__lid {
+  transform-origin: 50% 100% calc(var(--lid-d) / -2);
+  animation: identify-gift-lid-ajar 2.6s ease-in-out infinite;
+}
+
+.identify-gift-x__mouth {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: -0.08rem;
+  height: 0.62rem;
+  border-radius: 0.14rem;
+  background:
+    radial-gradient(ellipse at 50% 80%, #fff7ed 0%, #fde68a 28%, #f59e0b 62%, #9a3412 100%);
+  box-shadow:
+    0 0 10px 3px rgba(253, 224, 71, 0.7),
+    0 0 22px 6px rgba(251, 146, 60, 0.35);
+  transform: rotateX(86deg) translateZ(1px);
+  transform-origin: 50% 100%;
+  animation: identify-gift-mouth 2.8s ease-in-out infinite;
+}
+
+.identify-gift-x__pops {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.identify-gift-x__pop {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.55rem;
+  padding: 0.16rem 0.46rem 0.2rem;
+  border-radius: 999px;
+  background: #7c2d12;
+  color: #fffbeb;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 1.08rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  box-shadow:
+    0 0 0 2px #fde68a,
+    0 2px 0 #9a3412,
+    0 0 16px 3px rgba(251, 191, 36, 0.72);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+  animation: identify-gift-pop 2s cubic-bezier(0.16, 0.84, 0.32, 1) forwards;
+}
+
+.identify-gift-x__pop--big {
+  min-width: 2.85rem;
+  font-size: 1.22rem;
+  padding: 0.2rem 0.5rem 0.24rem;
+  background: #9a3412;
+  box-shadow:
+    0 0 0 2px #fef08a,
+    0 2px 0 #7c2d12,
+    0 0 20px 5px rgba(250, 204, 21, 0.85);
 }
 
 .identify-gift-x__body {
   position: absolute;
-  left: 14%;
-  right: 14%;
-  bottom: 10%;
-  height: 48%;
-  border-radius: 0.28rem 0.28rem 0.38rem 0.38rem;
-  background: linear-gradient(180deg, #fb923c 0%, #ea580c 72%, #c2410c 100%);
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.identify-gift-x__face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--gift-w);
+  height: var(--gift-h);
+  backface-visibility: hidden;
   overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.identify-gift-x__face--front {
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 72%, #c2410c 100%);
+  transform: rotateY(0deg) translateZ(calc(var(--gift-d) / 2));
+}
+
+.identify-gift-x__face--back {
+  background: linear-gradient(180deg, #f97316 0%, #c2410c 100%);
+  transform: rotateY(180deg) translateZ(calc(var(--gift-d) / 2));
+}
+
+.identify-gift-x__face--right {
+  background: linear-gradient(180deg, #ea580c 0%, #9a3412 100%);
+  transform: rotateY(90deg) translateZ(calc(var(--gift-w) / 2));
+}
+
+.identify-gift-x__face--left {
+  background: linear-gradient(180deg, #fdba74 0%, #ea580c 78%, #c2410c 100%);
+  transform: rotateY(-90deg) translateZ(calc(var(--gift-w) / 2));
 }
 
 .identify-gift-x__ribbon-v {
   position: absolute;
   inset: 0 auto 0 50%;
-  width: 18%;
+  width: 22%;
   transform: translateX(-50%);
-  background: linear-gradient(180deg, #fde68a, #f59e0b);
+  background: linear-gradient(180deg, #fde68a, #f59e0b 70%, #d97706);
 }
 
 .identify-gift-x__ribbon-h {
@@ -12232,47 +12388,98 @@ html.native-android .lesson-reader-root {
   left: 0;
   right: 0;
   top: 38%;
-  height: 18%;
+  height: 22%;
   background: linear-gradient(90deg, #fbbf24, #f59e0b 50%, #fbbf24);
 }
 
 .identify-gift-x__lid {
   position: absolute;
-  left: 10%;
-  right: 10%;
-  bottom: 52%;
-  height: 26%;
-  transform-origin: 8% 100%;
+  left: 50%;
+  top: 0;
+  width: var(--lid-w);
+  height: var(--lid-h);
+  margin-left: calc(var(--lid-w) / -2);
+  margin-top: calc(var(--lid-h) * -1);
+  transform-style: preserve-3d;
+  transform-origin: 50% 100% calc(var(--lid-d) / -2);
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1.15);
   z-index: 3;
 }
 
-.identify-gift-x__lid-face {
+.identify-gift-x__lid-cap {
   position: absolute;
-  inset: 0;
-  border-radius: 0.26rem 0.26rem 0.1rem 0.1rem;
-  background: linear-gradient(180deg, #fdba74, #f97316);
-  box-shadow: 0 2px 0 rgba(154, 52, 18, 0.22);
+  left: 0;
+  top: calc((var(--lid-h) - var(--lid-d)) / 2);
+  width: var(--lid-w);
+  height: var(--lid-d);
+  border-radius: 0.16rem;
+  background:
+    linear-gradient(90deg, transparent 39%, #fbbf24 39%, #f59e0b 61%, transparent 61%),
+    linear-gradient(180deg, #fed7aa, #fb923c 70%, #ea580c);
+  transform: rotateX(90deg) translateZ(calc(var(--lid-h) / 2));
+  box-shadow: 0 2px 0 rgba(154, 52, 18, 0.2);
 }
 
-.identify-gift-x__lid-face::after {
-  content: '';
+.identify-gift-x__lid-under {
   position: absolute;
-  left: 50%;
+  left: 0;
+  top: calc((var(--lid-h) - var(--lid-d)) / 2);
+  width: var(--lid-w);
+  height: var(--lid-d);
+  border-radius: 0.12rem;
+  background: linear-gradient(180deg, #9a3412, #7c2d12 70%, #431407);
+  transform: rotateX(-90deg) translateZ(calc(var(--lid-h) / 2));
+}
+
+.identify-gift-x__lid-rim {
+  position: absolute;
+  left: 0;
   top: 0;
-  bottom: 0;
-  width: 18%;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, #fde68a, #f59e0b);
+  background: linear-gradient(180deg, #fdba74, #f97316);
+  backface-visibility: hidden;
+}
+
+.identify-gift-x__lid-rim--front,
+.identify-gift-x__lid-rim--back {
+  width: var(--lid-w);
+  height: var(--lid-h);
+}
+
+.identify-gift-x__lid-rim--front {
+  transform: rotateY(0deg) translateZ(calc(var(--lid-d) / 2));
+}
+
+.identify-gift-x__lid-rim--back {
+  background: linear-gradient(180deg, #ea580c, #c2410c);
+  transform: rotateY(180deg) translateZ(calc(var(--lid-d) / 2));
+}
+
+.identify-gift-x__lid-rim--left,
+.identify-gift-x__lid-rim--right {
+  width: var(--lid-d);
+  height: var(--lid-h);
+}
+
+.identify-gift-x__lid-rim--right {
+  left: calc((var(--lid-w) - var(--lid-d)) / 2);
+  background: linear-gradient(180deg, #f97316, #9a3412);
+  transform: rotateY(90deg) translateZ(calc(var(--lid-w) / 2));
+}
+
+.identify-gift-x__lid-rim--left {
+  left: calc((var(--lid-w) - var(--lid-d)) / 2);
+  background: linear-gradient(180deg, #fdba74, #ea580c);
+  transform: rotateY(-90deg) translateZ(calc(var(--lid-w) / 2));
 }
 
 .identify-gift-x__bow {
   position: absolute;
   left: 50%;
-  top: -0.38rem;
-  width: 0.95rem;
-  height: 0.55rem;
-  transform: translateX(-50%);
+  top: calc((var(--lid-h) - 0.72rem) / 2);
+  width: 1.28rem;
+  height: 0.72rem;
+  margin-left: -0.64rem;
+  transform: rotateX(90deg) translateZ(calc(var(--lid-h) / 2 + 0.1rem));
   z-index: 4;
 }
 
@@ -12281,10 +12488,11 @@ html.native-android .lesson-reader-root {
   content: '';
   position: absolute;
   top: 0.06rem;
-  width: 0.48rem;
-  height: 0.38rem;
+  width: 0.52rem;
+  height: 0.4rem;
   border-radius: 50% 50% 40% 40%;
-  background: #f59e0b;
+  background: radial-gradient(circle at 35% 30%, #fde68a, #f59e0b 70%, #d97706);
+  box-shadow: 0 1px 0 rgba(154, 52, 18, 0.25);
 }
 
 .identify-gift-x__bow::before {
@@ -12363,8 +12571,8 @@ html.native-android .lesson-reader-root {
 .identify-gift-stage__shade {
   position: absolute;
   inset: 0;
-  background: rgba(28, 25, 23, 0.45);
-  animation: identify-gift-shade-in 0.28s ease-out both;
+  background: rgba(28, 25, 23, 0.42);
+  animation: identify-gift-shade-in 0.2s ease-out both;
 }
 
 .identify-gift-stage__focus {
@@ -12376,49 +12584,145 @@ html.native-android .lesson-reader-root {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  animation: identify-gift-zoom-in 0.38s cubic-bezier(0.2, 1.15, 0.3, 1) both;
+  animation: identify-gift-zoom-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .identify-gift-stage__focus .identify-gift-x__box {
+  --gift-w: 4.35rem;
+  --gift-h: 3rem;
+  --gift-d: 4.35rem;
+  --lid-w: 5rem;
+  --lid-h: 0.72rem;
+  --lid-d: 5rem;
   position: relative;
-  width: 7.25rem;
-  height: 7.25rem;
+  width: 8.4rem;
+  height: 8.4rem;
   inset: auto;
 }
 
-.identify-gift-stage--lid .identify-gift-x__lid,
-.identify-gift-stage--count .identify-gift-x__lid {
-  transform: rotate(-62deg) translate(-6px, -14px);
+.identify-gift-stage .identify-gift-x__scene {
+  perspective: 980px;
 }
 
-.identify-gift-stage--count .identify-gift-x__counter {
-  top: 0.15rem;
-  min-width: 5.5ch;
-  font-size: 3rem;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  color: #ea580c;
-  text-shadow:
-    0 2px 0 #fff7ed,
-    0 8px 24px rgba(234, 88, 12, 0.35);
-  opacity: 1;
-  transform: translate(-50%, 0);
+.identify-gift-stage .identify-gift-x__spin {
   animation: none;
+  transform: rotateX(-16deg) rotateY(-28deg);
 }
 
-.identify-gift-stage__hint {
-  margin-top: 0.85rem;
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: #fff7ed;
+.identify-gift-stage .identify-gift-x__lid {
+  animation: none;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes identify-gift-jerk {
-  0%, 82%, 100% { transform: translate(0, 0) rotate(0deg); }
-  84% { transform: translate(2px, -3px) rotate(-4deg); }
-  88% { transform: translate(-3px, 1px) rotate(5deg); }
-  92% { transform: translate(2px, 2px) rotate(-2deg); }
-  96% { transform: translate(0, -2px) rotate(1deg); }
+.identify-gift-stage--zoom .identify-gift-x__lid {
+  transform: rotateX(-50deg);
+}
+
+.identify-gift-stage--lid .identify-gift-x__lid,
+.identify-gift-stage--burst .identify-gift-x__lid {
+  transform: rotateX(-118deg);
+}
+
+.identify-gift-stage__burst {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.identify-gift-stage__burst-pop {
+  top: 46%;
+  left: 50%;
+  animation: identify-gift-burst-fly 0.98s cubic-bezier(0.16, 0.84, 0.32, 1) both;
+  animation-delay: var(--pop-delay, 0ms);
+}
+
+@keyframes identify-gift-spin {
+  0% { transform: rotateX(-28deg) rotateZ(-8deg) rotateY(0deg); }
+  100% { transform: rotateX(-28deg) rotateZ(-8deg) rotateY(360deg); }
+}
+
+@keyframes identify-gift-lid-ajar {
+  0%, 100% { transform: rotateX(-44deg); }
+  50% { transform: rotateX(-52deg); }
+}
+
+@keyframes identify-gift-mouth {
+  0%, 100% { opacity: 0.72; filter: brightness(0.95); }
+  18% { opacity: 1; filter: brightness(1.25); }
+  40% { opacity: 0.9; filter: brightness(1.08); }
+}
+
+@keyframes identify-gift-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 18px) scale(0.35);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(calc(-50% + (var(--pop-drift, 0px) * 0.15)), 2px) scale(1.12);
+  }
+  22% {
+    opacity: 1;
+    transform: translate(calc(-50% + (var(--pop-drift, 0px) * 0.28)), -6px) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--pop-drift, 0px)), -34px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--pop-drift, 0px)), -62px) scale(0.92);
+  }
+}
+
+@keyframes identify-gift-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes identify-gift-halo {
+  0%, 100% { opacity: 0.82; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes identify-gift-spark {
+  0%, 100% { opacity: 0.15; transform: scale(0.4) rotate(0deg); }
+  40% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+  70% { opacity: 0.35; transform: scale(0.7) rotate(-8deg); }
+}
+
+@keyframes identify-gift-plate {
+  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.85; }
+  50% { transform: translateX(-50%) scaleX(0.78); opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identify-gift-x__halo,
+  .identify-gift-x__spark,
+  .identify-gift-x__plate,
+  .identify-gift-x__hit,
+  .identify-gift-x__pop,
+  .identify-gift-x--idle .identify-gift-x__spin,
+  .identify-gift-x--idle .identify-gift-x__lid {
+    animation: none;
+  }
+
+  .identify-gift-x--idle .identify-gift-x__spin {
+    transform: rotateX(-26deg) rotateZ(-8deg) rotateY(-32deg);
+  }
+
+  .identify-gift-x--idle .identify-gift-x__lid {
+    transform: rotateX(-48deg);
+  }
+
+  .identify-gift-x__mouth {
+    animation: none;
+  }
+
+  .identify-gift-x__pops {
+    display: none;
+  }
 }
 
 @keyframes identify-gift-shade-in {
@@ -12427,8 +12731,23 @@ html.native-android .lesson-reader-root {
 }
 
 @keyframes identify-gift-zoom-in {
-  from { transform: scale(0.42); opacity: 0.7; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: scale(0.34); opacity: 0.75; }
+  to { transform: scale(1.18); opacity: 1; }
+}
+
+@keyframes identify-gift-burst-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--pop-dx, 0px)), calc(-50% + var(--pop-dy, -80px))) scale(1);
+  }
 }
 
 /* Identify header gift — compact twin of Home surprise gift */
