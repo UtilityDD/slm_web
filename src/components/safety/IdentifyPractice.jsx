@@ -15,6 +15,11 @@ import {
     identifyRealSecondsFor,
     submitIdentifyScore,
 } from '../../utils/identifyRealScore';
+import {
+    collectIdentifyImageUrls,
+    preloadIdentifyImages,
+    useQuizImageGate,
+} from '../../utils/quizImageGate';
 import IdentifyGridPractice from './IdentifyGridPractice';
 
 function practiceCopy(language) {
@@ -46,6 +51,7 @@ function practiceCopy(language) {
             rules3: 'Five mistakes and the game stops. One real try per day.',
             rulesStart: 'Start',
             rulesPractice: 'Practice',
+            loadingPic: 'Loading picture',
         }
         : {
             prompt: 'নাম কী?',
@@ -74,6 +80,7 @@ function practiceCopy(language) {
             rules3: '৫টা ভুল হলে খেলা থেমে যাবে। দিনে একবার আসল খেলা।',
             rulesStart: 'শুরু করুন',
             rulesPractice: 'প্র্যাকটিস করুন',
+            loadingPic: 'ছবি আসছে',
         };
 }
 
@@ -142,6 +149,9 @@ export default function IdentifyPractice({
 
     const activeMode = mode;
     const activeQuestion = question;
+    const visibleImageUrls = collectIdentifyImageUrls(activeQuestion, activeMode);
+    const { ready: imagesReady } = useQuizImageGate(visibleImageUrls, toSafetyLibraryDisplayUrl);
+    const clockArmed = !isReal || imagesReady;
 
     const startRealRound = (avoidItemId) => {
         const next = buildNextReal(items, recentModes, avoidItemId);
@@ -203,6 +213,7 @@ export default function IdentifyPractice({
         clockLimitRef.current = limit;
         setSecondsLeft(limit);
         window.clearInterval(clockTimer.current);
+        if (!imagesReady) return () => window.clearInterval(clockTimer.current);
         clockTimer.current = window.setInterval(() => {
             setSecondsLeft((prev) => {
                 if (prev <= 1) {
@@ -213,13 +224,21 @@ export default function IdentifyPractice({
             });
         }, 1000);
         return () => window.clearInterval(clockTimer.current);
-    }, [isReal, rulesReady, realDone, activeQuestion?.itemId, activeMode]);
+    }, [isReal, rulesReady, realDone, activeQuestion?.itemId, activeMode, imagesReady]);
 
     useEffect(() => {
-        if (!isReal || !rulesReady || realDone || secondsLeft > 0 || lockedRef.current) return;
+        if (!isReal || !rulesReady || realDone || !imagesReady || secondsLeft > 0 || lockedRef.current) return;
         finishAnswer(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [secondsLeft, isReal, rulesReady, realDone]);
+    }, [secondsLeft, isReal, rulesReady, realDone, imagesReady]);
+
+    useEffect(() => {
+        if (!activeQuestion || !imagesReady) return undefined;
+        const peekMode = nextIdentifyPracticeMode([...recentModes.current], items);
+        const peek = buildIdentifyPracticeQuestion(items, activeQuestion.itemId, peekMode);
+        if (peek) preloadIdentifyImages(collectIdentifyImageUrls(peek, peekMode));
+        return undefined;
+    }, [activeQuestion?.itemId, imagesReady, items]);
 
     const goNextPractice = (fromItemId) => {
         const nextMode = nextIdentifyPracticeMode(recentModes.current, items);
@@ -269,7 +288,7 @@ export default function IdentifyPractice({
     };
 
     const pickChoice = (choiceId) => {
-        if (answered || lockedRef.current || !activeQuestion || realDone) return;
+        if (answered || lockedRef.current || !activeQuestion || realDone || !clockArmed) return;
         const ok = choiceId === activeQuestion.itemId;
         setPickedId(choiceId);
         finishAnswer(ok);
@@ -427,7 +446,11 @@ export default function IdentifyPractice({
     }
 
     const clockUrgentAt = Math.max(1, Math.ceil(clockLimitRef.current / 3));
-    const clockTone = secondsLeft <= clockUrgentAt ? 'bg-rose-500' : 'bg-orange-500';
+    const clockTone = !clockArmed
+        ? 'bg-slate-400'
+        : secondsLeft <= clockUrgentAt
+            ? 'bg-rose-500'
+            : 'bg-orange-500';
 
     const scoreChip = isReal ? (
         <div className="mb-1 flex items-center justify-between gap-2">
@@ -478,6 +501,8 @@ export default function IdentifyPractice({
                     headerExtra={isReal ? scoreChip : null}
                     hideDefaultScore={isReal}
                     externalAnswered={isReal ? answered : undefined}
+                    lockChoices={isReal && !imagesReady}
+                    waitLabel={isReal && !imagesReady ? t.loadingPic : ''}
                 />
             </div>
         );
@@ -501,6 +526,11 @@ export default function IdentifyPractice({
                     onError={(e) => handleSafetyLibraryImageError(e, activeQuestion.image)}
                     className="h-full w-full object-contain object-center p-3"
                 />
+                {isReal && !imagesReady ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+                        <p className={`text-sm font-bold text-slate-500 ${bn ? 'font-bengali' : ''}`}>{t.loadingPic}</p>
+                    </div>
+                ) : null}
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -512,7 +542,7 @@ export default function IdentifyPractice({
                         <button
                             key={choice.id}
                             type="button"
-                            disabled={answered || lockedRef.current}
+                            disabled={answered || lockedRef.current || !clockArmed}
                             onClick={() => pickChoice(choice.id)}
                             className={`min-h-[3.25rem] rounded-2xl border px-2.5 py-2 text-center text-[12px] font-black leading-snug shadow-sm sm:min-h-[3.5rem] sm:text-sm ${bn ? 'font-bengali' : ''} ${
                                 showRight

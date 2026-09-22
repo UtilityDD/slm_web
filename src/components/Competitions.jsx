@@ -12,6 +12,12 @@ import {
     isImageOption,
     toDisplayImageUrl,
 } from '../utils/visualQuizImageUtils';
+import {
+    collectHourlyImageUrls,
+    preloadHourlyImages,
+    quizImageWaitCopy,
+    useQuizImageGate,
+} from '../utils/quizImageGate';
 import { openExternalUrl } from '../utils/nativeAndroidUx';
 import {
     filterQuestionsForTier,
@@ -370,6 +376,13 @@ export default function Competitions({
     const [imageRetryTick, setImageRetryTick] = useState({});
     const [failedImageKeys, setFailedImageKeys] = useState({});
     const [readingGateBlock, setReadingGateBlock] = useState(null);
+    const hourlyGateQuestion = (!quizSubmitted && !reviewMode && activeQuiz)
+        ? quizQuestions[currentQuestionIndex]
+        : null;
+    const { ready: hourlyImagesReady } = useQuizImageGate(
+        collectHourlyImageUrls(hourlyGateQuestion),
+        toDisplayImageUrl
+    );
 
     // Search Quota State
     const [searchCount, setSearchCount] = useState(0);
@@ -993,11 +1006,18 @@ export default function Competitions({
         packTimingRef.current = { ...packTimingRef.current, ...patch };
     };
 
-    const ensurePackTimerStarted = (packIdx, greenOverride = null) => {
+    const ensurePackTimerStarted = (packIdx, greenOverride = null, extraWaitMs = 0) => {
         const green = greenOverride ?? packTimingRef.current.greenSeconds ?? packGreenSeconds;
         const starts = [...(packTimingRef.current.starts || [])];
+        const wait = Math.max(0, Number(extraWaitMs) || 0);
         if (!starts[packIdx]) {
             starts[packIdx] = Date.now();
+            setPackStartTimes(starts);
+            syncPackTimingRef({ starts, greenSeconds: green });
+            return;
+        }
+        if (wait > 0) {
+            starts[packIdx] = Number(starts[packIdx]) + wait;
             setPackStartTimes(starts);
             syncPackTimingRef({ starts, greenSeconds: green });
         }
@@ -1812,7 +1832,7 @@ export default function Competitions({
         setHintViewedQuestions(new Set());
     };
 
-    // Per-set green timer: finalize previous pack when moving forward; start timer on new pack.
+    // Per-set green timer: finalize previous pack when moving forward; start after pictures are visible.
     useEffect(() => {
         if (!activeQuiz || quizSubmitted || reviewMode) return undefined;
         const packIdx = packIndexForQuestion(currentQuestionIndex);
@@ -1820,10 +1840,30 @@ export default function Competitions({
         if (prevPack !== undefined && packIdx > prevPack) {
             for (let p = prevPack; p < packIdx; p += 1) finalizePackTimer(p);
         }
-        ensurePackTimerStarted(packIdx);
         packTimingRef.current._uiPack = packIdx;
+
+        const waitKey = `${activeQuiz.id || ''}:${currentQuestionIndex}`;
+        if (packTimingRef.current._waitKey !== waitKey) {
+            packTimingRef.current._waitKey = waitKey;
+            packTimingRef.current._waitStartedAt = Date.now();
+        }
+        if (!hourlyImagesReady) return undefined;
+
+        const waitMs = packTimingRef.current._waitStartedAt
+            ? Date.now() - packTimingRef.current._waitStartedAt
+            : 0;
+        packTimingRef.current._waitStartedAt = 0;
+        const alreadyStarted = Boolean(packTimingRef.current.starts?.[packIdx]);
+        ensurePackTimerStarted(packIdx, null, alreadyStarted ? waitMs : 0);
         return undefined;
-    }, [activeQuiz, quizSubmitted, reviewMode, currentQuestionIndex]);
+    }, [activeQuiz, quizSubmitted, reviewMode, currentQuestionIndex, hourlyImagesReady]);
+
+    useEffect(() => {
+        if (!activeQuiz || quizSubmitted || reviewMode || !hourlyImagesReady) return undefined;
+        const next = quizQuestions.slice(currentQuestionIndex + 1, currentQuestionIndex + 3);
+        next.forEach((question) => preloadHourlyImages(collectHourlyImageUrls(question)));
+        return undefined;
+    }, [activeQuiz, quizSubmitted, reviewMode, hourlyImagesReady, currentQuestionIndex, quizQuestions]);
 
     useEffect(() => {
         if (!activeQuiz || quizSubmitted || reviewMode) return undefined;
@@ -1917,6 +1957,7 @@ export default function Competitions({
     };
 
     const handleAnswerSelect = (questionId, optionIndex) => {
+        if (!hourlyImagesReady) return;
         if (hintViewedQuestions.has(questionId)) return; // Prevent change if hint was viewed
         setUserAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
     };
@@ -3114,6 +3155,11 @@ export default function Competitions({
                                     <div className={`h-1 w-full overflow-hidden rounded-full bg-slate-200/80 ${hourlyImageOptionsMode ? 'mb-2 shrink-0' : 'mb-3 sm:mb-3.5'}`}>
                                         <div className="h-full rounded-full bg-orange-500 transition-all duration-300" style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}></div>
                                     </div>
+                                    {!reviewMode && !hourlyImagesReady ? (
+                                        <p className={`mb-2 text-center text-[12px] font-bold text-slate-500 ${hourlyImageOptionsMode ? 'shrink-0' : ''} ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                            {quizImageWaitCopy(language)}
+                                        </p>
+                                    ) : null}
                                     <div className={`flex items-start justify-between gap-2.5 ${hourlyImageOptionsMode ? 'mb-2 shrink-0 sm:mb-2.5 sm:gap-2' : 'mb-3 sm:mb-4 sm:gap-3'}`}>
                                         <div className="min-w-0 flex-1">
                                             {quizQuestions[currentQuestionIndex]?.question_image_url && !hourlyImageOptionsMode && (
@@ -3126,7 +3172,6 @@ export default function Competitions({
                                                         src={buildRetryImageSrc(quizQuestions[currentQuestionIndex]?.question_image_url, questionImageKey)}
                                                         alt={language === 'en' ? 'Question visual' : 'প্রশ্নের ছবি'}
                                                         className="w-full max-h-56 object-contain sm:max-h-64"
-                                                        loading="lazy"
                                                         data-fallback-index="0"
                                                         onError={(e) => {
                                                             const exhausted = handleImageLoadError(e, quizQuestions[currentQuestionIndex]?.question_image_url);
@@ -3239,8 +3284,8 @@ export default function Competitions({
                                                 <button
                                                     key={idx}
                                                     type="button"
-                                                    onClick={() => !reviewMode && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
-                                                    disabled={reviewMode || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
+                                                    onClick={() => !reviewMode && hourlyImagesReady && handleAnswerSelect(quizQuestions[currentQuestionIndex].id, idx)}
+                                                    disabled={reviewMode || !hourlyImagesReady || hintViewedQuestions.has(quizQuestions[currentQuestionIndex]?.id)}
                                                     className={`${buttonClass} text-left transition-all duration-200 ${
                                                         hourlyImageOptionsMode && optionIsImage
                                                             ? 'relative flex min-h-0 min-w-0 flex-col overflow-hidden p-1.5 sm:p-2'
@@ -3273,7 +3318,6 @@ export default function Competitions({
                                                                         ? 'h-full w-full object-contain object-center'
                                                                         : 'inline-block max-h-28 w-auto max-w-full rounded-lg object-contain'
                                                                 }
-                                                                loading="lazy"
                                                                 data-fallback-index="0"
                                                                 onError={(e) => {
                                                                     const optionImageKey = `o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`;
@@ -3325,7 +3369,7 @@ export default function Competitions({
                                     </div>
                                 </div>
 
-                                <div className="flex shrink-0 flex-col gap-1.5 border-t border-slate-200/70 bg-white px-3 py-3 sm:px-4 sm:py-3.5">
+                                <div className="flex shrink-0 flex-col gap-1.5 border-t border-slate-200/70 bg-white px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:px-4 sm:pt-3.5 sm:pb-3.5">
                                     <div className="flex items-center justify-between gap-2">
                                         <button
                                             type="button"

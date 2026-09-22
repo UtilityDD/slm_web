@@ -36,6 +36,9 @@ export default function IdentifyGridPractice({
     hideDefaultScore = false,
     /** When controlled by parent (timeout), lock tiles. */
     externalAnswered,
+    /** Timed run: wait for all four photos before taps count. */
+    lockChoices = false,
+    waitLabel = '',
 }) {
     const t = gridCopy(language);
     const bn = language === 'bn';
@@ -81,7 +84,7 @@ export default function IdentifyGridPractice({
     }, [isClue]);
 
     const pickTile = (choiceId) => {
-        if (answered || !question) return;
+        if (answered || lockChoices || !question) return;
         const ok = choiceId === question.itemId;
         setPickedId(choiceId);
         setFlash(ok ? 'right' : 'wrong');
@@ -140,7 +143,7 @@ export default function IdentifyGridPractice({
                                 <button
                                     key={`${question.itemId}-${choice.id}`}
                                     type="button"
-                                    disabled={answered}
+                                    disabled={answered || lockChoices}
                                     onClick={() => pickTile(choice.id)}
                                     style={{ animationDelay: `${i * 70}ms` }}
                                     className={`identify-grid-tile min-h-0 min-w-0 overflow-hidden rounded-xl border bg-white shadow-sm sm:rounded-2xl ${
@@ -161,6 +164,14 @@ export default function IdentifyGridPractice({
                             );
                         })}
                     </div>
+
+                    {waitLabel ? (
+                        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+                            <p className={`rounded-full bg-white px-3 py-1.5 text-sm font-bold text-slate-500 shadow-sm ${bn ? 'font-bengali' : ''}`}>
+                                {waitLabel}
+                            </p>
+                        </div>
+                    ) : null}
 
                     {flash ? (
                         <div

@@ -2473,11 +2473,11 @@ export default function SmartLinemanUI() {
               <RadioMiniPlayer
                 language={language}
                 currentView={currentView}
-                suppressChrome={showUpdateModal}
+                suppressChrome={showUpdateModal || hourlyQuizPlaying}
               />
             )}
 
-            {user && !['login', 'verify', 'safety-culture-survey'].includes(currentView) && (
+            {user && !hourlyQuizPlaying && !['login', 'verify', 'safety-culture-survey'].includes(currentView) && (
               <BottomNavigation
                 currentView={currentView} 
                 setCurrentView={navigateWithCultureGate} 
