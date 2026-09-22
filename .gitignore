@@ -20,6 +20,10 @@ scripts/maintenance/backups/
 scripts/maintenance/exports/
 scripts/.maxim-tmp/
 
+# Mantra clips are hosted on Supabase, not Vercel
+public/audio/mantra/
+scripts/maintenance/mantra-mp3/
+
 # Temp script outputs
 ai_fix.*
 enhance_chapters.*

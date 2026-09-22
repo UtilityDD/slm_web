@@ -15,7 +15,7 @@
 | `src/components/Admin.jsx` `handleSponsorImageUpload` | Compress sponsor product / logo before upload |
 | `scripts/maintenance/optimize_avatars_to_webp.mjs` | One-off WebP rewrite via **Image Transformations** — **do not run on Free** |
 
-Storage bucket: public **`avatars`** (profile photos **and** sponsor ad files). Lesson images stay on Drive / the website, not this bucket.
+Storage bucket: public **`avatars`** (profile photos, sponsor ad files, and **compressed mantra MP3s** under `audio/mantra/`). Lesson images stay on Drive / the website, not this bucket. Do not put raw `.wav` here.
 
 ---
 
@@ -73,6 +73,7 @@ Usage **Storage Image Transformations** resets at the next billing cycle. This m
 - **Old camera originals** that were never run through `compressAvatarFile` will now download at full size. New uploads are small. Do **not** “fix” them with `optimize_avatars_to_webp.mjs` while on Free — that script uses `/render/image`.
 - **Layered `placeholderEdge`** in `AvatarPhoto` no longer loads a smaller first frame (same URL). A distinct `placeholderSrc` (e.g. zoom preview) still works.
 - **Do not** put lesson posters, PDFs, or APKs in the `avatars` bucket.
+- Mantra speech is **48 kbps mono MP3** at `avatars/audio/mantra/` (~377 KB for 18 clips). The app loads that URL; Vercel does not host it.
 
 ---
 
