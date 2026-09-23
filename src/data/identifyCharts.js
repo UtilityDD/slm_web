@@ -379,3 +379,53 @@ export function getIdentifyChartPage(itemId) {
 export function hasIdentifyChartPage(itemId) {
   return Boolean(getIdentifyChartPage(itemId));
 }
+
+function relatedProductIds(chartId, catalogItems, byId) {
+  const ids = [];
+  const seen = new Set();
+  const push = (id) => {
+    if (!id || seen.has(id) || id === chartId) return;
+    const item = byId.get(id);
+    if (!item || item.category === 'Charts') return;
+    seen.add(id);
+    ids.push(id);
+  };
+  const chart = byId.get(chartId);
+  for (const rel of chart?.related_items || []) push(rel.id);
+  for (const item of catalogItems) {
+    if (item.related_items?.some((rel) => rel.id === chartId)) push(item.id);
+  }
+  return ids;
+}
+
+/** Unique photo per chart, only from that chart's related library items. */
+export function buildChartCardImages(catalogItems = []) {
+  const byId = new Map(catalogItems.map((item) => [item.id, item]));
+  const used = new Set();
+  const out = {};
+  const chartIds = [
+    ...Object.keys(IDENTIFY_CHART_PAGES),
+    ...catalogItems.filter((item) => item.category === 'Charts').map((item) => item.id),
+  ].filter((id, i, all) => all.indexOf(id) === i);
+
+  for (const chartId of chartIds) {
+    let pick = null;
+    for (const productId of relatedProductIds(chartId, catalogItems, byId)) {
+      for (const img of byId.get(productId)?.images || []) {
+        if (img && !used.has(img)) {
+          pick = img;
+          used.add(img);
+          break;
+        }
+      }
+      if (pick) break;
+    }
+    out[chartId] = pick;
+  }
+  return out;
+}
+
+export function getChartRelatedImage(chartId, catalogItems = []) {
+  if (!chartId) return null;
+  return buildChartCardImages(catalogItems)[chartId] || null;
+}

@@ -1211,7 +1211,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             className={
                 practiceOpen
                     ? 'mx-auto flex h-full min-h-0 w-full max-w-7xl min-w-0 flex-col overflow-hidden p-2 sm:p-4'
-                    : `mx-auto w-full max-w-7xl min-w-0 overflow-x-hidden px-2.5 pb-3 pt-2 sm:p-8 ${embedded ? 'pb-24' : ''}`
+                    : 'mx-auto w-full max-w-7xl min-w-0 overflow-x-hidden px-2.5 pt-2 sm:px-8 sm:pt-8 identify-nav-clear'
             }
         >
 
@@ -1287,13 +1287,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     onClick={() => openItemDetail(item)}
                                     className="w-14 shrink-0 text-left sm:w-[3.75rem]"
                                 >
-                                    <div className="aspect-square overflow-hidden rounded-lg border border-white bg-white shadow-sm ring-1 ring-slate-200/60">
+                                    <div className={hasIdentifyChartPage(item.id)
+                                        ? 'identify-chart-tile-mini aspect-square'
+                                        : 'aspect-square overflow-hidden rounded-lg border border-white bg-white shadow-sm ring-1 ring-slate-200/60'
+                                    }>
                                         {hasIdentifyChartPage(item.id) ? (
                                             <IdentifyChartThumb
-                                                chartId={item.id}
                                                 name={item.name_bn}
                                                 language={language}
-                                                kind={getIdentifyChartPage(item.id)?.kind}
                                                 compact
                                             />
                                         ) : (
@@ -1318,16 +1319,19 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 key={item.id}
                                 type="button"
                                 onClick={() => openItemDetail(item)}
-                                className="group flex w-full min-w-0 max-w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-sm transition-all hover:border-orange-200 hover:shadow-md active:scale-[0.98]"
+                                className={isChart
+                                    ? 'identify-chart-tile group flex w-full min-w-0 max-w-full flex-col text-left transition-transform active:scale-[0.98]'
+                                    : 'group flex w-full min-w-0 max-w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-sm transition-all hover:border-orange-200 hover:shadow-md active:scale-[0.98]'
+                                }
                             >
-                                <div className="relative aspect-square w-full min-w-0 shrink-0 overflow-hidden bg-slate-50">
+                                <div className={isChart
+                                    ? 'relative aspect-square w-full min-w-0 shrink-0'
+                                    : 'relative aspect-square w-full min-w-0 shrink-0 overflow-hidden bg-slate-50'
+                                }>
                                     {isChart ? (
                                         <IdentifyChartThumb
-                                            chartId={item.id}
                                             name={item.name_bn}
                                             language={language}
-                                            kind={getIdentifyChartPage(item.id)?.kind}
-                                            compact
                                         />
                                     ) : (
                                         <GridImage images={item.images} alt={item.name_bn} language={language} />
@@ -1352,16 +1356,17 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         </div>
                     </div>
                 ) : null}
+        </div>
+    );
 
-                {/* Detail modal — compact sheet chrome */}
-                {selectedItem && (
+    const detailModal = selectedItem && typeof document !== 'undefined' ? createPortal(
                     <div className="fixed inset-0 z-[11000] flex items-end justify-center p-0 animate-fade-in sm:items-start sm:px-4 sm:pb-4 sm:pt-20 lg:px-6 lg:pb-6 lg:pt-24">
                         <div className="absolute inset-0 bg-slate-900/55" onClick={closeDetailModal} aria-hidden="true" />
 
-                        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200/80 bg-[#fffdf7] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),820px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,980px)] sm:max-w-none sm:rounded-2xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),820px)] lg:max-h-[calc(100dvh-7rem)]">
+                        <div className={`relative flex h-full max-h-full w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200/80 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),820px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,980px)] sm:max-w-none sm:rounded-2xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),820px)] lg:max-h-[calc(100dvh-7rem)] ${selectedChartPage ? 'bg-[#cfc2a4]' : 'bg-[#fffdf7]'}`}>
                             <div className="mx-auto mb-0.5 mt-1.5 h-1 w-10 shrink-0 cursor-pointer rounded-full bg-slate-300 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
 
-                            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1.5 border-b border-slate-200/80 bg-white/95 px-2.5 py-1.5 backdrop-blur-md sm:px-4 sm:py-2">
+                            <div className={`grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1.5 border-b px-2.5 py-1.5 backdrop-blur-md sm:px-4 sm:py-2 ${selectedChartPage ? 'border-[#b8a888] bg-[#e8dcc4]/95' : 'border-slate-200/80 bg-white/95'}`}>
                                 <div className="flex min-w-0 items-center gap-1.5">
                                     {modalBrowseStack.length > 0 && (
                                         <button
@@ -1444,16 +1449,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 </div>
                             )}
 
-                            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar sm:overflow-hidden">
+                            <div className={`identify-chart-scroll min-h-0 flex-1 ${selectedChartPage ? 'overflow-y-auto overflow-x-hidden' : 'overflow-y-auto overflow-x-hidden sm:overflow-hidden'}`}>
                                 {selectedChartPage ? (
-                                    <div className="sm:h-full sm:overflow-y-auto sm:bg-[#fffdf7] sm:no-scrollbar">
-                                        <IdentifyChartPage
-                                            page={selectedChartPage}
-                                            language={language}
-                                            title={selectedItem.name_bn}
-                                            chartId={selectedItem.id}
-                                        />
-                                    </div>
+                                    <IdentifyChartPage
+                                        page={selectedChartPage}
+                                        language={language}
+                                        title={selectedItem.name_bn}
+                                        chartId={selectedItem.id}
+                                    />
                                 ) : (
                                 <div className="flex min-h-0 flex-col sm:h-full sm:flex-row sm:items-start">
                                 <div className="flex shrink-0 justify-center bg-white px-3 py-2.5 sm:w-[min(42%,280px)] sm:shrink-0 sm:border-r sm:border-slate-200/80 sm:px-4 sm:py-4">
@@ -1514,9 +1517,9 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             </div>
                         </div>
                     </div>
-                )}
-        </div>
-    );
+        ,
+        document.body
+    ) : null;
 
     const quitAvgMs = practiceSessionAvgMs > 0
         ? practiceSessionAvgMs
@@ -1697,6 +1700,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 >
                     {libraryContent}
                 </div>
+                {detailModal}
                 {scoreSheet}
                 {quitSheet}
                 {modeGateSheet}
@@ -1710,6 +1714,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 {searchAndCategories}
             </div>
             {libraryContent}
+            {detailModal}
             {scoreSheet}
             {quitSheet}
             {modeGateSheet}
