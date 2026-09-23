@@ -3169,6 +3169,7 @@ export default function Competitions({
                                                         return (
                                                             <>
                                                     <img
+                                                        key={questionImageKey}
                                                         src={buildRetryImageSrc(quizQuestions[currentQuestionIndex]?.question_image_url, questionImageKey)}
                                                         alt={language === 'en' ? 'Question visual' : 'প্রশ্নের ছবি'}
                                                         className="w-full max-h-56 object-contain sm:max-h-64"
@@ -3311,6 +3312,7 @@ export default function Competitions({
                                                     {optionIsImage ? (
                                                         <>
                                                             <img
+                                                                key={`o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`}
                                                                 src={buildRetryImageSrc(option, `o_${quizQuestions[currentQuestionIndex]?.id || currentQuestionIndex}_${idx}`)}
                                                                 alt={`${language === 'en' ? 'Option' : 'অপশন'} ${String.fromCharCode(65 + idx)}`}
                                                                 className={

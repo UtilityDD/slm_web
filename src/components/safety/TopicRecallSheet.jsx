@@ -1,80 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-/** Descending buzz on a wrong pick — tap is already a user gesture. */
-function playTopicRecallWrongSound() {
-    if (typeof window === 'undefined') return;
-    try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        const ctx = new Ctx();
-        const master = ctx.createGain();
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        master.gain.value = reduce ? 0.08 : 0.18;
-        master.connect(ctx.destination);
-
-        const schedule = (delaySec, freqHz, durSec, type = 'square') => {
-            const t0 = ctx.currentTime + delaySec;
-            const osc = ctx.createOscillator();
-            const g = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freqHz, t0);
-            osc.connect(g);
-            g.connect(master);
-            g.gain.setValueAtTime(0, t0);
-            g.gain.linearRampToValueAtTime(1, t0 + 0.01);
-            g.gain.exponentialRampToValueAtTime(0.001, t0 + durSec);
-            osc.start(t0);
-            osc.stop(t0 + durSec + 0.02);
-        };
-
-        schedule(0, 280, 0.12, 'square');
-        schedule(0.1, 196, 0.22, 'sawtooth');
-
-        window.setTimeout(() => {
-            ctx.close().catch(() => {});
-        }, 450);
-    } catch {
-        /* ignore */
-    }
-}
-
-/** Soft two-note tick on a correct pick. */
-function playTopicRecallCorrectSound() {
-    if (typeof window === 'undefined') return;
-    try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        const ctx = new Ctx();
-        const master = ctx.createGain();
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        master.gain.value = reduce ? 0.07 : 0.16;
-        master.connect(ctx.destination);
-
-        const schedule = (delaySec, freqHz, durSec, type = 'sine') => {
-            const t0 = ctx.currentTime + delaySec;
-            const osc = ctx.createOscillator();
-            const g = ctx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freqHz, t0);
-            osc.connect(g);
-            g.connect(master);
-            g.gain.setValueAtTime(0, t0);
-            g.gain.linearRampToValueAtTime(1, t0 + 0.012);
-            g.gain.exponentialRampToValueAtTime(0.001, t0 + durSec);
-            osc.start(t0);
-            osc.stop(t0 + durSec + 0.02);
-        };
-
-        schedule(0, 880, 0.07, 'triangle');
-        schedule(0.07, 1320, 0.16, 'sine');
-
-        window.setTimeout(() => {
-            ctx.close().catch(() => {});
-        }, 400);
-    } catch {
-        /* ignore */
-    }
-}
+import { playQuizCorrectSound, playQuizWrongSound } from '../../utils/quizChoiceSounds';
 
 /**
  * Full-pane picker: which topic was on the card just claimed as read.
@@ -102,11 +27,11 @@ export default function TopicRecallSheet({ language = 'bn', choices = [], correc
         if (pickedKey != null) return;
         setPickedKey(key);
         if (key !== correctKey) {
-            playTopicRecallWrongSound();
+            playQuizWrongSound();
             if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([30, 40, 50]);
             return;
         }
-        playTopicRecallCorrectSound();
+        playQuizCorrectSound();
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(8);
     };
 

@@ -4044,6 +4044,7 @@ export default function Training({
                                     ? getLifeSkillScoreCooldownDaysLeft(lastAwardAt)
                                     : 0;
                                 const onCooldown = daysUntilScore > 0;
+                                const scoreClaimReady = !onCooldown && (isCompleted || Boolean(lastAwardAt));
                                 const cardTotalPts = lifeSkillTotalsByModule.get(module.id) || 0;
                                 const cardTitle = language === 'en' ? module.title_en : module.title_bn;
                                 const nextScoreLabel = !onCooldown
@@ -4062,11 +4063,15 @@ export default function Training({
                                         type="button"
                                         onClick={() => openLifeSkillModule(module)}
                                         className={`group relative aspect-[3/4] w-full max-h-[280px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-left shadow-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fffdf7] hover:shadow-md active:scale-[0.99] sm:max-h-[320px] md:aspect-[4/5] md:max-h-[360px] ${
-                                            isCompleted ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-[#fffdf7]' : ''
+                                            scoreClaimReady
+                                                ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-[#fffdf7]'
+                                                : isCompleted
+                                                    ? 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-[#fffdf7]'
+                                                    : ''
                                         }`}
                                     >
                                         {/* Full-bleed media */}
-                                        <div className="absolute inset-0 bg-slate-800">
+                                        <div className={`absolute inset-0 bg-slate-800 ${scoreClaimReady ? 'grayscale opacity-70' : ''}`}>
                                             {module.image_url ? (
                                                 <img
                                                     src={module.image_url}
@@ -4125,7 +4130,32 @@ export default function Training({
                                             </h3>
                                         </div>
 
-                                        {onCooldown && (
+                                        {scoreClaimReady ? (
+                                            <div
+                                                className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+                                                title={
+                                                    language === 'en'
+                                                        ? `+${LIFE_SKILL_MONTHLY_BONUS_POINTS} points ready`
+                                                        : `+${toBengaliNumber(LIFE_SKILL_MONTHLY_BONUS_POINTS, 'bn')} পয়েন্ট প্রস্তুত`
+                                                }
+                                            >
+                                                <span className="sr-only">
+                                                    {language === 'en'
+                                                        ? `+${LIFE_SKILL_MONTHLY_BONUS_POINTS} points ready`
+                                                        : `+${toBengaliNumber(LIFE_SKILL_MONTHLY_BONUS_POINTS, 'bn')} পয়েন্ট প্রস্তুত`}
+                                                </span>
+                                                <span
+                                                    aria-hidden
+                                                    className={`rounded-full bg-amber-400 px-5 py-2 text-4xl font-black tabular-nums leading-none tracking-tight text-slate-900 shadow-lg sm:px-6 sm:py-2.5 sm:text-5xl md:text-6xl ${
+                                                        language === 'bn' ? 'font-bengali' : ''
+                                                    }`}
+                                                >
+                                                    +{language === 'bn'
+                                                        ? toBengaliNumber(LIFE_SKILL_MONTHLY_BONUS_POINTS, 'bn')
+                                                        : LIFE_SKILL_MONTHLY_BONUS_POINTS}
+                                                </span>
+                                            </div>
+                                        ) : onCooldown ? (
                                             <div
                                                 className={`absolute left-2 top-2 z-10 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 text-[11px] font-bold tabular-nums tracking-tight text-white shadow-sm backdrop-blur-sm sm:left-3 sm:top-3 sm:text-xs ${
                                                     language === 'bn' ? 'font-bengali' : ''
@@ -4135,7 +4165,7 @@ export default function Training({
                                                 <span className="sr-only">{nextScoreLabel}</span>
                                                 <span aria-hidden>{nextScoreChip}</span>
                                             </div>
-                                        )}
+                                        ) : null}
 
                                         {isCompleted && (
                                             <div

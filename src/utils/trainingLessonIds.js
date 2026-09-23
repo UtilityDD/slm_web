@@ -142,6 +142,58 @@ export function buildLifeSkillActiveCooldowns(attempts, now = new Date()) {
     return active;
 }
 
+/** Latest award timestamp per module (cooldown or not). */
+export function buildLifeSkillLatestAwards(attempts) {
+    const latest = new Map();
+    for (const row of attempts || []) {
+        const moduleId = moduleIdFromLifeSkillBonusQuizId(row.quiz_id);
+        if (!moduleId || !row.created_at) continue;
+        const prev = latest.get(moduleId);
+        if (!prev || new Date(row.created_at) > new Date(prev)) {
+            latest.set(moduleId, row.created_at);
+        }
+    }
+    return latest;
+}
+
+/**
+ * Modules the user already touched that can claim Life Skill points again.
+ * Never-opened catalog cards do not count.
+ */
+export function buildLifeSkillWaitingScores({
+    moduleIds,
+    attempts,
+    completedIds,
+    now = new Date(),
+} = {}) {
+    const latest = buildLifeSkillLatestAwards(attempts);
+    const completed = new Set((completedIds || []).filter(Boolean));
+    const pool = Array.isArray(moduleIds) && moduleIds.length > 0
+        ? moduleIds
+        : [...new Set([...latest.keys(), ...completed])];
+
+    const readyIds = [];
+    for (const id of pool) {
+        if (!id) continue;
+        const lastAt = latest.get(id) || null;
+        if (!lastAt && !completed.has(id)) continue;
+        if (getLifeSkillScoreCooldownDaysLeft(lastAt, now) > 0) continue;
+        readyIds.push(id);
+    }
+    readyIds.sort((a, b) => {
+        const ta = latest.get(a) ? new Date(latest.get(a)).getTime() : 0;
+        const tb = latest.get(b) ? new Date(latest.get(b)).getTime() : 0;
+        return ta - tb;
+    });
+    const waitingCount = readyIds.length;
+    return {
+        waitingCount,
+        waitingPoints: waitingCount * LIFE_SKILL_MONTHLY_BONUS_POINTS,
+        readyIds,
+        featuredId: readyIds[0] || null,
+    };
+}
+
 /**
  * Lifetime points earned per Life Skill module from life_skill_bonus_* attempts.
  * @param {Array<{ quiz_id?: string, score?: number }>} attempts
@@ -318,4 +370,37 @@ export function buildCoreLessonActiveCooldowns(attempts, launchIso, now = new Da
         }
     }
     return active;
+}
+
+/**
+ * Core lessons the user already read/scored that can claim +20 again.
+ * Never-opened lessons do not count.
+ */
+export function buildCoreLessonWaitingScores({
+    lessonIds,
+    attempts,
+    completedIds,
+    launchIso,
+    now = new Date(),
+} = {}) {
+    const latest = buildCoreLessonLatestAwardByLesson(attempts, launchIso);
+    const completed = new Set(filterCoreCompletedLessonIds(completedIds || []));
+    const pool = Array.isArray(lessonIds) && lessonIds.length > 0
+        ? lessonIds.filter((id) => CORE_LESSON_ID_RE.test(String(id || '')))
+        : [...new Set([...latest.keys(), ...completed])];
+
+    const readyIds = [];
+    for (const id of pool) {
+        if (!id) continue;
+        const lastAt = latest.get(id) || null;
+        if (!lastAt && !completed.has(id)) continue;
+        if (getCoreLessonScoreCooldownDaysLeft(lastAt, now) > 0) continue;
+        readyIds.push(id);
+    }
+    const waitingCount = readyIds.length;
+    return {
+        waitingCount,
+        waitingPoints: waitingCount * CORE_LESSON_MONTHLY_BONUS_POINTS,
+        readyIds,
+    };
 }

@@ -7,7 +7,7 @@ import {
     handleSafetyLibraryImageError,
 } from '../../utils/safetyLibraryImageUrl';
 import { pushIdentifyRecent, readIdentifyRecents } from '../../utils/safetyLibraryRecents';
-import { readIdentifyPracticeScore } from '../../utils/safetyLibraryPractice';
+import { readIdentifyPracticeScore, formatIdentifyAvgResponse } from '../../utils/safetyLibraryPractice';
 import {
     fetchIdentifyScoreStatus,
     canStartIdentifyReal,
@@ -719,6 +719,8 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const [modeGateMessage, setModeGateMessage] = useState('');
     const [scoreSheetOpen, setScoreSheetOpen] = useState(false);
     const [quitConfirmOpen, setQuitConfirmOpen] = useState(false);
+    const [practiceSessionAvgMs, setPracticeSessionAvgMs] = useState(0);
+    const practiceSessionRef = useRef({ ms: 0, n: 0 });
     const [videoNudge, setVideoNudge] = useState('');
     const videoNudgeDoneRef = useRef(false);
     const videoDwellLeftRef = useRef(VIDEO_NUDGE_AFTER_MS);
@@ -731,6 +733,12 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     useEffect(() => {
         setDetailZoomLevel(1);
     }, [selectedItem?.id]);
+
+    useEffect(() => {
+        if (!practiceOpen || practiceScoringMode !== 'practice') return;
+        practiceSessionRef.current = { ms: 0, n: 0 };
+        setPracticeSessionAvgMs(0);
+    }, [practiceOpen, practiceScoringMode]);
 
     /** Home gift FAB: open straight into real mode (UI launch flag). */
     useEffect(() => {
@@ -853,6 +861,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             practiceBadgeAria: 'Familiarity',
             scoreAll: 'All time',
             scorePractice: 'Practice',
+            scoreAvgTime: 'Avg time',
             scoreReal: 'Real score',
             scoreRealEmpty: 'Not set yet',
             relatedChartLabel: 'Chart',
@@ -894,6 +903,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             practiceBadgeAria: 'চেনা',
             scoreAll: 'মোট',
             scorePractice: 'প্র্যাকটিস',
+            scoreAvgTime: 'গড় সময়',
             scoreReal: 'আসল স্কোর',
             scoreRealEmpty: 'এখনো নেই',
             relatedChartLabel: 'চার্ট',
@@ -1219,7 +1229,18 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 setPracticeFromRules(true);
                                 setPracticeScoringMode('practice');
                             }}
-                            onScoreSaved={setPracticeScore}
+                            onScoreSaved={(record) => {
+                                setPracticeScore((prev) => {
+                                    const added = (record?.lifeTimeMs ?? 0) - (prev?.lifeTimeMs ?? 0);
+                                    if (added > 0) {
+                                        const next = practiceSessionRef.current;
+                                        next.ms += added;
+                                        next.n += 1;
+                                        setPracticeSessionAvgMs(Math.round(next.ms / next.n));
+                                    }
+                                    return record;
+                                });
+                            }}
                             onIdentifySubmitResult={(result) => {
                                 if (result?.ok) {
                                     setIdentifyStatus((prev) => ({
@@ -1497,6 +1518,10 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         </div>
     );
 
+    const quitAvgMs = practiceSessionAvgMs > 0
+        ? practiceSessionAvgMs
+        : (practiceScore?.lifeTimed > 0 ? practiceScore.avgResponseMs : 0);
+
     const quitSheet = quitConfirmOpen && typeof document !== 'undefined' ? createPortal(
         <div className="fixed inset-0 z-[12100] flex items-center justify-center p-4 animate-fade-in">
             <div className="absolute inset-0 bg-slate-900/45" onClick={() => setQuitConfirmOpen(false)} aria-hidden="true" />
@@ -1504,6 +1529,16 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                 <h2 className={`text-center text-base font-black text-slate-900 ${language === 'bn' ? 'font-bengali' : ''}`}>
                     {t.quitTitle}
                 </h2>
+                {practiceScoringMode === 'practice' && quitAvgMs > 0 ? (
+                    <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-center">
+                        <p className={`text-[11px] font-black text-amber-800/80 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {t.scoreAvgTime}
+                        </p>
+                        <p className={`identify-practice-live-time identify-practice-live-time--sheet mt-1.5 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                            {formatIdentifyAvgResponse(quitAvgMs, language)}
+                        </p>
+                    </div>
+                ) : null}
                 <div className="mt-4 flex gap-2">
                     <button
                         type="button"
@@ -1616,6 +1651,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             <p className="mt-2 text-center text-base font-black tabular-nums text-slate-900">
                                 {practiceScore.lifeCorrect}/{practiceScore.lifeTotal}
                             </p>
+                            {practiceScore.lifeTimed > 0 ? (
+                                <p className={`mt-2 text-center text-sm font-bold text-slate-600 ${language === 'bn' ? 'font-bengali' : ''}`}>
+                                    {t.scoreAvgTime}{' '}
+                                    <span className="tabular-nums text-slate-900">
+                                        {formatIdentifyAvgResponse(practiceScore.avgResponseMs, language)}
+                                    </span>
+                                </p>
+                            ) : null}
                         </>
                     ) : (
                         <p className={`mt-2 text-center text-sm font-semibold text-slate-400 ${language === 'bn' ? 'font-bengali' : ''}`}>

@@ -7,6 +7,7 @@ import {
     buildIdentifyPracticeQuestion,
     nextIdentifyPracticeMode,
     recordIdentifyPracticeAnswer,
+    formatIdentifyAvgResponse,
 } from '../../utils/safetyLibraryPractice';
 import {
     IDENTIFY_REAL_SECONDS_SHORT,
@@ -21,6 +22,7 @@ import {
     useQuizImageGate,
 } from '../../utils/quizImageGate';
 import IdentifyGridPractice from './IdentifyGridPractice';
+import { playQuizChoiceSound } from '../../utils/quizChoiceSounds';
 
 function practiceCopy(language) {
     return language === 'en'
@@ -122,6 +124,8 @@ export default function IdentifyPractice({
     });
     const [pickedId, setPickedId] = useState('');
     const [flash, setFlash] = useState('');
+    const [elapsedMs, setElapsedMs] = useState(0);
+    const [clockFrozen, setClockFrozen] = useState(false);
     const advanceTimer = useRef(0);
     const clockTimer = useRef(0);
     const lockedRef = useRef(false);
@@ -141,6 +145,7 @@ export default function IdentifyPractice({
     const realMistakesRef = useRef(0);
     const realAskedRef = useRef(0);
     const clockLimitRef = useRef(IDENTIFY_REAL_SECONDS_SHORT);
+    const startedAtRef = useRef(0);
 
     const answered = Boolean(pickedId);
     const liveCorrect = score?.lifeCorrect ?? 0;
@@ -233,6 +238,30 @@ export default function IdentifyPractice({
     }, [secondsLeft, isReal, rulesReady, realDone, imagesReady]);
 
     useEffect(() => {
+        if (isReal || !activeQuestion) return;
+        startedAtRef.current = Date.now();
+        setElapsedMs(0);
+        setClockFrozen(false);
+    }, [isReal, activeQuestion?.itemId, activeMode, imagesReady]);
+
+    useEffect(() => {
+        if (isReal || !activeQuestion || answered || clockFrozen) return undefined;
+        const tick = () => {
+            const start = startedAtRef.current;
+            setElapsedMs(start ? Math.max(0, Date.now() - start) : 0);
+        };
+        tick();
+        const id = window.setInterval(tick, 100);
+        return () => window.clearInterval(id);
+    }, [isReal, activeQuestion?.itemId, activeMode, imagesReady, answered, clockFrozen]);
+
+    const takePracticeResponseMs = () => {
+        const start = startedAtRef.current;
+        if (!start) return null;
+        return Date.now() - start;
+    };
+
+    useEffect(() => {
         if (!activeQuestion || !imagesReady) return undefined;
         const peekMode = nextIdentifyPracticeMode([...recentModes.current], items);
         const peek = buildIdentifyPracticeQuestion(items, activeQuestion.itemId, peekMode);
@@ -282,7 +311,7 @@ export default function IdentifyPractice({
             return;
         }
 
-        onScoreSaved?.(recordIdentifyPracticeAnswer(ok));
+        onScoreSaved?.(recordIdentifyPracticeAnswer(ok, takePracticeResponseMs()));
         window.clearTimeout(advanceTimer.current);
         advanceTimer.current = window.setTimeout(() => goNextPractice(activeQuestion?.itemId), 900);
     };
@@ -290,6 +319,7 @@ export default function IdentifyPractice({
     const pickChoice = (choiceId) => {
         if (answered || lockedRef.current || !activeQuestion || realDone || !clockArmed) return;
         const ok = choiceId === activeQuestion.itemId;
+        playQuizChoiceSound(ok);
         setPickedId(choiceId);
         finishAnswer(ok);
     };
@@ -474,9 +504,21 @@ export default function IdentifyPractice({
             </p>
         </div>
     ) : (
-        <div className="mb-1 flex justify-end">
+        <div className="mb-1 flex items-center justify-between gap-2">
             <p className={`identify-quiz-score rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-black tabular-nums text-white shadow-sm ${bn ? 'font-bengali' : ''}`}>
                 {livePercent}% · {liveCorrect}/{liveTotal}
+            </p>
+            <p
+                className={`identify-practice-live-time ${
+                    elapsedMs >= 8000
+                        ? 'identify-practice-live-time--late'
+                        : elapsedMs >= 4000
+                            ? 'identify-practice-live-time--mid'
+                            : ''
+                } ${bn ? 'font-bengali' : ''}`}
+                aria-live="off"
+            >
+                {formatIdentifyAvgResponse(elapsedMs, language)}
             </p>
         </div>
     );
@@ -490,7 +532,10 @@ export default function IdentifyPractice({
                     question={activeQuestion}
                     score={isReal ? { lifeCorrect: realCorrect, lifeTotal: realAsked + (answered ? 1 : 0), lifePercent: 0 } : score}
                     persistLocalScore={!isReal}
-                    onScoreSaved={isReal ? undefined : onScoreSaved}
+                    onScoreSaved={isReal ? undefined : (record) => {
+                        setClockFrozen(true);
+                        onScoreSaved?.(record);
+                    }}
                     onAnswered={isReal ? (ok) => {
                         if (lockedRef.current) return;
                         setPickedId(ok ? activeQuestion.itemId : '__wrong__');
@@ -498,11 +543,12 @@ export default function IdentifyPractice({
                     } : undefined}
                     onAdvance={isReal ? undefined : goNextPractice}
                     clueText={clueText}
-                    headerExtra={isReal ? scoreChip : null}
-                    hideDefaultScore={isReal}
+                    headerExtra={scoreChip}
+                    hideDefaultScore
                     externalAnswered={isReal ? answered : undefined}
                     lockChoices={isReal && !imagesReady}
                     waitLabel={isReal && !imagesReady ? t.loadingPic : ''}
+                    promptReady={imagesReady}
                 />
             </div>
         );

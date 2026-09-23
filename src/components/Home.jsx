@@ -2,7 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import HomeSkeleton from './loaders/HomeSkeleton';
 import { UserIcon } from './icons';
 import { firstTimeReadingPointsFromLessons, getBadgeByLevel } from '../utils/badgeUtils';
-import { filterCoreCompletedLessonIds } from '../utils/trainingLessonIds';
+import {
+  filterCoreCompletedLessonIds,
+  buildLifeSkillWaitingScores,
+  buildCoreLessonWaitingScores,
+} from '../utils/trainingLessonIds';
+import { CORE_LESSON_MONTHLY_BONUS_ENABLED, CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO } from '../config';
 import { isGuestUser } from '../utils/guestPreview';
 import { supabase } from '../supabaseClient';
 import { storageUtils } from '../utils/storageUtils';
@@ -23,8 +28,10 @@ import {
 } from '../utils/hourlyNightWindow';
 import HomePrimaryActionCards from './HomePrimaryActionCards';
 import IdentifyScoreGiftFab from './IdentifyScoreGiftFab';
+import LifeSkillWaitingBalloon from './LifeSkillWaitingBalloon';
 import { canStartIdentifyReal, fetchIdentifyScoreStatus } from '../utils/identifyRealScore';
 import { isIdentifyGiftInRewardWindow } from '../utils/identifyGiftSchedule';
+import { loadSupplementaryCompletedModuleIds } from '../utils/supplementaryProgressStorage';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
 import LanguageSwitch from './LanguageSwitch';
@@ -132,6 +139,8 @@ export default function Home({
   /** Home gift: can_play today AND inside personal reward window (admin always in-window). */
   const [identifyGiftEligible, setIdentifyGiftEligible] = useState(false);
   const [identifyGiftInWindow, setIdentifyGiftInWindow] = useState(false);
+  const [lifeSkillWaitingCount, setLifeSkillWaitingCount] = useState(0);
+  const [lessonWaitingCount, setLessonWaitingCount] = useState(0);
   const avatarSrc = useCachedAvatar(user?.id, userProfile?.avatar_url, !!userProfile);
 
   useEffect(() => {
@@ -174,6 +183,69 @@ export default function Home({
     const timer = window.setInterval(tick, 60_000);
     return () => window.clearInterval(timer);
   }, [user?.id, userProfile, identifyGiftStaffPreview]);
+
+  useEffect(() => {
+    if (!user?.id || isGuestUser(userProfile)) {
+      setLifeSkillWaitingCount(0);
+      setLessonWaitingCount(0);
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      const completedIds = loadSupplementaryCompletedModuleIds(user.id);
+      const coreDone = filterCoreCompletedLessonIds(
+        Array.isArray(userProfile?.completed_lessons) ? userProfile.completed_lessons : []
+      );
+      let moduleIds = [];
+      try {
+        const res = await fetch('/data/supplementary_modules.json');
+        if (res.ok) {
+          const rows = await res.json();
+          moduleIds = (Array.isArray(rows) ? rows : []).map((row) => row?.id).filter(Boolean);
+        }
+      } catch {
+        moduleIds = [];
+      }
+      const [lsRes, lessonRes] = await Promise.all([
+        supabase
+          .from('quiz_attempts')
+          .select('quiz_id, created_at, score')
+          .eq('user_id', user.id)
+          .like('quiz_id', 'life_skill_bonus_%'),
+        CORE_LESSON_MONTHLY_BONUS_ENABLED
+          ? supabase
+              .from('quiz_attempts')
+              .select('quiz_id, created_at')
+              .eq('user_id', user.id)
+              .like('quiz_id', 'lesson_bonus_%')
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (cancelled) return;
+      if (lsRes.error) {
+        console.warn('Life Skill waiting scores load failed:', lsRes.error);
+      }
+      if (lessonRes.error) {
+        console.warn('Lesson waiting scores load failed:', lessonRes.error);
+      }
+      const ls = buildLifeSkillWaitingScores({
+        moduleIds,
+        attempts: lsRes.data || [],
+        completedIds,
+      });
+      const lessons = CORE_LESSON_MONTHLY_BONUS_ENABLED
+        ? buildCoreLessonWaitingScores({
+            completedIds: coreDone,
+            attempts: lessonRes.data || [],
+            launchIso: CORE_LESSON_MONTHLY_BONUS_LAUNCH_ISO,
+          })
+        : { waitingCount: 0 };
+      setLifeSkillWaitingCount(ls.waitingCount);
+      setLessonWaitingCount(lessons.waitingCount);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, userProfile]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -738,6 +810,21 @@ export default function Home({
               eligible={identifyGiftStaffPreview || (identifyGiftEligible && identifyGiftInWindow)}
               visible
               onOpen={() => go('safety-library')}
+            />
+          ) : null}
+          {user?.id && !isGuestUser(userProfile) ? (
+            <LifeSkillWaitingBalloon
+              language={language}
+              lifeSkillCount={lifeSkillWaitingCount}
+              lessonCount={lessonWaitingCount}
+              alwaysShow={isAdmin}
+              sleepCover={showSleepNudge && !isAdmin}
+              onOpenLessons={() => {
+                window.location.hash = '/training';
+              }}
+              onOpenLifeSkill={() => {
+                window.location.hash = '/training?tab=supplementary';
+              }}
             />
           ) : null}
         </div>

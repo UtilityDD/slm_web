@@ -1016,6 +1016,7 @@ const ChapterQuizModal = ({
                                     {currentQuestion?.image && (
                                         <div className="flex max-h-[220px] justify-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
                                             <img
+                                                key={`${currentQuestionIndex}-${currentQuestion.image}`}
                                                 src={currentQuestion.image}
                                                 alt="Visual aid"
                                                 className="max-w-full max-h-full object-contain animate-fade-in"

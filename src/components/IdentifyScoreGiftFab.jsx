@@ -5,6 +5,7 @@ import {
     isIdentifyHomeGiftDoneToday,
     markIdentifyHomeGiftDoneToday,
 } from '../utils/identifyGiftLaunch';
+import { playGiftWinSound } from '../utils/quizChoiceSounds';
 
 const GIFT_POP_SCORES = [5, 10, 15, 20, 25, 30, 50, 80, 100];
 
@@ -94,6 +95,7 @@ export default function IdentifyScoreGiftFab({
         if (phase !== 'idle') return;
         if (!alwaysShow) markIdentifyHomeGiftDoneToday();
         if (navigator.vibrate) navigator.vibrate([10, 18, 10, 18, 12]);
+        playGiftWinSound();
         clearTimers();
         setBursts([]);
         setPhase('zoom');

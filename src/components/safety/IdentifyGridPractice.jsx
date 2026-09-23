@@ -3,7 +3,8 @@ import {
     toSafetyLibraryDisplayUrl,
     handleSafetyLibraryImageError,
 } from '../../utils/safetyLibraryImageUrl';
-import { recordIdentifyPracticeAnswer, practiceClueAsk } from '../../utils/safetyLibraryPractice';
+import { recordIdentifyPracticeAnswer, practiceClueAsk, formatIdentifyAvgResponse } from '../../utils/safetyLibraryPractice';
+import { playQuizChoiceSound } from '../../utils/quizChoiceSounds';
 
 function gridCopy(language) {
     return language === 'en'
@@ -39,6 +40,8 @@ export default function IdentifyGridPractice({
     /** Timed run: wait for all four photos before taps count. */
     lockChoices = false,
     waitLabel = '',
+    /** When photos/clue are ready, restart the practice response clock. */
+    promptReady = true,
 }) {
     const t = gridCopy(language);
     const bn = language === 'bn';
@@ -47,10 +50,14 @@ export default function IdentifyGridPractice({
     const [boardPx, setBoardPx] = useState(0);
     const fitRef = useRef(null);
     const advanceTimer = useRef(0);
+    const startedAtRef = useRef(0);
     const answered = Boolean(pickedId) || Boolean(externalAnswered);
     const liveCorrect = score?.lifeCorrect ?? 0;
     const liveTotal = score?.lifeTotal ?? 0;
     const livePercent = score?.lifePercent ?? 0;
+    const liveAvg = score?.lifeTimed > 0
+        ? formatIdentifyAvgResponse(score.avgResponseMs, language)
+        : '';
     const isClue = Boolean(clueText);
     const clueAsk = isClue ? practiceClueAsk(question?.category, language) : '';
 
@@ -60,7 +67,13 @@ export default function IdentifyGridPractice({
         window.clearTimeout(advanceTimer.current);
         setPickedId('');
         setFlash('');
+        startedAtRef.current = Date.now();
     }, [question?.itemId, clueText]);
+
+    useEffect(() => {
+        if (answered) return;
+        startedAtRef.current = Date.now();
+    }, [promptReady, answered]);
 
     useLayoutEffect(() => {
         const el = fitRef.current;
@@ -86,10 +99,12 @@ export default function IdentifyGridPractice({
     const pickTile = (choiceId) => {
         if (answered || lockChoices || !question) return;
         const ok = choiceId === question.itemId;
+        playQuizChoiceSound(ok);
         setPickedId(choiceId);
         setFlash(ok ? 'right' : 'wrong');
         if (persistLocalScore) {
-            onScoreSaved?.(recordIdentifyPracticeAnswer(ok));
+            const started = startedAtRef.current;
+            onScoreSaved?.(recordIdentifyPracticeAnswer(ok, started ? Date.now() - started : null));
         }
         if (typeof onAnswered === 'function') {
             onAnswered(ok);
@@ -108,7 +123,7 @@ export default function IdentifyGridPractice({
                 {!hideDefaultScore ? (
                     <div className="mb-1 flex justify-end">
                         <p className={`identify-quiz-score rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-black tabular-nums text-white shadow-sm ${bn ? 'font-bengali' : ''}`}>
-                            {livePercent}% · {liveCorrect}/{liveTotal}
+                            {livePercent}% · {liveCorrect}/{liveTotal}{liveAvg ? ` · ${liveAvg}` : ''}
                         </p>
                     </div>
                 ) : null}

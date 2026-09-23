@@ -64,6 +64,21 @@ function clampScore(n) {
     return Number.isFinite(v) ? Math.max(0, v) : 0;
 }
 
+/** Cap leftover-tab waits so one pause cannot wreck the average. */
+function clampResponseMs(n) {
+    const v = Math.round(Number(n));
+    if (!Number.isFinite(v) || v < 0) return null;
+    return Math.min(v, 5 * 60 * 1000);
+}
+
+export function formatIdentifyAvgResponse(ms, language = 'bn') {
+    const n = Math.round(Number(ms));
+    if (!Number.isFinite(n) || n < 0) return '';
+    const sec = n / 1000;
+    const label = sec < 10 ? sec.toFixed(1) : String(Math.round(sec));
+    return language === 'en' ? `${label}s` : `${label} সে`;
+}
+
 export function readIdentifyPracticeScore() {
     try {
         const raw = storageUtils.getItem(SCORE_KEY);
@@ -81,6 +96,11 @@ export function readIdentifyPracticeScore() {
             0,
             Math.min(100, Math.round(Number(parsed?.bestPercent) || lastPercent || 0))
         );
+        const lifeTimed = clampScore(parsed?.lifeTimed);
+        const lifeTimeMs = clampScore(parsed?.lifeTimeMs);
+        const avgResponseMs = lifeTimed > 0
+            ? Math.round(lifeTimeMs / lifeTimed)
+            : clampScore(parsed?.avgResponseMs);
         if (lastTotal < 1 && lifeTotal < 1) return null;
         return {
             lastPercent,
@@ -92,19 +112,26 @@ export function readIdentifyPracticeScore() {
             lifeCorrect,
             lifeTotal,
             lifePercent,
+            lifeTimed,
+            lifeTimeMs,
+            avgResponseMs,
         };
     } catch {
         return null;
     }
 }
 
-export function recordIdentifyPracticeAnswer(isCorrect) {
+export function recordIdentifyPracticeAnswer(isCorrect, responseMs) {
     const prev = readIdentifyPracticeScore();
     const lifeTotal = (prev?.lifeTotal ?? 0) + 1;
     const lifeCorrect = (prev?.lifeCorrect ?? 0) + (isCorrect ? 1 : 0);
     const lifePercent = Math.round((lifeCorrect / lifeTotal) * 100);
     const beatsBest = lifePercent > (prev?.bestPercent ?? -1)
         || (lifePercent === (prev?.bestPercent ?? -1) && lifeTotal >= (prev?.bestTotal ?? 0));
+    const timedMs = clampResponseMs(responseMs);
+    const lifeTimeMs = (prev?.lifeTimeMs ?? 0) + (timedMs ?? 0);
+    const lifeTimed = (prev?.lifeTimed ?? 0) + (timedMs != null ? 1 : 0);
+    const avgResponseMs = lifeTimed > 0 ? Math.round(lifeTimeMs / lifeTimed) : 0;
     const record = {
         lastPercent: lifePercent,
         lastCorrect: lifeCorrect,
@@ -115,6 +142,9 @@ export function recordIdentifyPracticeAnswer(isCorrect) {
         lifeCorrect,
         lifeTotal,
         lifePercent,
+        lifeTimeMs,
+        lifeTimed,
+        avgResponseMs,
         updatedAt: new Date().toISOString(),
     };
     storageUtils.setItem(SCORE_KEY, JSON.stringify(record));
