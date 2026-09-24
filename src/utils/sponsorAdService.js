@@ -1,9 +1,9 @@
 /**
  * Sponsor bottom strip (Standing-card style).
  *
- * Content rotation: every clock hour alternates between
- *   - the live paid/sponsor ad from Supabase (when available), and
- *   - the built-in invite (“স্পনসর চাই”) demo ad.
+ * Content: paid/sponsor ads from Supabase only.
+ * The built-in “স্পনসর চাই” invite is kept for Admin preview — it does not
+ * auto-show. Flip SHOW_INVITE_SPONSOR_AD to restore hourly paid ↔ invite.
  *
  * Show frequency: every other app open (1st, 3rd, 5th…), then at most
  * once within that open (session flag after dismiss).
@@ -15,6 +15,9 @@ const HOUR_MS = 60 * 60 * 1000;
 const APP_OPEN_COUNT_KEY = 'slm_sponsor_ad_app_opens';
 const OPEN_ELIGIBLE_KEY = 'slm_sponsor_ad_open_eligible';
 const OPEN_SHOWN_KEY = 'slm_sponsor_ad_open_shown';
+
+/** Off: do not auto-show the built-in “স্পনসর চাই” invite. Admin preview still works. */
+export const SHOW_INVITE_SPONSOR_AD = false;
 
 /** Built-in inviting / “sponsor wanted” ad (same content as Admin SPONSOR_ASK_PRESET). */
 export const INVITE_SPONSOR_AD = {
@@ -36,6 +39,16 @@ export const INVITE_SPONSOR_AD = {
     contact_safety_mitra: true,
     is_active: true,
 };
+
+export function isInviteSponsorAd(ad) {
+    if (!ad) return false;
+    if (ad.contact_safety_mitra === true) return true;
+    if (ad.id === INVITE_SPONSOR_AD.id) return true;
+    const headlines = [ad.headline, ...(Array.isArray(ad.headlines) ? ad.headlines : [])]
+        .map((h) => String(h || ''))
+        .join('\n');
+    return headlines.includes('স্পনসর চাই');
+}
 
 let dbAdPromise = null;
 let appOpenCounted = false;
@@ -89,12 +102,13 @@ export function markSponsorAdSeen(_adId) {
 }
 
 /**
- * Pick paid vs invite from the wall clock.
+ * Pick the live ad. Invite rotation is off unless SHOW_INVITE_SPONSOR_AD.
  * Even hour buckets → paid (fallback invite). Odd → invite.
  */
 export function selectHourlySponsorAd(dbAd, nowMs = Date.now()) {
     const invite = INVITE_SPONSOR_AD;
-    const paid = dbAd && dbAd.contact_safety_mitra !== true ? dbAd : null;
+    const paid = dbAd && !isInviteSponsorAd(dbAd) ? dbAd : null;
+    if (!SHOW_INVITE_SPONSOR_AD) return paid;
     const usePaidSlot = currentSponsorHourBucket(nowMs) % 2 === 0;
     if (usePaidSlot && paid) return paid;
     return invite;

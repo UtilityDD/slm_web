@@ -14,6 +14,7 @@ import {
     isIdentifyAdmin,
 } from '../../utils/identifyRealScore';
 import { consumeIdentifyRealLaunch } from '../../utils/identifyGiftLaunch';
+import { prefetchIdentifyCatalog } from '../../utils/quizImagePrefetch';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
 import { getIdentifyChartPage, hasIdentifyChartPage } from '../../data/identifyCharts';
 import IdentifyPractice from './IdentifyPractice';
@@ -145,9 +146,20 @@ const MagnifierPlusIcon = ({ className }) => (
     </svg>
 );
 
+const ExpandCornersIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M8 3H3v5" />
+        <path d="M16 3h5v5" />
+        <path d="M8 21H3v-5" />
+        <path d="M16 21h5v-5" />
+    </svg>
+);
+
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 2.5;
 const ZOOM_STEP = 0.25;
+const ZOOM_DOUBLE_TAP = 2;
+const DOUBLE_TAP_MS = 320;
 
 const ImageSlider = forwardRef(function ImageSlider(
     {
@@ -167,6 +179,8 @@ const ImageSlider = forwardRef(function ImageSlider(
         /** Auto-rotate slides every 3s when multiple images (off in detail modal). */
         autoAdvance = true,
         emptyLabel = 'No photo',
+        /** Lightbox: transparent frame so the photo sits on the dark stage. */
+        surface = 'white',
     },
     ref
 ) {
@@ -192,6 +206,8 @@ const ImageSlider = forwardRef(function ImageSlider(
         originX: 0,
         originY: 0
     });
+    const tapStartRef = useRef(null);
+    const lastTapRef = useRef({ t: 0, x: 0, y: 0 });
 
     const clampPan = useCallback((nx, ny, z) => {
         const el = viewportRef.current;
@@ -247,6 +263,28 @@ const ImageSlider = forwardRef(function ImageSlider(
         onZoomChange?.(zoom);
     }, [zoom, onZoomChange]);
 
+    const applyDoubleTapZoom = useCallback(
+        (clientX, clientY) => {
+            const next = zoomRef.current > 1.001 ? ZOOM_MIN : ZOOM_DOUBLE_TAP;
+            if (next <= 1.001) {
+                setZoom(1);
+                setPan({ x: 0, y: 0 });
+                return;
+            }
+            const el = viewportRef.current;
+            if (!el) {
+                setZoom(next);
+                return;
+            }
+            const rect = el.getBoundingClientRect();
+            const ox = clientX - (rect.left + rect.width / 2);
+            const oy = clientY - (rect.top + rect.height / 2);
+            setZoom(next);
+            setPan(clampPan(-ox * (next - 1), -oy * (next - 1), next));
+        },
+        [clampPan]
+    );
+
     useImperativeHandle(
         ref,
         () => ({
@@ -289,6 +327,11 @@ const ImageSlider = forwardRef(function ImageSlider(
                 const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, startZoom * (d / startDist)));
                 setZoom(next);
                 return;
+            }
+
+            const tap = tapStartRef.current;
+            if (tap && tap.pointerId === e.pointerId && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 14) {
+                tapStartRef.current = null;
             }
 
             const d = dragRef.current;
@@ -364,6 +407,7 @@ const ImageSlider = forwardRef(function ImageSlider(
             const target = e.target;
             if (target instanceof Element && (target.closest('[data-zoom-ui]') || target.closest('button'))) return;
 
+            tapStartRef.current = { pointerId: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now() };
             pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
             if (!globalListenersAttachedRef.current) {
@@ -378,6 +422,7 @@ const ImageSlider = forwardRef(function ImageSlider(
             }
 
             if (pointersRef.current.size >= 2) {
+                tapStartRef.current = null;
                 if (dragRef.current.active) {
                     const pid = dragRef.current.pointerId;
                     dragRef.current = {
@@ -423,6 +468,34 @@ const ImageSlider = forwardRef(function ImageSlider(
             }
         },
         [enableZoom]
+    );
+
+    const onViewportPointerUp = useCallback(
+        (e) => {
+            if (!enableZoom) return;
+            if (e.button !== undefined && e.button !== 0) return;
+            const target = e.target;
+            if (target instanceof Element && (target.closest('[data-zoom-ui]') || target.closest('button'))) return;
+            if (pinchRef.current.active || pointersRef.current.size > 1) {
+                tapStartRef.current = null;
+                return;
+            }
+            const start = tapStartRef.current;
+            tapStartRef.current = null;
+            if (!start || start.pointerId !== e.pointerId) return;
+            if (Date.now() - start.t > 420) return;
+            if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 14) return;
+
+            const last = lastTapRef.current;
+            const now = Date.now();
+            if (last.t && now - last.t < DOUBLE_TAP_MS && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 40) {
+                lastTapRef.current = { t: 0, x: 0, y: 0 };
+                applyDoubleTapZoom(e.clientX, e.clientY);
+                return;
+            }
+            lastTapRef.current = { t: now, x: e.clientX, y: e.clientY };
+        },
+        [enableZoom, applyDoubleTapZoom]
     );
 
     const onLostPointerCapture = useCallback(
@@ -486,15 +559,16 @@ const ImageSlider = forwardRef(function ImageSlider(
         enableZoom && zoom > 1.001
             ? `touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`
             : enableZoom
-              ? 'touch-pan-y'
+              ? 'touch-manipulation'
               : '';
 
     return (
         <div
             ref={enableZoom ? viewportRef : undefined}
             onPointerDown={enableZoom ? onViewportPointerDown : undefined}
+            onPointerUp={enableZoom ? onViewportPointerUp : undefined}
             onLostPointerCapture={enableZoom ? onLostPointerCapture : undefined}
-            className={`group/slider relative flex select-none justify-center bg-white ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+            className={`group/slider relative flex select-none justify-center ${surface === 'dark' ? 'bg-transparent' : 'bg-white'} ${boxAspect} [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
                 naturalImageHeight && !fillFrame ? 'items-start overflow-x-hidden overflow-y-visible' : 'items-center overflow-hidden'
             } ${touchClass}`}
         >
@@ -725,13 +799,15 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const videoNudgeDoneRef = useRef(false);
     const videoDwellLeftRef = useRef(VIDEO_NUDGE_AFTER_MS);
     const tabsRef = useRef(null);
-    const detailSliderRef = useRef(null);
-    const [detailZoomLevel, setDetailZoomLevel] = useState(1);
+    const lightboxSliderRef = useRef(null);
+    const [imageMaximized, setImageMaximized] = useState(false);
+    const [lightboxZoomLevel, setLightboxZoomLevel] = useState(1);
     /** Modal only: stack when opening a related chart from a product item. */
     const [modalBrowseStack, setModalBrowseStack] = useState([]);
 
     useEffect(() => {
-        setDetailZoomLevel(1);
+        setImageMaximized(false);
+        setLightboxZoomLevel(1);
     }, [selectedItem?.id]);
 
     useEffect(() => {
@@ -872,6 +948,8 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             zoomInAria: 'Bigger',
             zoomOutAria: 'Smaller',
             zoomToolbarAria: 'Make the picture bigger or smaller',
+            maximizeLabel: 'Enlarge',
+            maximizeAria: 'View larger photo',
             relatedOpenAriaPrefix: 'Open',
             backPreviousAria: 'Go back',
             closeAria: 'Close',
@@ -914,6 +992,8 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             zoomInAria: 'বড় করুন',
             zoomOutAria: 'ছোট করুন',
             zoomToolbarAria: 'ছবি বড় বা ছোট করুন',
+            maximizeLabel: 'বড় করুন',
+            maximizeAria: 'ছবি বড় করে দেখুন',
             relatedOpenAriaPrefix: '',
             backPreviousAria: 'পিছনে',
             closeAria: 'বন্ধ',
@@ -938,9 +1018,30 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     const savedIdentifyScore = identifyStatus?.score;
 
     const closeDetailModal = useCallback(() => {
+        setImageMaximized(false);
         setModalBrowseStack([]);
         setSelectedItem(null);
     }, []);
+
+    const openImageLightbox = useCallback(() => {
+        if (!selectedItem?.images?.length) return;
+        setLightboxZoomLevel(1);
+        setImageMaximized(true);
+    }, [selectedItem]);
+
+    const closeImageLightbox = useCallback(() => {
+        setImageMaximized(false);
+        setLightboxZoomLevel(1);
+    }, []);
+
+    useEffect(() => {
+        if (!imageMaximized) return undefined;
+        const onKey = (e) => {
+            if (e.key === 'Escape') closeImageLightbox();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [imageMaximized, closeImageLightbox]);
 
     const openItemDetail = useCallback((item) => {
         setModalBrowseStack([]);
@@ -995,6 +1096,11 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     };
 
     useEffect(() => { fetchLibrary(); }, []);
+
+    useEffect(() => {
+        if (!items.length) return;
+        prefetchIdentifyCatalog(items);
+    }, [items]);
 
     useEffect(() => {
         const filtered = items.filter((item) => {
@@ -1067,13 +1173,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
 
     const searchAndCategories = (
         <div className={`shrink-0 bg-[#fffdf7] ${embedded ? 'border-b border-slate-200/80' : ''}`}>
-            <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8 py-3' : 'py-4 px-4 sm:px-8'}`}>
+            <div className={`max-w-7xl mx-auto space-y-3 ${embedded ? 'px-4 sm:px-8' : 'px-4 sm:px-8'} ${practiceOpen ? 'py-1.5' : embedded ? 'py-3' : 'py-4'}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                         <h1
-                            className={`min-w-0 truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl ${
-                                language === 'bn' ? 'font-bengali' : ''
-                            }`}
+                            className={`min-w-0 truncate font-black tracking-tight text-slate-900 ${
+                                practiceOpen ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
+                            } ${language === 'bn' ? 'font-bengali' : ''}`}
                         >
                             {t.title}
                         </h1>
@@ -1210,13 +1316,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         <div
             className={
                 practiceOpen
-                    ? 'mx-auto flex h-full min-h-0 w-full max-w-7xl min-w-0 flex-col overflow-hidden p-2 sm:p-4'
+                    ? 'mx-auto flex h-full min-h-0 w-full max-w-7xl min-w-0 flex-col overflow-hidden px-2 pb-2 pt-0 sm:px-3 sm:pb-3'
                     : 'mx-auto w-full max-w-7xl min-w-0 overflow-x-hidden px-2.5 pt-2 sm:px-8 sm:pt-8 identify-nav-clear'
             }
         >
 
                 {practiceOpen ? (
-                    <div className="flex h-full min-h-0 w-full flex-col">
+                    <div className="flex h-full min-h-0 w-full flex-1 flex-col">
                         <IdentifyPractice
                             key={practiceScoringMode}
                             language={language}
@@ -1366,7 +1472,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         <div className={`relative flex h-full max-h-full w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200/80 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-2xl animate-slide-up sm:h-[min(calc(100dvh-6rem),820px)] sm:max-h-[calc(100dvh-6rem)] sm:w-[min(96vw,980px)] sm:max-w-none sm:rounded-2xl sm:pb-0 sm:pt-0 sm:animate-scale-in lg:h-[min(calc(100dvh-7rem),820px)] lg:max-h-[calc(100dvh-7rem)] ${selectedChartPage ? 'bg-[#cfc2a4]' : 'bg-[#fffdf7]'}`}>
                             <div className="mx-auto mb-0.5 mt-1.5 h-1 w-10 shrink-0 cursor-pointer rounded-full bg-slate-300 sm:hidden" onClick={closeDetailModal} aria-hidden="true" />
 
-                            <div className={`grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1.5 border-b px-2.5 py-1.5 backdrop-blur-md sm:px-4 sm:py-2 ${selectedChartPage ? 'border-[#b8a888] bg-[#e8dcc4]/95' : 'border-slate-200/80 bg-white/95'}`}>
+                            <div className={`grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1.5 border-b px-2.5 py-1.5 backdrop-blur-md sm:px-4 sm:py-2 ${selectedChartPage ? 'border-[#b8a888] bg-[#e8dcc4]/95' : 'border-slate-200/80 bg-white/95'}`}>
                                 <div className="flex min-w-0 items-center gap-1.5">
                                     {modalBrowseStack.length > 0 && (
                                         <button
@@ -1388,35 +1494,6 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                         {selectedItem.name_bn}
                                     </h2>
                                 </div>
-                                {selectedChartPage ? (
-                                    <span className="justify-self-center" aria-hidden />
-                                ) : (
-                                    <div
-                                        role="toolbar"
-                                        aria-label={t.zoomToolbarAria}
-                                        data-zoom-ui
-                                        className="flex items-center gap-0.5 justify-self-center rounded-full border border-slate-200/80 bg-slate-100/90 p-0.5"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => detailSliderRef.current?.zoomOut()}
-                                            disabled={detailZoomLevel <= ZOOM_MIN + 0.01}
-                                            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                                            aria-label={t.zoomOutAria}
-                                        >
-                                            <MagnifierMinusIcon className="h-[15px] w-[15px]" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => detailSliderRef.current?.zoomIn()}
-                                            disabled={detailZoomLevel >= ZOOM_MAX - 0.01}
-                                            className="flex h-7 w-7 items-center justify-center rounded-full text-slate-700 transition-colors hover:bg-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                                            aria-label={t.zoomInAria}
-                                        >
-                                            <MagnifierPlusIcon className="h-[15px] w-[15px]" />
-                                        </button>
-                                    </div>
-                                )}
                                 <button
                                     type="button"
                                     onClick={closeDetailModal}
@@ -1460,21 +1537,35 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 ) : (
                                 <div className="flex min-h-0 flex-col sm:h-full sm:flex-row sm:items-start">
                                 <div className="flex shrink-0 justify-center bg-white px-3 py-2.5 sm:w-[min(42%,280px)] sm:shrink-0 sm:border-r sm:border-slate-200/80 sm:px-4 sm:py-4">
-                                    <div className="group/modal-img relative aspect-square w-[min(52vw,220px)] sm:w-full sm:max-w-[240px]">
+                                    <div
+                                        className={`group/modal-img relative aspect-square w-[min(52vw,220px)] sm:w-full sm:max-w-[240px] ${selectedItem.images?.length ? 'cursor-zoom-in' : ''}`}
+                                        onClick={(e) => {
+                                            if (!selectedItem.images?.length) return;
+                                            if (e.target instanceof Element && e.target.closest('button')) return;
+                                            openImageLightbox();
+                                        }}
+                                    >
                                     <ImageSlider
                                         key={selectedItem.id}
-                                        ref={detailSliderRef}
                                         images={selectedItem.images}
                                         alt={selectedItem.name_bn}
                                         aspect="h-full w-full"
                                         showControls={true}
-                                        enableZoom
-                                        zoomChrome="none"
-                                        onZoomChange={setDetailZoomLevel}
                                         fillFrame
                                         autoAdvance={false}
                                         emptyLabel={t.noPhoto}
                                     />
+                                    {selectedItem.images?.length > 0 ? (
+                                        <button
+                                            type="button"
+                                            onClick={openImageLightbox}
+                                            className={`absolute bottom-2 right-2 z-20 inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/95 px-2.5 py-1 text-[10px] font-bold text-slate-800 shadow-sm backdrop-blur-sm transition-transform active:scale-95 ${language === 'bn' ? 'font-bengali' : ''}`}
+                                            aria-label={t.maximizeAria}
+                                        >
+                                            <ExpandCornersIcon className="h-3.5 w-3.5" />
+                                            {t.maximizeLabel}
+                                        </button>
+                                    ) : null}
                                     </div>
                                 </div>
 
@@ -1518,6 +1609,77 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                         </div>
                     </div>
         ,
+        document.body
+    ) : null;
+
+    const imageLightbox = imageMaximized && selectedItem && typeof document !== 'undefined' ? createPortal(
+        <div className="fixed inset-0 z-[12050] flex flex-col animate-fade-in">
+            <button
+                type="button"
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl"
+                onClick={closeImageLightbox}
+                aria-label={t.closeAria}
+            />
+            <div className="relative flex min-h-0 flex-1 flex-col pointer-events-none">
+                <div className="pointer-events-auto flex shrink-0 items-center gap-2 px-3 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4">
+                    <p className={`min-w-0 flex-1 truncate text-sm font-bold text-white drop-shadow ${language === 'bn' ? 'font-bengali' : ''}`}>
+                        {selectedItem.name_bn}
+                    </p>
+                    <div
+                        role="toolbar"
+                        aria-label={t.zoomToolbarAria}
+                        data-zoom-ui
+                        className="flex items-center gap-0.5 rounded-full border border-white/25 bg-slate-900/35 p-0.5 backdrop-blur-md"
+                    >
+                        <button
+                            type="button"
+                            onClick={() => lightboxSliderRef.current?.zoomOut()}
+                            disabled={lightboxZoomLevel <= ZOOM_MIN + 0.01}
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                            aria-label={t.zoomOutAria}
+                        >
+                            <MagnifierMinusIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => lightboxSliderRef.current?.zoomIn()}
+                            disabled={lightboxZoomLevel >= ZOOM_MAX - 0.01}
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                            aria-label={t.zoomInAria}
+                        >
+                            <MagnifierPlusIcon className="h-4 w-4" />
+                        </button>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={closeImageLightbox}
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-900 shadow-lg shadow-slate-900/25 transition-transform active:scale-95"
+                        aria-label={t.closeAria}
+                    >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="pointer-events-auto relative min-h-0 flex-1 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+                    <ImageSlider
+                        key={`${selectedItem.id}-lightbox`}
+                        ref={lightboxSliderRef}
+                        images={selectedItem.images}
+                        alt={selectedItem.name_bn}
+                        aspect="h-full w-full"
+                        showControls={true}
+                        enableZoom
+                        zoomChrome="none"
+                        onZoomChange={setLightboxZoomLevel}
+                        fillFrame
+                        autoAdvance={false}
+                        emptyLabel={t.noPhoto}
+                        surface="dark"
+                    />
+                </div>
+            </div>
+        </div>,
         document.body
     ) : null;
 
@@ -1701,6 +1863,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                     {libraryContent}
                 </div>
                 {detailModal}
+                {imageLightbox}
                 {scoreSheet}
                 {quitSheet}
                 {modeGateSheet}
@@ -1715,6 +1878,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             </div>
             {libraryContent}
             {detailModal}
+            {imageLightbox}
             {scoreSheet}
             {quitSheet}
             {modeGateSheet}

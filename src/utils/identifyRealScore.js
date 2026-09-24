@@ -135,6 +135,55 @@ export async function submitIdentifyScore(payload) {
     return data;
 }
 
+const TOP_SCORER_CACHE_KEY = 'slm_identify_top_scorer_v1';
+
+function readIdentifyTopScorerCache() {
+    try {
+        const raw = sessionStorage.getItem(TOP_SCORER_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return null;
+        if (parsed.today !== identifyIstToday()) return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function writeIdentifyTopScorerCache(row) {
+    if (!row || typeof row !== 'object') return;
+    try {
+        sessionStorage.setItem(
+            TOP_SCORER_CACHE_KEY,
+            JSON.stringify({ ...row, today: identifyIstToday() })
+        );
+    } catch {
+        // ignore
+    }
+}
+
+/**
+ * Highest current Parichiti real score + name.
+ * @returns {Promise<{ok: boolean, empty?: boolean, full_name?: string, score?: number}|null>}
+ */
+export async function fetchIdentifyTopScorer({ force = false } = {}) {
+    if (!force) {
+        const cached = readIdentifyTopScorerCache();
+        if (cached?.ok) return cached;
+    }
+    try {
+        const { data, error } = await supabase.rpc('get_identify_top_scorer');
+        if (error) throw error;
+        const row = data && typeof data === 'object' ? data : null;
+        if (!row?.ok) return { ok: false, empty: true };
+        writeIdentifyTopScorerCache(row);
+        return row;
+    } catch (err) {
+        console.error('Error fetching identify top scorer:', err);
+        return { ok: false, empty: true };
+    }
+}
+
 /** Client-side gate before opening real mode (RPC is still authoritative). */
 export function canStartIdentifyReal({ user, userProfile, status }) {
     if (!user?.id) {

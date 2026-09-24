@@ -86,7 +86,7 @@ const EMPTY_SPONSOR_FORM = {
   is_active: true,
 };
 
-/** Preset: Bangla non-profit “sponsor wanted” ad (matches INVITE_SPONSOR_AD rotation). Load into form, then Save + enable if you want it in DB too — live clients already rotate this built-in invite every other hour. */
+/** Preset: Bangla non-profit “sponsor wanted” ad. Preview-only unless saved and enabled — live clients do not auto-rotate this invite. */
 const SPONSOR_ASK_PRESET = {
   ...EMPTY_SPONSOR_FORM,
   headline: 'স্পনসর চাই',

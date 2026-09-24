@@ -67,6 +67,7 @@ Real score = **number of correct answers** in that run (not a percent). Practice
 | `supabase/migrations/20260920120000_identify_score_award_points.sql` | `points_awarded` + Home `profiles.points` award (cap 100) |
 | `supabase/migrations/20260920143000_identify_score_board_feed.sql` | One `quiz_attempts` row/`identify-YYYY-MM-DD` → Monthly + Lineman Day |
 | `supabase/migrations/20260920153000_identify_score_p_user_id.sql` | Custom-auth: `p_user_id` on status/submit (app often has no `auth.uid()`) |
+| `supabase/migrations/20260924120000_identify_top_scorer.sql` | Public top scorer name + score for the gift/rules card |
 
 ---
 
@@ -111,6 +112,7 @@ One real finish / IST day (non-admin)
 2. `20260920120000_identify_score_award_points.sql`  
 3. `20260920143000_identify_score_board_feed.sql`  
 4. `20260920153000_identify_score_p_user_id.sql`  
+5. `20260924120000_identify_top_scorer.sql`  
 
 All are additive / `CREATE OR REPLACE` — no drops of live tables. Prefer `npx supabase db query --linked -f …` per file; do **not** blind `db push` the whole migrations folder.
 

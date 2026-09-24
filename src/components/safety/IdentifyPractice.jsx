@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     toSafetyLibraryDisplayUrl,
     handleSafetyLibraryImageError,
@@ -15,12 +16,14 @@ import {
     IDENTIFY_REAL_POINTS_CAP,
     identifyRealSecondsFor,
     submitIdentifyScore,
+    fetchIdentifyTopScorer,
 } from '../../utils/identifyRealScore';
 import {
     collectIdentifyImageUrls,
     preloadIdentifyImages,
     useQuizImageGate,
 } from '../../utils/quizImageGate';
+import { prefetchIdentifyCatalog } from '../../utils/quizImagePrefetch';
 import IdentifyGridPractice from './IdentifyGridPractice';
 import { playQuizChoiceSound } from '../../utils/quizChoiceSounds';
 
@@ -46,14 +49,21 @@ function practiceCopy(language) {
             lives: 'Miss',
             savedAs: 'Saved score',
             pointsAdded: 'Added to your score',
-            rulesTitle: `Win up to +${IDENTIFY_REAL_POINTS_CAP} points`,
+            rulesTitle: `${IDENTIFY_REAL_POINTS_CAP} points every day`,
+            rulesAdUnit: 'points',
+            rulesAdEvery: 'every day',
             rulesAbout: 'A game to recognise different PPE, tools, and other gear.',
             rules1: 'You get 5 to 8 seconds for each answer.',
             rules2: `Right answers raise your run score. Up to +${IDENTIFY_REAL_POINTS_CAP} points go to your Home score today.`,
             rules3: 'Five mistakes and the game stops. One real try per day.',
             rulesStart: 'Start',
             rulesPractice: 'Practice',
+            rulesOpen: 'Rules',
+            rulesHow: 'How to play',
+            rulesGotIt: 'Got it',
             loadingPic: 'Loading picture',
+            topKicker: 'Top scorer',
+            topPoints: 'points',
         }
         : {
             prompt: 'নাম কী?',
@@ -75,14 +85,21 @@ function practiceCopy(language) {
             lives: 'ভুল',
             savedAs: 'জমা স্কোর',
             pointsAdded: 'আপনার স্কোরে যোগ হয়েছে',
-            rulesTitle: `সর্বোচ্চ +${IDENTIFY_REAL_POINTS_CAP} পয়েন্ট`,
+            rulesTitle: `${IDENTIFY_REAL_POINTS_CAP} পয়েন্ট প্রতিদিন`,
+            rulesAdUnit: 'পয়েন্ট',
+            rulesAdEvery: 'প্রতিদিন',
             rulesAbout: 'এটা নানা ধরনের PPE, যন্ত্রপাতি বা অন্য সরঞ্জাম চেনার খেলা।',
             rules1: 'প্রতিটি উত্তরের জন্য ৫ থেকে ৮ সেকেন্ড সময় থাকে।',
             rules2: `ঠিক উত্তর হলে রান স্কোর বাড়ে। আজ হোম স্কোরে সর্বোচ্চ +${IDENTIFY_REAL_POINTS_CAP} পয়েন্ট যোগ হতে পারে।`,
             rules3: '৫টা ভুল হলে খেলা থেমে যাবে। দিনে একবার আসল খেলা।',
             rulesStart: 'শুরু করুন',
             rulesPractice: 'প্র্যাকটিস করুন',
+            rulesOpen: 'নিয়ম',
+            rulesHow: 'কীভাবে খেলবেন',
+            rulesGotIt: 'বুঝেছি',
             loadingPic: 'ছবি আসছে',
+            topKicker: 'সেরা স্কোর',
+            topPoints: 'পয়েন্ট',
         };
 }
 
@@ -141,6 +158,9 @@ export default function IdentifyPractice({
     const [savedScore, setSavedScore] = useState(null);
     const [pointsAwarded, setPointsAwarded] = useState(null);
     const [rulesReady, setRulesReady] = useState(() => scoringMode !== 'real');
+    const [topScorer, setTopScorer] = useState(null);
+    const [topScorerPhase, setTopScorerPhase] = useState('idle');
+    const [rulesModalOpen, setRulesModalOpen] = useState(false);
     const realCorrectRef = useRef(0);
     const realMistakesRef = useRef(0);
     const realAskedRef = useRef(0);
@@ -201,6 +221,11 @@ export default function IdentifyPractice({
     }, []);
 
     useEffect(() => {
+        if (!items?.length) return;
+        prefetchIdentifyCatalog(items);
+    }, [items]);
+
+    useEffect(() => {
         if (!isReal) {
             setRulesReady(true);
             return;
@@ -208,6 +233,36 @@ export default function IdentifyPractice({
         resetReal({ showRules: true });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isReal, items]);
+
+    useEffect(() => {
+        if (!isReal || rulesReady) return undefined;
+        let cancelled = false;
+        let settleId = 0;
+        setTopScorer(null);
+        setTopScorerPhase('loading');
+        const started = Date.now();
+        fetchIdentifyTopScorer().then((row) => {
+            if (cancelled) return;
+            const score = Number(row?.score);
+            const name = String(row?.full_name || '').trim();
+            const ready = Boolean(row?.ok && !row.empty && name && Number.isFinite(score) && score > 0);
+            const wait = Math.max(0, 360 - (Date.now() - started));
+            settleId = window.setTimeout(() => {
+                if (cancelled) return;
+                if (ready) {
+                    setTopScorer({ name, score });
+                    setTopScorerPhase('ready');
+                } else {
+                    setTopScorer(null);
+                    setTopScorerPhase('empty');
+                }
+            }, wait);
+        });
+        return () => {
+            cancelled = true;
+            window.clearTimeout(settleId);
+        };
+    }, [isReal, rulesReady]);
 
     useEffect(() => {
         if (!isReal || !rulesReady || realDone || !activeQuestion) return undefined;
@@ -362,29 +417,100 @@ export default function IdentifyPractice({
         };
     }, [isReal, realDone, onIdentifySubmitResult, userId]);
 
+    useEffect(() => {
+        if (!rulesModalOpen) return undefined;
+        const onKey = (e) => {
+            if (e.key === 'Escape') setRulesModalOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [rulesModalOpen]);
+
     if (isReal && !rulesReady) {
         const lines = [t.rules1, t.rules2, t.rules3];
+        const rulesModal = rulesModalOpen && typeof document !== 'undefined'
+            ? createPortal(
+                <div className="identify-rules-modal" role="dialog" aria-modal="true" aria-labelledby="identify-rules-modal-title">
+                    <button
+                        type="button"
+                        className="identify-rules-modal__backdrop"
+                        onClick={() => setRulesModalOpen(false)}
+                        aria-label={t.rulesGotIt}
+                    />
+                    <div className="identify-rules-modal__card">
+                        <button
+                            type="button"
+                            className="identify-rules-modal__close"
+                            onClick={() => setRulesModalOpen(false)}
+                            aria-label={t.rulesGotIt}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <h3 id="identify-rules-modal-title" className={`identify-rules-modal__title ${bn ? 'font-bengali' : ''}`}>
+                            {t.rulesHow}
+                        </h3>
+                        <p className={`identify-rules-about ${bn ? 'font-bengali' : ''}`}>
+                            {t.rulesAbout}
+                        </p>
+                        <ul className="identify-rules-list">
+                            {lines.map((line) => (
+                                <li key={line} className={bn ? 'font-bengali' : ''}>
+                                    <span aria-hidden />
+                                    <span>{line}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <button
+                            type="button"
+                            onClick={() => setRulesModalOpen(false)}
+                            className={`identify-rules-modal__ok ${bn ? 'font-bengali' : ''}`}
+                        >
+                            {t.rulesGotIt}
+                        </button>
+                    </div>
+                </div>,
+                document.body
+            )
+            : null;
         return (
-            <div className="mx-auto flex min-h-[280px] w-full max-w-md flex-col justify-center px-4 py-6">
-                <div className="rounded-3xl border border-orange-100 bg-[#fffdf7] px-5 py-5 shadow-sm">
-                    <h2 className={`text-center text-[1.15rem] font-black leading-snug text-orange-700 ${bn ? 'font-bengali' : ''}`}>
-                        {t.rulesTitle}
+            <>
+            <div className="identify-rules-page">
+                <button
+                    type="button"
+                    onClick={() => setRulesModalOpen(true)}
+                    className={`identify-rules-open ${bn ? 'font-bengali' : ''}`}
+                >
+                    {t.rulesOpen}
+                </button>
+                <div className="identify-rules-stack">
+                {topScorerPhase === 'loading' || topScorerPhase === 'ready' ? (
+                    <div className="identify-top-plaque-slot">
+                        <div
+                            className={`identify-top-plaque ${topScorerPhase === 'ready' ? 'is-sharp' : 'is-blurred'}`}
+                            aria-busy={topScorerPhase === 'loading'}
+                            aria-label={topScorer ? `${t.topKicker}: ${topScorer.name} ${topScorer.score}` : t.topKicker}
+                        >
+                            <span className="identify-top-plaque__pin" aria-hidden />
+                            <p className={`identify-top-plaque__kicker ${bn ? 'font-bengali' : ''}`}>{t.topKicker}</p>
+                            <p className={`identify-top-plaque__name identify-top-plaque__reveal ${bn ? 'font-bengali' : ''}`}>
+                                {topScorer?.name || (bn ? 'লাইনম্যান' : 'Lineman')}
+                            </p>
+                            <p className="identify-top-plaque__score identify-top-plaque__reveal">
+                                {topScorer ? topScorer.score : '88'}
+                            </p>
+                            <p className={`identify-top-plaque__unit ${bn ? 'font-bengali' : ''}`}>{t.topPoints}</p>
+                        </div>
+                    </div>
+                ) : null}
+                <div className="identify-rules-sheet">
+                    <h2 className={`identify-ad-headline ${bn ? 'font-bengali' : ''}`} aria-label={t.rulesTitle}>
+                        <span className="identify-ad-headline__num">{IDENTIFY_REAL_POINTS_CAP}</span>
+                        <span className={`identify-ad-headline__unit ${bn ? '' : 'identify-ad-headline__unit--en'}`}>{t.rulesAdUnit}</span>
+                        <span className="identify-ad-headline__every">{t.rulesAdEvery}</span>
                     </h2>
-                    <p className={`mt-3 text-center text-[13px] font-semibold leading-snug text-slate-700 ${bn ? 'font-bengali' : ''}`}>
-                        {t.rulesAbout}
-                    </p>
-                    <ul className="mt-4 space-y-2.5">
-                        {lines.map((line) => (
-                            <li
-                                key={line}
-                                className={`flex gap-2 text-[13px] font-semibold leading-snug text-slate-700 ${bn ? 'font-bengali' : ''}`}
-                            >
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden />
-                                <span>{line}</span>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mt-5 flex flex-col gap-2">
+                    <div className="identify-rules-actions">
                         <button
                             type="button"
                             onClick={() => {
@@ -395,7 +521,7 @@ export default function IdentifyPractice({
                                 setSecondsLeft(identifyRealSecondsFor(mode));
                                 setRulesReady(true);
                             }}
-                            className={`w-full rounded-full bg-orange-500 px-4 py-3 text-sm font-black text-white shadow-sm active:scale-[0.99] ${bn ? 'font-bengali' : ''}`}
+                            className={`identify-rules-start ${bn ? 'font-bengali' : ''}`}
                         >
                             {t.rulesStart}
                         </button>
@@ -403,14 +529,17 @@ export default function IdentifyPractice({
                             <button
                                 type="button"
                                 onClick={onRequestPracticeMode}
-                                className={`w-full rounded-full border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm active:scale-[0.99] ${bn ? 'font-bengali' : ''}`}
+                                className={`identify-rules-practice ${bn ? 'font-bengali' : ''}`}
                             >
                                 {t.rulesPractice}
                             </button>
                         ) : null}
                     </div>
                 </div>
+                </div>
             </div>
+            {rulesModal}
+            </>
         );
     }
 

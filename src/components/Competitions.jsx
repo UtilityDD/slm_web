@@ -18,6 +18,7 @@ import {
     quizImageWaitCopy,
     useQuizImageGate,
 } from '../utils/quizImageGate';
+import { prefetchHourlyBank } from '../utils/quizImagePrefetch';
 import { openExternalUrl } from '../utils/nativeAndroidUx';
 import {
     filterQuestionsForTier,
@@ -1857,6 +1858,18 @@ export default function Competitions({
         ensurePackTimerStarted(packIdx, null, alreadyStarted ? waitMs : 0);
         return undefined;
     }, [activeQuiz, quizSubmitted, reviewMode, currentQuestionIndex, hourlyImagesReady]);
+
+    useEffect(() => {
+        if (isFullLeaderboard) return;
+        const bank = hourlyQuiz?.questions;
+        if (!bank?.length) return;
+        prefetchHourlyBank(bank);
+    }, [isFullLeaderboard, hourlyQuiz]);
+
+    useEffect(() => {
+        if (!activeQuiz || quizSubmitted || reviewMode) return;
+        prefetchHourlyBank(quizQuestions);
+    }, [activeQuiz, quizSubmitted, reviewMode, quizQuestions]);
 
     useEffect(() => {
         if (!activeQuiz || quizSubmitted || reviewMode || !hourlyImagesReady) return undefined;

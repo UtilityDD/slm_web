@@ -28,7 +28,6 @@ import { useWeatherAlert } from "./hooks/useWeatherAlert";
 import { UserIcon } from "./components/icons";
 import { APP_NAME, CURRENT_APP_VERSION, CURRENT_APP_RELEASE_NOTES, WEBSITE_URL, SUPPORT_EMAIL, ANDROID_DOWNLOAD_PAGE_URL, ANDROID_APK_URL } from "./config";
 import AppUpdateModal from "./components/AppUpdateModal";
-import { preloadSafetyLibraryAssets } from "./utils/assetPreloader";
 import { leaderboardService } from "./utils/leaderboardService";
 import { invalidateLeaderboardCaches } from "./utils/leaderboardCacheKeys";
 import BottomNavigation from "./components/BottomNavigation";
@@ -643,31 +642,6 @@ export default function SmartLinemanUI() {
 
   useEffect(() => () => {
     if (nativeExitHintTimerRef.current) clearTimeout(nativeExitHintTimerRef.current);
-  }, []);
-
-  // Background preload for Safety Library images — far after first paint
-  // so post-login Training + Supabase chapter sync keep network priority.
-  useEffect(() => {
-    let cancelled = false;
-    let idleId = null;
-    const run = () => {
-      if (cancelled) return;
-      preloadSafetyLibraryAssets();
-    };
-    const timer = setTimeout(() => {
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        idleId = window.requestIdleCallback(run, { timeout: 6000 });
-      } else {
-        run();
-      }
-    }, 15000);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-      if (idleId != null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-        window.cancelIdleCallback(idleId);
-      }
-    };
   }, []);
 
   // Last-active ping only. Rank / Prizes / Play fetch boards when those screens open

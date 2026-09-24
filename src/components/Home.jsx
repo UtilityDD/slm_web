@@ -31,6 +31,7 @@ import IdentifyScoreGiftFab from './IdentifyScoreGiftFab';
 import LifeSkillWaitingBalloon from './LifeSkillWaitingBalloon';
 import { canStartIdentifyReal, fetchIdentifyScoreStatus } from '../utils/identifyRealScore';
 import { isIdentifyGiftInRewardWindow } from '../utils/identifyGiftSchedule';
+import { prefetchIdentifyCatalog } from '../utils/quizImagePrefetch';
 import { loadSupplementaryCompletedModuleIds } from '../utils/supplementaryProgressStorage';
 import HomeTeamReminderCard from './HomeTeamReminderCard';
 import HomeTipBoard from './HomeTipBoard';
@@ -183,6 +184,16 @@ export default function Home({
     const timer = window.setInterval(tick, 60_000);
     return () => window.clearInterval(timer);
   }, [user?.id, userProfile, identifyGiftStaffPreview]);
+
+  useEffect(() => {
+    const giftOn = Boolean(
+      user?.id
+      && !isGuestUser(userProfile)
+      && (identifyGiftStaffPreview || (identifyGiftEligible && identifyGiftInWindow))
+    );
+    if (!giftOn) return;
+    prefetchIdentifyCatalog();
+  }, [user?.id, userProfile, identifyGiftStaffPreview, identifyGiftEligible, identifyGiftInWindow]);
 
   useEffect(() => {
     if (!user?.id || isGuestUser(userProfile)) {
