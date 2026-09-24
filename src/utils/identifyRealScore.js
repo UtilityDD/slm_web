@@ -135,7 +135,7 @@ export async function submitIdentifyScore(payload) {
     return data;
 }
 
-const TOP_SCORER_CACHE_KEY = 'slm_identify_top_scorer_v1';
+const TOP_SCORER_CACHE_KEY = 'slm_identify_top_scorer_v4';
 
 function readIdentifyTopScorerCache() {
     try {
@@ -163,8 +163,8 @@ function writeIdentifyTopScorerCache(row) {
 }
 
 /**
- * Highest current Parichiti real score + name.
- * @returns {Promise<{ok: boolean, empty?: boolean, full_name?: string, score?: number}|null>}
+ * Today's IST Parichiti top awarded points + name (cap 100).
+ * @returns {Promise<{ok: boolean, empty?: boolean, full_name?: string, avatar_url?: string, district?: string, score?: number}|null>}
  */
 export async function fetchIdentifyTopScorer({ force = false } = {}) {
     if (!force) {
@@ -176,7 +176,7 @@ export async function fetchIdentifyTopScorer({ force = false } = {}) {
         if (error) throw error;
         const row = data && typeof data === 'object' ? data : null;
         if (!row?.ok) return { ok: false, empty: true };
-        writeIdentifyTopScorerCache(row);
+        if (!row.empty) writeIdentifyTopScorerCache(row);
         return row;
     } catch (err) {
         console.error('Error fetching identify top scorer:', err);

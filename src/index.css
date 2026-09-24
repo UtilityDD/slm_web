@@ -7542,31 +7542,34 @@ body,
   display: flex;
   flex: 0 0 auto;
   justify-content: center;
-  padding: 0.2rem 0.4rem 0.45rem;
-  overflow: hidden;
+  padding: 0.45rem 0.35rem 0.7rem;
+  overflow: visible;
+}
+
+.identify-top-plaque-wrap {
+  width: min(88%, 18rem);
+  perspective: none;
+  filter: drop-shadow(0 8px 14px rgba(72, 32, 8, 0.14));
 }
 
 .identify-top-plaque {
   position: relative;
   z-index: 1;
-  width: min(72%, 14.5rem);
-  padding: clamp(0.4rem, 1.4dvh, 0.9rem) 0.85rem clamp(0.45rem, 1.5dvh, 0.95rem);
-  transform: rotate(-4.5deg);
-  border: 1px solid #e8c48a;
-  border-radius: 0.35rem 0.85rem 0.4rem 0.9rem;
-  background:
-    linear-gradient(180deg, rgba(255, 251, 235, 0.35), transparent 42%),
-    repeating-linear-gradient(
-      -12deg,
-      rgba(180, 83, 9, 0.035) 0 1px,
-      transparent 1px 7px
-    ),
-    #fff6e4;
+  isolation: isolate;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 6.1rem;
+  overflow: hidden;
+  padding: 0;
+  transform: rotate(-1.4deg);
+  border: 1px solid #e4c48a;
+  border-radius: 0.35rem;
+  background: linear-gradient(180deg, #fffdf6 0%, #fff4dc 100%);
   box-shadow:
-    0 1px 0 #fffaf0 inset,
-    0 14px 28px -16px rgba(120, 53, 15, 0.45),
-    4px 8px 0 rgba(180, 83, 9, 0.08);
-  text-align: center;
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 10px 18px -12px rgba(72, 32, 8, 0.28);
+  text-align: left;
 }
 
 .identify-top-plaque::before,
@@ -7577,64 +7580,112 @@ body,
 }
 
 .identify-top-plaque::before {
-  top: -0.42rem;
-  left: 1.1rem;
-  width: 2.6rem;
-  height: 0.85rem;
-  background: rgba(253, 224, 71, 0.38);
-  transform: rotate(-8deg);
-  border-radius: 1px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  display: none;
 }
 
 .identify-top-plaque::after {
-  right: 0.7rem;
-  bottom: 0.55rem;
-  width: 1.7rem;
-  height: 1.7rem;
-  border: 1.5px solid rgba(180, 83, 9, 0.28);
-  border-radius: 999px;
-  transform: rotate(12deg);
-  opacity: 0.7;
+  display: none;
 }
 
+.identify-top-plaque__shine,
+.identify-top-plaque__peel,
 .identify-top-plaque__pin {
-  position: absolute;
-  top: -0.28rem;
-  left: 50%;
-  width: 0.55rem;
-  height: 0.55rem;
-  margin-left: -0.28rem;
-  border-radius: 999px;
-  background: radial-gradient(circle at 35% 30%, #ffe8a3, #d97706 62%, #92400e);
-  box-shadow: 0 2px 3px rgba(120, 53, 15, 0.35);
+  display: none;
 }
 
 .identify-top-plaque__kicker {
-  font-size: 0.68rem;
+  margin: 0;
+  max-width: none;
+  font-size: 0.58rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
   text-transform: uppercase;
   color: #b45309;
 }
 
+.identify-top-plaque__photo {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 5.35rem;
+  width: 5.35rem;
+  min-height: 6.1rem;
+  overflow: hidden;
+  border-radius: 0;
+  background: #efe0c0;
+  box-shadow: inset -1px 0 0 rgba(180, 83, 9, 0.16);
+}
+
+.identify-top-plaque__initial {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #9a3412;
+  background: #f6e3b8;
+}
+
+.identify-top-plaque__meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem 0.5rem 0.7rem;
+}
+
+.identify-top-plaque__who {
+  min-width: 0;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid rgba(180, 83, 9, 0.22);
+}
+
 .identify-top-plaque__name {
-  margin-top: 0.2rem;
-  min-height: 1.35em;
-  min-width: 8rem;
-  font-size: clamp(0.92rem, 2.4dvh, 1.15rem);
+  margin: 0;
+  min-height: 0;
+  min-width: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: 'Noto Serif Bengali', Georgia, 'Times New Roman', serif;
+  font-size: 1.12rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   color: #1c1917;
 }
 
+.identify-top-plaque__district {
+  margin: 0.16rem 0 0.28rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #92400e;
+}
+
+.identify-top-plaque__scoreline {
+  display: flex;
+  align-items: baseline;
+  gap: 0.28rem;
+  margin-top: 0.28rem;
+}
+
 .identify-top-plaque__score {
-  margin-top: 0.15rem;
-  min-width: 2.4rem;
-  font-size: clamp(1.45rem, 5.2dvh, 2.4rem);
+  margin: 0;
+  min-width: 0;
+  font-size: 1.55rem;
   font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
   color: #c2410c;
 }
 
@@ -7662,13 +7713,19 @@ body,
 }
 
 .identify-top-plaque__unit {
-  margin-top: 0.15rem;
+  margin: 0;
   font-size: 0.7rem;
   font-weight: 700;
   color: #9a3412;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .identify-top-plaque-wrap {
+    perspective: none;
+    filter:
+      drop-shadow(4px 8px 8px rgba(72, 32, 8, 0.16));
+  }
+
   .identify-top-plaque {
     transform: none;
   }

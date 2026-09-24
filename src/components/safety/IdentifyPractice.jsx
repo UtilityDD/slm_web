@@ -25,6 +25,8 @@ import {
 } from '../../utils/quizImageGate';
 import { prefetchIdentifyCatalog } from '../../utils/quizImagePrefetch';
 import IdentifyGridPractice from './IdentifyGridPractice';
+import AvatarPhoto from '../AvatarPhoto';
+import { AVATAR_EDGE } from '../../utils/avatarImage';
 import { playQuizChoiceSound } from '../../utils/quizChoiceSounds';
 
 function practiceCopy(language) {
@@ -62,7 +64,7 @@ function practiceCopy(language) {
             rulesHow: 'How to play',
             rulesGotIt: 'Got it',
             loadingPic: 'Loading picture',
-            topKicker: 'Top scorer',
+            topKicker: 'Top so far today',
             topPoints: 'points',
         }
         : {
@@ -98,7 +100,7 @@ function practiceCopy(language) {
             rulesHow: 'কীভাবে খেলবেন',
             rulesGotIt: 'বুঝেছি',
             loadingPic: 'ছবি আসছে',
-            topKicker: 'সেরা স্কোর',
+            topKicker: 'আজকের সেরা এখন পর্যন্ত',
             topPoints: 'পয়েন্ট',
         };
 }
@@ -241,16 +243,21 @@ export default function IdentifyPractice({
         setTopScorer(null);
         setTopScorerPhase('loading');
         const started = Date.now();
-        fetchIdentifyTopScorer().then((row) => {
+        fetchIdentifyTopScorer({ force: true }).then((row) => {
             if (cancelled) return;
-            const score = Number(row?.score);
+            const score = Math.min(
+                IDENTIFY_REAL_POINTS_CAP,
+                Math.max(0, Math.round(Number(row?.score) || 0))
+            );
             const name = String(row?.full_name || '').trim();
+            const avatarUrl = String(row?.avatar_url || '').trim();
+            const district = String(row?.district || '').trim();
             const ready = Boolean(row?.ok && !row.empty && name && Number.isFinite(score) && score > 0);
             const wait = Math.max(0, 360 - (Date.now() - started));
             settleId = window.setTimeout(() => {
                 if (cancelled) return;
                 if (ready) {
-                    setTopScorer({ name, score });
+                    setTopScorer({ name, score, avatarUrl, district });
                     setTopScorerPhase('ready');
                 } else {
                     setTopScorer(null);
@@ -487,20 +494,47 @@ export default function IdentifyPractice({
                 <div className="identify-rules-stack">
                 {topScorerPhase === 'loading' || topScorerPhase === 'ready' ? (
                     <div className="identify-top-plaque-slot">
+                        <div className="identify-top-plaque-wrap">
                         <div
                             className={`identify-top-plaque ${topScorerPhase === 'ready' ? 'is-sharp' : 'is-blurred'}`}
                             aria-busy={topScorerPhase === 'loading'}
                             aria-label={topScorer ? `${t.topKicker}: ${topScorer.name} ${topScorer.score}` : t.topKicker}
                         >
                             <span className="identify-top-plaque__pin" aria-hidden />
-                            <p className={`identify-top-plaque__kicker ${bn ? 'font-bengali' : ''}`}>{t.topKicker}</p>
-                            <p className={`identify-top-plaque__name identify-top-plaque__reveal ${bn ? 'font-bengali' : ''}`}>
-                                {topScorer?.name || (bn ? 'লাইনম্যান' : 'Lineman')}
-                            </p>
-                            <p className="identify-top-plaque__score identify-top-plaque__reveal">
-                                {topScorer ? topScorer.score : '88'}
-                            </p>
-                            <p className={`identify-top-plaque__unit ${bn ? 'font-bengali' : ''}`}>{t.topPoints}</p>
+                            <span className="identify-top-plaque__shine" aria-hidden />
+                            <span className="identify-top-plaque__peel" aria-hidden />
+                            <div className="identify-top-plaque__photo identify-top-plaque__reveal">
+                                {topScorer?.avatarUrl ? (
+                                    <AvatarPhoto
+                                        url={topScorer.avatarUrl}
+                                        edge={AVATAR_EDGE.podium}
+                                        alt=""
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="identify-top-plaque__initial" aria-hidden>
+                                        {(topScorer?.name || (bn ? 'লা' : 'L')).trim().charAt(0)}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="identify-top-plaque__meta">
+                                <p className={`identify-top-plaque__kicker ${bn ? 'font-bengali' : ''}`}>{t.topKicker}</p>
+                                <div className="identify-top-plaque__who">
+                                    <p className={`identify-top-plaque__name identify-top-plaque__reveal ${bn ? 'font-bengali' : ''}`}>
+                                        {topScorer?.name || (bn ? 'লাইনম্যান' : 'Lineman')}
+                                    </p>
+                                    {topScorer?.district ? (
+                                        <p className={`identify-top-plaque__district identify-top-plaque__reveal ${bn ? 'font-bengali' : ''}`}>
+                                            {topScorer.district}
+                                        </p>
+                                    ) : null}
+                                </div>
+                                <p className="identify-top-plaque__scoreline identify-top-plaque__reveal">
+                                    <span className="identify-top-plaque__score">{topScorer ? topScorer.score : '88'}</span>
+                                    <span className={`identify-top-plaque__unit ${bn ? 'font-bengali' : ''}`}>{t.topPoints}</span>
+                                </p>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 ) : null}
