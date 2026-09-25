@@ -827,7 +827,13 @@ export const SAFETY_LIBRARY_ITEMS = [
     "images": [],
     "approx_price_inr": "---",
     "guide_bn": "ছবির ছক পড়ে তার বাঁধুন। মোটা জিআই জুগাড় নয়।",
-    "related_items": []
+    "related_items": [
+      {
+        "id": "Tools:ওয়্যার গেজ",
+        "category": "Tools",
+        "name_bn": "ওয়্যার গেজ"
+      }
+    ]
   },
   {
     "id": "Charts:নিরাপদ দূরত্বের চার্ট",
@@ -1141,7 +1147,36 @@ export const SAFETY_LIBRARY_ITEMS = [
     ],
     "approx_price_inr": "---",
     "guide_bn": "মেটাল টেপ লাইভ লাইনের কাছে বাড়াবেন না। ভিজে গেলে মুছে শুকিয়ে রাখুন।",
-    "related_items": []
+    "related_items": [
+      {
+        "id": "Tools:ওয়্যার গেজ",
+        "category": "Tools",
+        "name_bn": "ওয়্যার গেজ"
+      }
+    ]
+  },
+  {
+    "id": "Tools:ওয়্যার গেজ",
+    "category": "Tools",
+    "name_bn": "ওয়্যার গেজ",
+    "function_bn": "তার কত SWG — স্লটে ধরে মাপে। চোখে আন্দাজ নয়।",
+    "images": [
+      "/assets/safety/library/tools/Wire_Gauge.webp"
+    ],
+    "approx_price_inr": "---",
+    "guide_bn": "যে স্লটে ঢুকে আটকে যায়, সেটাই মাপ। ফিউজ তার বাঁধার আগে চার্টের সঙ্গে মেলান।",
+    "related_items": [
+      {
+        "id": "Charts:ডিটিআর ফিউজ রেটিং চার্ট",
+        "category": "Charts",
+        "name_bn": "ডিটিআর ফিউজ রেটিং চার্ট"
+      },
+      {
+        "id": "Tools:মেজারিং টেপ",
+        "category": "Tools",
+        "name_bn": "মেজারিং টেপ"
+      }
+    ]
   },
   {
     "id": "Tools:এবি পুলিং রোলার",
@@ -1262,19 +1297,19 @@ export const SAFETY_LIBRARY_ITEMS = [
     "guide_bn": "দুই পাশে সমান উঁচু করুন। অ্যাক্সেল শক্ত আছে কি না দেখুন। ড্রামের নিচে হাত দেবেন না।",
     "related_items": [
       {
+        "id": "Tools:কেবল পুলিং উইঞ্চ",
+        "category": "Tools",
+        "name_bn": "কেবল পুলিং উইঞ্চ"
+      },
+      {
+        "id": "Tools:ইউজি কেবল রোলার",
+        "category": "Tools",
+        "name_bn": "ইউজি কেবল রোলার"
+      },
+      {
         "id": "Tools:এবি পুলিং রোলার",
         "category": "Tools",
         "name_bn": "এবি পুলিং রোলার"
-      },
-      {
-        "id": "Tools:হাত র্যাচেট কেবল পুলার",
-        "category": "Tools",
-        "name_bn": "হাত র্যাচেট কেবল পুলার"
-      },
-      {
-        "id": "Tools:চেন পুলি (১-২ টন ক্ষমতা সম্পন্ন)",
-        "category": "Tools",
-        "name_bn": "চেন পুলি (১-২ টন ক্ষমতা সম্পন্ন)"
       }
     ]
   },
@@ -1381,6 +1416,11 @@ export const SAFETY_LIBRARY_ITEMS = [
     "approx_price_inr": "35000",
     "guide_bn": "টেস্টের আগে লাইন আইসোলেট ও ডিসচার্জ করুন। লিড সঠিক জোড়ায় লাগান।",
     "related_items": [
+      {
+        "id": "Tools:কেবল রুট ট্রেসার",
+        "category": "Tools",
+        "name_bn": "কেবল রুট ট্রেসার"
+      },
       {
         "id": "Tools:মেগার (ইনসুলেশন টেস্টার)",
         "category": "Tools",
@@ -1787,6 +1827,32 @@ export const SAFETY_LIBRARY_ITEMS = [
     ]
   },
   {
+    "id": "Charts:কেবল রেটিং চার্ট",
+    "category": "Charts",
+    "name_bn": "কেবল রেটিং চার্ট",
+    "function_bn": "mm² দেখে কেবল কত অ্যাম্পিয়ার নিতে পারে আর কোন MCB লাগে।",
+    "images": [],
+    "approx_price_inr": "---",
+    "guide_bn": "ছকের সাইজ মেলান। SWG গেজ দিয়ে কেবল mm² মাপবেন না।",
+    "related_items": [
+      {
+        "id": "Tools:11 কেভি টার্মিনেশন কিট",
+        "category": "Tools",
+        "name_bn": "11 কেভি টার্মিনেশন কিট"
+      },
+      {
+        "id": "Tools:ওয়্যার গেজ",
+        "category": "Tools",
+        "name_bn": "ওয়্যার গেজ"
+      },
+      {
+        "id": "Charts:কিছু পরিচিত তার ও কেবিলের ব্যবহার",
+        "category": "Charts",
+        "name_bn": "কিছু পরিচিত তার ও কেবিলের ব্যবহার"
+      }
+    ]
+  },
+  {
     "id": "Charts:DTR স্মার্ট চার্ট",
     "category": "Charts",
     "name_bn": "DTR স্মার্ট চার্ট",
@@ -1837,5 +1903,92 @@ export const SAFETY_LIBRARY_ITEMS = [
     "approx_price_inr": "---",
     "guide_bn": "প্রতিফলক স্ট্রিপ পরিষ্কার রাখুন। ভিজে গেলে শুকিয়ে তুলুন।",
     "related_items": []
+  },
+  {
+    "id": "Tools:কেবল রুট ট্রেসার",
+    "category": "Tools",
+    "name_bn": "কেবল রুট ট্রেসার",
+    "function_bn": "রাস্তায় মাটির নিচের কেবল কোন পথে গেছে — সেটা খুঁজে।",
+    "images": [
+      "/assets/safety/library/ug-cable/Cable_Route_Tracer.webp"
+    ],
+    "approx_price_inr": "---",
+    "guide_bn": "ট্রান্সমিটার কেবলে জোড়ান, রিসিভার নিয়ে হাঁটুন। ফল্ট লোকেটার নয় — এটা পথ দেখায়।",
+    "related_items": [
+      {
+        "id": "Tools:কেবল ফল্ট লোকেটার",
+        "category": "Tools",
+        "name_bn": "কেবল ফল্ট লোকেটার"
+      }
+    ]
+  },
+  {
+    "id": "Tools:ইউজি কেবল রোলার",
+    "category": "Tools",
+    "name_bn": "ইউজি কেবল রোলার",
+    "function_bn": "ট্রেঞ্চে কেবল মাটিতে ঘষা না লেগে রোলারের ওপর দিয়ে যায়।",
+    "images": [
+      "/assets/safety/library/ug-cable/UG_Cable_Roller.webp"
+    ],
+    "approx_price_inr": "---",
+    "guide_bn": "ট্রেঞ্চের তলায় বসান। এবি পুলিং রোলার নয় — এটা মাটিতে বসে।",
+    "related_items": [
+      {
+        "id": "Tools:কেবল পুলিং উইঞ্চ",
+        "category": "Tools",
+        "name_bn": "কেবল পুলিং উইঞ্চ"
+      },
+      {
+        "id": "Tools:এবি পুলিং রোলার",
+        "category": "Tools",
+        "name_bn": "এবি পুলিং রোলার"
+      }
+    ]
+  },
+  {
+    "id": "Tools:কেবল পুলিং উইঞ্চ",
+    "category": "Tools",
+    "name_bn": "কেবল পুলিং উইঞ্চ",
+    "function_bn": "পাইপ বা ট্রেঞ্চে কেবল টানে। হাত র্যাচেটের বড় ভাই।",
+    "images": [
+      "/assets/safety/library/ug-cable/Cable_Pulling_Winch.webp"
+    ],
+    "approx_price_inr": "---",
+    "guide_bn": "টান বেশি হলে কেবল ছিঁড়ে। রোলার বসিয়ে তারপর উইঞ্চ চালান।",
+    "related_items": [
+      {
+        "id": "Tools:ইউজি কেবল রোলার",
+        "category": "Tools",
+        "name_bn": "ইউজি কেবল রোলার"
+      },
+      {
+        "id": "Tools:হাত র্যাচেট কেবল পুলার",
+        "category": "Tools",
+        "name_bn": "হাত র্যাচেট কেবল পুলার"
+      },
+      {
+        "id": "Tools:ড্রাম জ্যাক",
+        "category": "Tools",
+        "name_bn": "ড্রাম জ্যাক"
+      }
+    ]
+  },
+  {
+    "id": "Tools:11 কেভি টার্মিনেশন কিট",
+    "category": "Tools",
+    "name_bn": "11 কেভি টার্মিনেশন কিট",
+    "function_bn": "আরএমইউ বা পিলারে ইউজি কেবলের শেষ মাথা বানায়।",
+    "images": [
+      "/assets/safety/library/ug-cable/HV_Termination_Kit.webp"
+    ],
+    "approx_price_inr": "---",
+    "guide_bn": "সেমিকন ঠিকমতো ছাড়ুন। হিট শ্রিংক সমান গরম করুন। জয়েন্ট কিট নয় — এটা শেষ মাথা।",
+    "related_items": [
+      {
+        "id": "Tools:কেবল ফল্ট লোকেটার",
+        "category": "Tools",
+        "name_bn": "কেবল ফল্ট লোকেটার"
+      }
+    ]
   }
 ];

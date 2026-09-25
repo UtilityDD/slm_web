@@ -42,7 +42,7 @@ No Home gift. Practice on Parichiti still works locally.
 | Mode | Where score lives | Clock | How it ends | Who can start |
 |------|-------------------|-------|-------------|---------------|
 | **Practice** | `localStorage` (`slm_identify_practice_v1`) | None | User quits | Anyone browsing Identify |
-| **Real** | Supabase `identify_scores` (replaces on submit) | 5s name/grid, 8s clue | 5 mistakes **or** Stop | Logged-in non-guest; **1× per IST day** (admin unlimited preview) |
+| **Real** | Supabase `identify_scores` (replaces on submit) | 5s name/grid, 8s clue/odd/which/chart | 5 mistakes **or** Stop | Logged-in non-guest; **1× per IST day** (admin unlimited preview) |
 
 Real score = **number of correct answers** in that run (not a percent). Practice badge stays local-only and is **not** updated by real mode.
 
@@ -55,7 +55,8 @@ Real score = **number of correct answers** in that run (not a percent). Practice
 | `src/utils/identifyRealScore.js` | Timers (`5` / `8`), max mistakes (`5`), points cap (`100`), status cache, submit/status RPCs |
 | `src/utils/identifyGiftSchedule.js` | Personal IST reward window (hash of `userId` + date); active 06:00–23:00; **3h** live window |
 | `src/utils/identifyGiftLaunch.js` | UI-only Home→Identify handoff (`sessionStorage`) + Home gift done-for-today (`localStorage`) |
-| `src/utils/safetyLibraryPractice.js` | Shared question builder (name / grid / clue); practice persistence |
+| `src/utils/safetyLibraryPractice.js` | Shared question builder (name / grid / clue / odd / which / chart mix); practice persistence |
+| `src/utils/identifyChartQuiz.js` | Table lookup / reverse from Identify charts; field Bangla stems |
 | `src/components/safety/IdentifyPractice.jsx` | Overlay: practice **or** real (`scoringMode`); rules gate; clock; end screen; submit once |
 | `src/components/safety/IdentifyGridPractice.jsx` | 2×2 / MCQ UI; `persistLocalScore={false}` in real; `onAnswered` / `headerExtra` |
 | `src/components/safety/SafetyLibrary.jsx` | Practice pill, score sheet, launch consume, quit→rules return |
@@ -205,7 +206,7 @@ open real
   → rulesReady=false (info card: time, endless, 5 mistakes)
   → optional “practice first” → practiceFromRules; quit practice returns to rules (not library)
   → Start → rulesReady=true
-  → endless rounds (name / grid / clue; no 3× same type in a row — shared builder)
+  → endless rounds (name / grid / clue / odd-one-out / which-family / chart-table ~1 in 5; no 3× same type in a row — shared builder)
   → per question clock: identifyRealSecondsFor(mode) → 5 or 8; timeout = miss
   → wrong or timeout increments mistakes; at 5 → realDone reason=mistakes
   → Stop → realDone reason=stop
@@ -217,7 +218,7 @@ Constants (change in one place):
 
 ```js
 IDENTIFY_REAL_SECONDS_SHORT = 5  // name + grid
-IDENTIFY_REAL_SECONDS_LONG  = 8  // clue / বর্ণনা
+IDENTIFY_REAL_SECONDS_LONG  = 8  // clue / odd-one-out / which-family / chart
 IDENTIFY_REAL_MAX_MISTAKES   = 5
 IDENTIFY_REAL_POINTS_CAP     = 100
 ```

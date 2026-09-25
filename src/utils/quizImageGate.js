@@ -10,8 +10,8 @@ export function uniqueImageUrls(urls) {
 }
 
 export function collectIdentifyImageUrls(question, mode) {
-    if (!question) return [];
-    if (mode === 'grid' || mode === 'clue') {
+    if (!question || mode === 'chart') return [];
+    if (mode === 'grid' || mode === 'clue' || mode === 'odd' || mode === 'which') {
         return uniqueImageUrls((question.choices || []).map((choice) => choice?.image));
     }
     return uniqueImageUrls([question.image]);

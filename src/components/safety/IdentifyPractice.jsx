@@ -9,6 +9,8 @@ import {
     nextIdentifyPracticeMode,
     recordIdentifyPracticeAnswer,
     formatIdentifyAvgResponse,
+    practiceOddAsk,
+    practiceWhichAsk,
 } from '../../utils/safetyLibraryPractice';
 import {
     IDENTIFY_REAL_SECONDS_SHORT,
@@ -54,7 +56,7 @@ function practiceCopy(language) {
             rulesTitle: `${IDENTIFY_REAL_POINTS_CAP} points every day`,
             rulesAdUnit: 'points',
             rulesAdEvery: 'every day',
-            rulesAbout: 'A game to recognise different PPE, tools, and other gear.',
+            rulesAbout: 'A game to recognise different PPE, tools, and other gear. Chart ratings come up now and then.',
             rules1: 'You get 5 to 8 seconds for each answer.',
             rules2: `Right answers raise your run score. Up to +${IDENTIFY_REAL_POINTS_CAP} points go to your Home score today.`,
             rules3: 'Five mistakes and the game stops. One real try per day.',
@@ -90,7 +92,7 @@ function practiceCopy(language) {
             rulesTitle: `${IDENTIFY_REAL_POINTS_CAP} পয়েন্ট প্রতিদিন`,
             rulesAdUnit: 'পয়েন্ট',
             rulesAdEvery: 'প্রতিদিন',
-            rulesAbout: 'এটা নানা ধরনের PPE, যন্ত্রপাতি বা অন্য সরঞ্জাম চেনার খেলা।',
+            rulesAbout: 'এটা নানা ধরনের PPE, যন্ত্রপাতি বা অন্য সরঞ্জাম চেনার খেলা। মাঝে মাঝে চার্টের হিসাবও আসবে।',
             rules1: 'প্রতিটি উত্তরের জন্য ৫ থেকে ৮ সেকেন্ড সময় থাকে।',
             rules2: `ঠিক উত্তর হলে রান স্কোর বাড়ে। আজ হোম স্কোরে সর্বোচ্চ +${IDENTIFY_REAL_POINTS_CAP} পয়েন্ট যোগ হতে পারে।`,
             rules3: '৫টা ভুল হলে খেলা থেমে যাবে। দিনে একবার আসল খেলা।',
@@ -126,6 +128,8 @@ export default function IdentifyPractice({
     userId = null,
     /** Called after submit attempt with latest status payload. */
     onIdentifySubmitResult,
+    /** Practice: open the source Identify chart after a wrong chart answer. */
+    onOpenChartPage,
 }) {
     const t = practiceCopy(language);
     const bn = language === 'bn';
@@ -686,8 +690,19 @@ export default function IdentifyPractice({
         </div>
     );
 
-    if (activeMode === 'grid' || activeMode === 'clue') {
+    if (activeMode === 'grid' || activeMode === 'clue' || activeMode === 'odd' || activeMode === 'which' || activeMode === 'chart') {
         const clueText = activeMode === 'clue' ? (activeQuestion.clue_bn || '') : '';
+        const chartAsk = activeMode === 'chart'
+            ? (language === 'en'
+                ? (activeQuestion.ask_en || activeQuestion.ask_bn || '')
+                : (activeQuestion.ask_bn || activeQuestion.ask_en || ''))
+            : '';
+        const oddAsk = chartAsk
+            || (activeMode === 'odd' && activeQuestion.oddFamily
+                ? practiceOddAsk(activeQuestion.oddFamily, language)
+                : activeMode === 'which' && activeQuestion.whichFamily
+                    ? practiceWhichAsk(activeQuestion.whichFamily, language)
+                    : '');
         return (
             <div className="flex h-full min-h-0 w-full flex-col">
                 <IdentifyGridPractice
@@ -706,12 +721,17 @@ export default function IdentifyPractice({
                     } : undefined}
                     onAdvance={isReal ? undefined : goNextPractice}
                     clueText={clueText}
+                    oddAsk={oddAsk}
                     headerExtra={scoreChip}
                     hideDefaultScore
                     externalAnswered={isReal ? answered : undefined}
                     lockChoices={isReal && !imagesReady}
                     waitLabel={isReal && !imagesReady ? t.loadingPic : ''}
                     promptReady={imagesReady}
+                    textChoices={activeMode === 'chart'}
+                    onStudyChart={!isReal && activeMode === 'chart' && activeQuestion.chartPageId
+                        ? () => onOpenChartPage?.(activeQuestion.chartPageId)
+                        : undefined}
                 />
             </div>
         );

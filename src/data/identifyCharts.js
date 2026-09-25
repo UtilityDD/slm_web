@@ -5,6 +5,27 @@
 
 /** @typedef {'howto'|'compare'|'table'|'cards'|'sections'} ChartKind */
 
+const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+
+/** Chart numbers always use English digits (1, 2, 3) — never ১, ২, ৩. */
+export function chartEnglishDigits(value) {
+  if (typeof value !== 'string' || !value) return value;
+  return value.replace(/[০-৯]/g, (digit) => String(BN_DIGITS.indexOf(digit)));
+}
+
+function withChartEnglishDigits(node) {
+  if (typeof node === 'string') return chartEnglishDigits(node);
+  if (Array.isArray(node)) return node.map(withChartEnglishDigits);
+  if (node && typeof node === 'object') {
+    const out = {};
+    for (const [key, value] of Object.entries(node)) {
+      out[key] = withChartEnglishDigits(value);
+    }
+    return out;
+  }
+  return node;
+}
+
 /**
  * @type {Record<string, {
  *   kind: ChartKind,
@@ -18,9 +39,10 @@
  *   cards?: { title: string, points: string[] }[],
  *   sections?: { title: string, tone?: 'ok'|'bad'|'neutral', points: string[] }[],
  *   flow?: string[],
+ *   figure?: { image: string, title?: string, info?: string },
  * }>}
  */
-export const IDENTIFY_CHART_PAGES = {
+const IDENTIFY_CHART_PAGES_RAW = {
   'Charts:হেলমেট কিভাবে পড়তে হয়': {
     kind: 'howto',
     kicker: 'ঠিক ফিট = নিরাপদ কাজ',
@@ -72,7 +94,7 @@ export const IDENTIFY_CHART_PAGES = {
     tables: [
       {
         title: 'ডিটিআর ফিউজ (SWG)',
-        headers: ['ট্রান্সফরমার', 'HT ফিউজ', 'LT ফিউজ'],
+        headers: ['ট্রান্সফরমার', 'HT ফিউজ (SWG)', 'LT ফিউজ (SWG)'],
         rows: [
           ['10 kVA', '38', '24'],
           ['16 kVA', '38', '22'],
@@ -82,8 +104,18 @@ export const IDENTIFY_CHART_PAGES = {
           ['160 kVA', '30', '12'],
           ['250 kVA', '28', '10'],
         ],
+        notes: [
+          'সব মাপ SWG — Standard Wire Gauge (ব্রিটিশ)।',
+          'AWG = American Wire Gauge। একই নম্বর হলেও বেধ আলাদা — 16 SWG ≠ 16 AWG।',
+          'ভারতে ডিটিআর ফিউজ তার ও ওয়্যার গেজ SWG চলে। AWG গেজ দিয়ে মাপবেন না।',
+        ],
       },
     ],
+    figure: {
+      image: '/assets/safety/library/tools/Wire_Gauge.webp',
+      title: 'ওয়্যার গেজ (SWG)',
+      info: 'তার স্লটে ঢোকান। যেটা আটকে যায় — সেটাই SWG। ফিউজ বাঁধার আগে এই গেজ দিয়ে মাপুন।',
+    },
     flow: ['ফল্ট হয়', 'ফিউজ আগে কাটে', 'ডিটিআর বাঁচে'],
   },
 
@@ -354,7 +386,7 @@ export const IDENTIFY_CHART_PAGES = {
     tables: [
       {
         title: 'ডিটিআর স্মার্ট ছক',
-        headers: ['kVA', 'LT A', 'HT A', 'LT ফিউজ', 'HT ফিউজ', 'তার'],
+        headers: ['kVA', 'LT A', 'HT A', 'LT SWG', 'HT SWG', 'তার'],
         rows: [
           ['10', '14', '1', '24', '38', 'Weasel'],
           ['16', '22', '1', '22', '38', 'Weasel'],
@@ -364,12 +396,51 @@ export const IDENTIFY_CHART_PAGES = {
           ['160', '224', '13', '12', '30', 'Wolf'],
           ['250', '350', '20', '10', '28', 'Panther'],
         ],
-        note: 'লোড বেশি = গরম।',
+        note: 'ফিউজ মাপ SWG। AWG নয়। লোড বেশি = গরম।',
       },
     ],
     flow: ['kVA', 'Amp', 'ফিউজ', 'তার'],
   },
+
+  'Charts:কেবল রেটিং চার্ট': {
+    kind: 'table',
+    kicker: 'mm² দেখে অ্যাম্প আর MCB',
+    intro: 'তামা কেবলের সাইজ → কত কারেন্ট নিতে পারে → কোন MCB লাগবে।',
+    tip: 'MCB কেবলের চেয়ে এক ধাপ ছোট — কেবল আগে গরম হলেও ব্রেকার কাটে।',
+    warning: 'পাতলা কেবলে মোটা MCB = কেবল পুড়ে, ব্রেকার কাটে না।',
+    tables: [
+      {
+        title: 'কেবল রেটিং (তামা)',
+        headers: ['সাইজ (mm²)', 'কারেন্ট (A)', 'MCB (A)'],
+        rows: [
+          ['1.5', '7.9–15.9', '8'],
+          ['2.5', '15.9–22', '15'],
+          ['4', '22–30', '20'],
+          ['6', '30–39', '30'],
+          ['10', '39–54', '40'],
+          ['16', '54–72', '60'],
+          ['25', '71–93', '80'],
+          ['50', '117–147', '125'],
+          ['70', '147–180', '150'],
+          ['95', '180–216', '200'],
+          ['120', '216–250', '225'],
+          ['150', '250–287', '275'],
+          ['185', '287–334', '300'],
+          ['240', '334–400', '350'],
+        ],
+        notes: [
+          'তামা কেবলের আনুমানিক মাপ। অ্যালুতে কারেন্ট কম।',
+          'ভারতে কেবল mm²। SWG বা AWG দিয়ে কেবল সাইজ বলবেন না।',
+        ],
+      },
+    ],
+    flow: ['সাইজ দেখুন', 'কারেন্ট মেলান', 'MCB বাছুন'],
+  },
 };
+
+export const IDENTIFY_CHART_PAGES = Object.fromEntries(
+  Object.entries(IDENTIFY_CHART_PAGES_RAW).map(([id, page]) => [id, withChartEnglishDigits(page)])
+);
 
 export function getIdentifyChartPage(itemId) {
   if (!itemId) return null;

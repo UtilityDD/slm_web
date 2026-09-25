@@ -1,4 +1,9 @@
 import React from 'react';
+import { chartEnglishDigits } from '../../data/identifyCharts';
+import {
+    toSafetyLibraryDisplayUrl,
+    handleSafetyLibraryImageError,
+} from '../../utils/safetyLibraryImageUrl';
 import { getChartTopic } from './identifyChartIcons';
 
 function bnClass(bn, extra = '') {
@@ -131,11 +136,11 @@ function TableBlock({ tables, bn }) {
                             </tbody>
                         </table>
                     </div>
-                    {table.note ? (
-                        <div className="identify-chart-table-note">
-                            <p className={bnClass(bn, 'identify-chart-body-type')}>{table.note}</p>
+                    {(table.notes?.length ? table.notes : table.note ? [table.note] : []).map((line) => (
+                        <div key={line} className="identify-chart-table-note">
+                            <p className={bnClass(bn, 'identify-chart-body-type')}>{line}</p>
                         </div>
-                    ) : null}
+                    ))}
                 </div>
             ))}
         </section>
@@ -205,6 +210,31 @@ function SectionsBlock({ sections, bn }) {
     );
 }
 
+function FigureBlock({ figure, bn }) {
+    if (!figure?.image) return null;
+    return (
+        <section>
+            <SectionLabel bn={bn}>যন্ত্র</SectionLabel>
+            <div className="identify-chart-card identify-chart-card--figure">
+                <img
+                    src={toSafetyLibraryDisplayUrl(figure.image)}
+                    alt={figure.title || ''}
+                    className="identify-chart-figure-img"
+                    onError={(e) => handleSafetyLibraryImageError(e, figure.image)}
+                />
+                <div className="min-w-0">
+                    {figure.title ? (
+                        <p className={bnClass(bn, 'identify-chart-heading-type')}>{figure.title}</p>
+                    ) : null}
+                    {figure.info ? (
+                        <p className={bnClass(bn, 'identify-chart-body-type mt-1')}>{figure.info}</p>
+                    ) : null}
+                </div>
+            </div>
+        </section>
+    );
+}
+
 function FlowStrip({ flow, bn }) {
     if (!flow?.length) return null;
     return (
@@ -246,7 +276,7 @@ export default function IdentifyChartPage({ page, language = 'bn', title, chartI
                     </p>
                     {title ? (
                         <h3 className={bnClass(bn, 'identify-chart-print-title')}>
-                            {title}
+                            {chartEnglishDigits(title)}
                         </h3>
                     ) : null}
                     {page.intro ? (
@@ -261,6 +291,7 @@ export default function IdentifyChartPage({ page, language = 'bn', title, chartI
                     <StepList steps={page.steps} bn={bn} />
                     <CompareBlock compare={page.compare} bn={bn} />
                     <TableBlock tables={page.tables} bn={bn} />
+                    <FigureBlock figure={page.figure} bn={bn} />
                     <CardsBlock cards={page.cards} bn={bn} />
                     <SectionsBlock sections={page.sections} bn={bn} />
 

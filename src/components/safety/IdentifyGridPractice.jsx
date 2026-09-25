@@ -1,10 +1,19 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     toSafetyLibraryDisplayUrl,
     handleSafetyLibraryImageError,
 } from '../../utils/safetyLibraryImageUrl';
 import { recordIdentifyPracticeAnswer, practiceClueAsk, formatIdentifyAvgResponse } from '../../utils/safetyLibraryPractice';
 import { playQuizChoiceSound } from '../../utils/quizChoiceSounds';
+
+function CloseIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    );
+}
 
 function gridCopy(language) {
     return language === 'en'
@@ -13,12 +22,18 @@ function gridCopy(language) {
             right: 'Right',
             wrong: 'Wrong',
             score: 'Score',
+            studyHint: (answer) => `Right was ${answer}. It’s on the chart — want to look?`,
+            studyOpen: 'See the chart',
+            studySkip: 'Not now',
         }
         : {
             ask: 'কোনটা',
             right: 'ঠিক',
             wrong: 'ভুল',
             score: 'স্কোর',
+            studyHint: (answer) => `ঠিক ছিল ${answer}। চার্টে একবার দেখে নেবেন?`,
+            studyOpen: 'চার্ট দেখুন',
+            studySkip: 'এখন নয়',
         };
 }
 
@@ -30,6 +45,12 @@ export default function IdentifyGridPractice({
     onAdvance,
     /** When set, show description clue instead of the item name. */
     clueText = '',
+    /** Odd-one-out ask, e.g. “কোনটা PPE নয়?” */
+    oddAsk = '',
+    /** Chart / text MCQ: same 2×2 board, lettered colourful tiles instead of photos. */
+    textChoices = false,
+    /** Practice only: open the source chart after a wrong chart answer. */
+    onStudyChart,
     persistLocalScore = true,
     /** Real-mode: parent owns advance; called once with correct boolean. */
     onAnswered,
@@ -47,6 +68,7 @@ export default function IdentifyGridPractice({
     const bn = language === 'bn';
     const [pickedId, setPickedId] = useState('');
     const [flash, setFlash] = useState('');
+    const [studyOffer, setStudyOffer] = useState(false);
     const [boardPx, setBoardPx] = useState(0);
     const fitRef = useRef(null);
     const advanceTimer = useRef(0);
@@ -59,6 +81,7 @@ export default function IdentifyGridPractice({
         ? formatIdentifyAvgResponse(score.avgResponseMs, language)
         : '';
     const isClue = Boolean(clueText);
+    const isOdd = Boolean(oddAsk);
     const clueAsk = isClue ? practiceClueAsk(question?.category, language) : '';
 
     useEffect(() => () => window.clearTimeout(advanceTimer.current), []);
@@ -67,8 +90,9 @@ export default function IdentifyGridPractice({
         window.clearTimeout(advanceTimer.current);
         setPickedId('');
         setFlash('');
+        setStudyOffer(false);
         startedAtRef.current = Date.now();
-    }, [question?.itemId, clueText]);
+    }, [question?.itemId, clueText, oddAsk, textChoices]);
 
     useEffect(() => {
         if (answered) return;
@@ -94,7 +118,7 @@ export default function IdentifyGridPractice({
             ro?.disconnect();
             window.removeEventListener('resize', measure);
         };
-    }, [isClue]);
+    }, [isClue, isOdd, textChoices]);
 
     const pickTile = (choiceId) => {
         if (answered || lockChoices || !question) return;
@@ -111,6 +135,13 @@ export default function IdentifyGridPractice({
             return;
         }
         window.clearTimeout(advanceTimer.current);
+        if (textChoices && !ok && question.chartPageId && typeof onStudyChart === 'function') {
+            advanceTimer.current = window.setTimeout(() => {
+                setFlash('');
+                setStudyOffer(true);
+            }, 1100);
+            return;
+        }
         advanceTimer.current = window.setTimeout(() => onAdvance?.(question.itemId), 900);
     };
 
@@ -134,6 +165,10 @@ export default function IdentifyGridPractice({
                             {clueText}
                         </p>
                     </div>
+                ) : isOdd ? (
+                    <p className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${bn ? 'font-bengali' : ''}`}>
+                        {oddAsk}
+                    </p>
                 ) : (
                     <p className={`text-sm font-black leading-snug text-slate-900 sm:text-base ${bn ? 'font-bengali' : ''}`}>
                         {t.ask} <span className="text-orange-600">{question.name_bn}</span>?
@@ -154,6 +189,8 @@ export default function IdentifyGridPractice({
                             const chosen = pickedId === choice.id;
                             const showRight = answered && chosen && choice.id === question.itemId;
                             const showWrong = answered && chosen && choice.id !== question.itemId;
+                            const letter = ['A', 'B', 'C', 'D'][i] || String(i + 1);
+                            const tone = ['a', 'b', 'c', 'd'][i] || 'a';
                             return (
                                 <button
                                     key={`${question.itemId}-${choice.id}`}
@@ -161,20 +198,29 @@ export default function IdentifyGridPractice({
                                     disabled={answered || lockChoices}
                                     onClick={() => pickTile(choice.id)}
                                     style={{ animationDelay: `${i * 70}ms` }}
-                                    className={`identify-grid-tile min-h-0 min-w-0 overflow-hidden rounded-xl border bg-white shadow-sm sm:rounded-2xl ${
-                                        showRight ? 'identify-grid-tile--right border-emerald-400' : ''
-                                    } ${showWrong ? 'identify-grid-tile--wrong border-rose-400' : ''} ${
-                                        !answered ? 'border-slate-200/80 active:scale-[0.98]' : 'border-slate-200/80'
-                                    }`}
+                                    className={`identify-grid-tile min-h-0 min-w-0 overflow-hidden rounded-xl border shadow-sm sm:rounded-2xl ${
+                                        textChoices ? `identify-chart-opt identify-chart-opt--${tone}` : 'border-slate-200/80 bg-white'
+                                    } ${showRight ? 'identify-grid-tile--right border-emerald-400' : ''} ${
+                                        showWrong ? 'identify-grid-tile--wrong border-rose-400' : ''
+                                    } ${!answered ? 'active:scale-[0.98]' : ''}`}
                                 >
-                                    <img
-                                        src={toSafetyLibraryDisplayUrl(choice.image)}
-                                        alt=""
-                                        data-fallback-index="0"
-                                        onError={(e) => handleSafetyLibraryImageError(e, choice.image)}
-                                        className="h-full w-full object-contain object-center p-1.5 sm:p-2.5"
-                                        draggable={false}
-                                    />
+                                    {textChoices ? (
+                                        <>
+                                            <span className="identify-chart-opt-letter">{letter}</span>
+                                            <span className={`identify-chart-opt-text ${bn ? 'font-bengali' : ''}`}>
+                                                {choice.name_bn}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <img
+                                            src={toSafetyLibraryDisplayUrl(choice.image)}
+                                            alt=""
+                                            data-fallback-index="0"
+                                            onError={(e) => handleSafetyLibraryImageError(e, choice.image)}
+                                            className="h-full w-full object-contain object-center p-1.5 sm:p-2.5"
+                                            draggable={false}
+                                        />
+                                    )}
                                 </button>
                             );
                         })}
@@ -201,6 +247,38 @@ export default function IdentifyGridPractice({
                     ) : null}
                 </div>
             </div>
+            {studyOffer && typeof document !== 'undefined'
+                ? createPortal(
+                    <div className="identify-chart-study-overlay fixed inset-0 z-[10800] flex items-center justify-center px-5">
+                        <div className="absolute inset-0 bg-slate-900/45" aria-hidden="true" />
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            className="identify-chart-study relative w-full max-w-sm rounded-3xl border border-amber-100 bg-[#fffdf7] px-5 pb-5 pt-4 shadow-2xl"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => onAdvance?.(question.itemId)}
+                                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 active:scale-95"
+                                aria-label={t.studySkip}
+                            >
+                                <CloseIcon className="h-4 w-4" />
+                            </button>
+                            <p className={`pr-10 text-[15px] font-black leading-snug text-slate-900 sm:text-base ${bn ? 'font-bengali' : ''}`}>
+                                {t.studyHint(question.name_bn)}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => onStudyChart?.()}
+                                className={`mt-4 w-full rounded-full bg-amber-700 px-4 py-2.5 text-sm font-black text-white shadow-sm active:scale-[0.98] ${bn ? 'font-bengali' : ''}`}
+                            >
+                                {t.studyOpen}
+                            </button>
+                        </div>
+                    </div>,
+                    document.body
+                )
+                : null}
         </div>
     );
 }

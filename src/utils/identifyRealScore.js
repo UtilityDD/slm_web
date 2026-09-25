@@ -19,10 +19,12 @@ export const IDENTIFY_REAL_SECONDS = IDENTIFY_REAL_SECONDS_SHORT;
 const STATUS_CACHE_KEY = 'slm_identify_status_cache_v1';
 
 /**
- * Clue / “বর্ণনা অনুযায়ী” → 8s; name & grid → 5s.
+ * Clue / odd / which / chart → 8s; name & grid → 5s.
  */
 export function identifyRealSecondsFor(mode) {
-    if (mode === 'clue') return IDENTIFY_REAL_SECONDS_LONG;
+    if (mode === 'clue' || mode === 'odd' || mode === 'which' || mode === 'chart') {
+        return IDENTIFY_REAL_SECONDS_LONG;
+    }
     return IDENTIFY_REAL_SECONDS_SHORT;
 }
 

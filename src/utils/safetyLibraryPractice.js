@@ -1,9 +1,15 @@
 import { storageUtils } from './storageUtils.js';
+import {
+    IDENTIFY_CHART_MIX_RATE,
+    buildIdentifyChartQuestion,
+    isIdentifyChartReady,
+} from './identifyChartQuiz.js';
 
 const SCORE_KEY = 'slm_identify_practice_v1';
 export const IDENTIFY_PRACTICE_QUESTION_COUNT = 10;
 export const IDENTIFY_PRACTICE_CHOICE_COUNT = 4;
-export const IDENTIFY_PRACTICE_MODES = ['name', 'grid', 'clue'];
+export const IDENTIFY_PRACTICE_MODES = ['name', 'grid', 'clue', 'odd', 'which'];
+export const IDENTIFY_ODD_FAMILIES = ['PPE', 'Tools', 'Insulators'];
 
 function shuffle(list) {
     const next = [...list];
@@ -30,7 +36,7 @@ export function isIdentifyPracticeItem(item) {
 export function practiceClueAsk(category, language = 'bn') {
     const named = {
         PPE: { bn: 'পিপিই', en: 'PPE' },
-        Tools: { bn: 'টুল', en: 'tool' },
+        Tools: { bn: 'টুল বা মেশিন', en: 'tool or machine' },
         Insulators: { bn: 'ইনসুলেটর', en: 'insulator' },
     };
     const label = named[category];
@@ -53,6 +59,47 @@ export function practiceClueText(item) {
 
 export function isIdentifyPracticeClueItem(item) {
     return isIdentifyPracticeItem(item) && Boolean(practiceClueText(item));
+}
+
+function familyLabel(family, language = 'bn') {
+    const named = {
+        PPE: { bn: 'PPE', en: 'PPE' },
+        Tools: { bn: 'টুল বা মেশিন', en: 'a tool or machine' },
+        Insulators: { bn: 'ইনসুলেটর', en: 'an insulator' },
+    };
+    return named[family]?.[language === 'en' ? 'en' : 'bn'] || (language === 'en' ? 'this group' : 'এই দল');
+}
+
+/** “Which photo is not PPE / a tool / an insulator?” */
+export function practiceOddAsk(family, language = 'bn') {
+    const label = familyLabel(family, language);
+    if (language === 'en') return `Which one is not ${label}?`;
+    return `কোনটা ${label} নয়?`;
+}
+
+export function isIdentifyOddReady(items) {
+    const pool = (items || []).filter(isIdentifyPracticeItem);
+    return IDENTIFY_ODD_FAMILIES.some((family) => {
+        const mates = pool.filter((row) => row.category === family).length;
+        const others = pool.filter((row) => row.category !== family).length;
+        return mates >= 3 && others >= 1;
+    });
+}
+
+/** “Which photo is PPE / a tool / an insulator?” */
+export function practiceWhichAsk(family, language = 'bn') {
+    const label = familyLabel(family, language);
+    if (language === 'en') return `Which one is ${label}?`;
+    return `কোনটা ${label}?`;
+}
+
+export function isIdentifyWhichReady(items) {
+    const pool = (items || []).filter(isIdentifyPracticeItem);
+    return IDENTIFY_ODD_FAMILIES.some((family) => {
+        const mates = pool.filter((row) => row.category === family).length;
+        const others = pool.filter((row) => row.category !== family).length;
+        return mates >= 1 && others >= 3;
+    });
 }
 
 export function firstPracticeImage(item) {
@@ -175,8 +222,8 @@ function pickRandomMode(except) {
 }
 
 /**
- * Mix name / grid / clue. Never allow the same type three times in a row
- * (if the last two match, force a different mode).
+ * Mix name / grid / clue / odd / which. Never allow the same type three times in a row
+ * (if the last two match, force a different mode). Chart-table ~1 in 5, never twice in a row.
  */
 export function nextIdentifyPracticeMode(recentModes, items) {
     const last = recentModes?.[recentModes.length - 1];
@@ -193,12 +240,111 @@ export function nextIdentifyPracticeMode(recentModes, items) {
     if (mode === 'clue' && !clueReady) {
         mode = last === 'grid' ? 'name' : 'grid';
     }
+    if (mode === 'odd' && !isIdentifyOddReady(items)) {
+        mode = last === 'grid' ? 'name' : 'grid';
+    }
+    if (mode === 'which' && !isIdentifyWhichReady(items)) {
+        mode = last === 'grid' ? 'name' : 'grid';
+    }
+    if (isIdentifyChartReady() && last !== 'chart' && Math.random() < IDENTIFY_CHART_MIX_RATE) {
+        return 'chart';
+    }
     return mode;
 }
 
+function questionFromWhichFamily(items, avoidItemId) {
+    const pool = (items || []).filter(isIdentifyPracticeItem);
+    const viable = IDENTIFY_ODD_FAMILIES.filter((family) => {
+        const mates = pool.filter((row) => row.category === family).length;
+        const others = pool.filter((row) => row.category !== family).length;
+        return mates >= 1 && others >= 3;
+    });
+    if (!viable.length) return null;
+
+    const family = viable[Math.floor(Math.random() * viable.length)];
+    let mates = pool.filter((row) => row.category === family);
+    if (avoidItemId) {
+        const without = mates.filter((row) => row.id !== avoidItemId);
+        if (without.length) mates = without;
+    }
+    const pick = mates[Math.floor(Math.random() * mates.length)];
+    const trio = shuffle(pool.filter((row) => row.category !== family && row.id !== pick.id)).slice(0, 3);
+    if (!pick || trio.length < 3) return null;
+
+    const choices = shuffle([pick, ...trio]).map((row) => ({
+        id: row.id,
+        name_bn: row.name_bn,
+        image: firstPracticeImage(row),
+    }));
+    return {
+        itemId: pick.id,
+        name_bn: pick.name_bn,
+        category: family,
+        whichFamily: family,
+        image: firstPracticeImage(pick),
+        clue_bn: '',
+        choices,
+    };
+}
+
+function questionFromOddOut(items, avoidItemId) {
+    const pool = (items || []).filter(isIdentifyPracticeItem);
+    const viable = IDENTIFY_ODD_FAMILIES.filter((family) => {
+        const mates = pool.filter((row) => row.category === family).length;
+        const others = pool.filter((row) => row.category !== family).length;
+        return mates >= 3 && others >= 1;
+    });
+    if (!viable.length) return null;
+
+    const family = viable[Math.floor(Math.random() * viable.length)];
+    const mates = shuffle(pool.filter((row) => row.category === family));
+    let outsiders = pool.filter((row) => row.category !== family);
+    if (avoidItemId) {
+        const without = outsiders.filter((row) => row.id !== avoidItemId);
+        if (without.length) outsiders = without;
+    }
+    const odd = outsiders[Math.floor(Math.random() * outsiders.length)];
+    const trio = mates.filter((row) => row.id !== odd.id).slice(0, 3);
+    if (!odd || trio.length < 3) return null;
+
+    const choices = shuffle([odd, ...trio]).map((row) => ({
+        id: row.id,
+        name_bn: row.name_bn,
+        image: firstPracticeImage(row),
+    }));
+    return {
+        itemId: odd.id,
+        name_bn: odd.name_bn,
+        category: family,
+        oddFamily: family,
+        image: firstPracticeImage(odd),
+        clue_bn: '',
+        choices,
+    };
+}
+
 export function buildIdentifyPracticeQuestion(items, avoidItemId, mode = 'name') {
+    if (mode === 'chart') {
+        const chartQ = buildIdentifyChartQuestion(avoidItemId);
+        if (chartQ) return chartQ;
+    }
+
     const pool = (items || []).filter(isIdentifyPracticeItem);
     if (pool.length < 2) return null;
+
+    if (mode === 'odd') {
+        return questionFromOddOut(items, avoidItemId) || questionFromItem(
+            pool[Math.floor(Math.random() * pool.length)],
+            pool
+        );
+    }
+
+    if (mode === 'which') {
+        return questionFromWhichFamily(items, avoidItemId) || questionFromItem(
+            pool[Math.floor(Math.random() * pool.length)],
+            pool
+        );
+    }
 
     let source = pool;
     if (mode === 'clue') {

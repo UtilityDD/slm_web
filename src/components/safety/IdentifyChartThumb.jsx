@@ -1,4 +1,5 @@
 import React from 'react';
+import { chartEnglishDigits } from '../../data/identifyCharts';
 
 /**
  * Text-only printed chart tile.
@@ -22,7 +23,7 @@ export default function IdentifyChartThumb({
                     </span>
                 )}
                 <p className={`identify-chart-thumb-title ${bn ? 'font-bengali' : ''}`}>
-                    {name}
+                    {chartEnglishDigits(name)}
                 </p>
             </div>
         </div>

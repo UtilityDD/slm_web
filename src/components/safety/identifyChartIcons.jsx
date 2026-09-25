@@ -376,7 +376,7 @@ export const CHART_TOPICS = {
     'Charts:ট্রান্সফরমার কারেন্ট রেটিং চার্ট': { icon: 'transformer', shortBn: 'কারেন্ট', accent: 'sky' },
     'Charts:নিরাপদ দূরত্বের চার্ট': { icon: 'ruler', shortBn: 'দূরত্ব', accent: 'emerald' },
     'Charts:মই-এর ভাল মন্দ': { icon: 'ladder', shortBn: 'মই', accent: 'orange' },
-    'Charts:মই ব্যবহারের ৩-পয়েন্ট নিয়ম': { icon: 'points3', shortBn: '৩ পয়েন্ট', accent: 'rose' },
+    'Charts:মই ব্যবহারের ৩-পয়েন্ট নিয়ম': { icon: 'points3', shortBn: '3 পয়েন্ট', accent: 'rose' },
     'Charts:ফুল বডি হারনেস কিভাবে পড়তে হয়': { icon: 'harness', shortBn: 'হারনেস পরুন', accent: 'orange' },
     'Charts:পিপিই কবে বদলাবেন': { icon: 'calendar', shortBn: 'পিপিই বদল', accent: 'violet' },
     'Charts:ACSR কারেন্ট বহন ক্ষমতা': { icon: 'cable', shortBn: 'ACSR', accent: 'sky' },
@@ -384,6 +384,7 @@ export const CHART_TOPICS = {
     'Charts:আপনার সেফিটি গ্লাভস চিনুন': { icon: 'glove', shortBn: 'গ্লাভস', accent: 'emerald' },
     'Charts:ডিসচার্জ রডের সঠিক ব্যবহার': { icon: 'rod', shortBn: 'ডিসচার্জ', accent: 'rose' },
     'Charts:DTR স্মার্ট চার্ট': { icon: 'smart', shortBn: 'ডিটিআর', accent: 'orange' },
+    'Charts:কেবল রেটিং চার্ট': { icon: 'cable', shortBn: 'কেবল', accent: 'sky' },
 };
 
 export const ACCENT_STYLES = {

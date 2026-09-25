@@ -16,13 +16,24 @@ import {
 import { consumeIdentifyRealLaunch } from '../../utils/identifyGiftLaunch';
 import { prefetchIdentifyCatalog } from '../../utils/quizImagePrefetch';
 import { invalidateLeaderboardCaches } from '../../utils/leaderboardCacheKeys';
-import { getIdentifyChartPage, hasIdentifyChartPage } from '../../data/identifyCharts';
+import { getIdentifyChartPage, hasIdentifyChartPage, chartEnglishDigits } from '../../data/identifyCharts';
 import IdentifyPractice from './IdentifyPractice';
 import IdentifyChartPage from './IdentifyChartPage';
 import IdentifyChartThumb from './IdentifyChartThumb';
 import { getChartTopic } from './identifyChartIcons';
 
 const CATEGORY_ORDER = ['PPE', 'Tools', 'Insulators', 'AB Cable Items', 'Charts', 'Others'];
+const CATEGORY_SESSION_KEY = 'slm_identify_cat_v1';
+
+function readSavedCategory() {
+    try {
+        const saved = sessionStorage.getItem(CATEGORY_SESSION_KEY);
+        if (saved === 'All' || CATEGORY_ORDER.includes(saved)) return saved;
+    } catch {
+        /* ignore */
+    }
+    return 'PPE';
+}
 const VIDEO_NUDGE_AFTER_MS = 60_000;
 const VIDEO_NUDGE_HOLD_MS = 16_000;
 const VIDEO_NUDGE_FADE_MS = 2400;
@@ -30,7 +41,7 @@ const VIDEO_NUDGE_FADE_MS = 2400;
 const CATEGORY_LABELS = {
     All: { bn: 'সব', en: 'All' },
     PPE: { bn: 'পিপিই', en: 'PPE' },
-    Tools: { bn: 'টুলস', en: 'Tools' },
+    Tools: { bn: 'টুল / মেশিন', en: 'Tools / machines' },
     Insulators: { bn: 'ইনসুলেটর', en: 'Insulators' },
     Charts: { bn: 'চার্ট', en: 'Charts' },
     'AB Cable Items': { bn: 'এবি কেবল সরঞ্জাম', en: 'AB cable accessories' },
@@ -775,11 +786,10 @@ const GridImage = ({ images, alt, language }) => {
 
 export default function SafetyLibrary({ language, setCurrentView, embedded = false, user = null, userProfile = null, refreshProfile = null }) {
     const [items, setItems] = useState([]);
-    const [filteredItems, setFilteredItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('PPE');
+    const [activeCategory, setActiveCategory] = useState(readSavedCategory);
     const [selectedItem, setSelectedItem] = useState(null);
     const [categories, setCategories] = useState([]);
     const [recentIds, setRecentIds] = useState(() => readIdentifyRecents());
@@ -910,18 +920,13 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         };
     }, [embedded]);
 
-    // Scroll Hint Effect
     useEffect(() => {
-        if (categories.length > 0 && tabsRef.current) {
-            const container = tabsRef.current;
-            setTimeout(() => {
-                container.scrollTo({ left: 100, behavior: 'smooth' });
-                setTimeout(() => {
-                    container.scrollTo({ left: 0, behavior: 'smooth' });
-                }, 800);
-            }, 500);
+        if (practiceOpen || !tabsRef.current) return;
+        const selected = tabsRef.current.querySelector('[data-identify-cat][data-selected="1"]');
+        if (selected && typeof selected.scrollIntoView === 'function') {
+            selected.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
-    }, [categories.length]);
+    }, [practiceOpen, activeCategory, categories.length]);
 
     const t = {
         en: {
@@ -1049,6 +1054,17 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
         if (item?.id) setRecentIds(pushIdentifyRecent(item.id));
     }, []);
 
+    const openChartFromPractice = useCallback((pageId) => {
+        if (!pageId || !hasIdentifyChartPage(pageId)) return;
+        const full = items.find((item) => item.id === pageId);
+        openItemDetail(full || {
+            id: pageId,
+            name_bn: String(pageId).replace(/^Charts:/, ''),
+            category: 'Charts',
+            images: [],
+        });
+    }, [items, openItemDetail]);
+
     const goToRelatedChart = useCallback(
         (rel) => {
             const full = items.find((i) => i.id === rel.id);
@@ -1076,7 +1092,6 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             const data = await libraryService.fetchLibrary(force);
             if (!data || data.length === 0) throw new Error("No data found");
             setItems(data);
-            setFilteredItems(data);
             const uniqueCats = [...new Set(data.map((item) => item.category))].filter(Boolean);
             uniqueCats.sort((a, b) => {
                 const ia = CATEGORY_ORDER.indexOf(a);
@@ -1085,8 +1100,12 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
             });
             const dynamicCategories = uniqueCats.map((cat) => ({ id: cat }));
             setCategories(dynamicCategories);
-            if (dynamicCategories.length > 0 && !activeCategory) {
-                setActiveCategory(dynamicCategories[0].id);
+            if (
+                dynamicCategories.length > 0
+                && activeCategory !== 'All'
+                && !dynamicCategories.some((row) => row.id === activeCategory)
+            ) {
+                setActiveCategory('All');
             }
         } catch (error) {
             setError({ message: error.message, technical: error.stack?.split('\n')[0] || 'Check Internet' });
@@ -1103,12 +1122,21 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
     }, [items]);
 
     useEffect(() => {
-        const filtered = items.filter((item) => {
+        try {
+            sessionStorage.setItem(CATEGORY_SESSION_KEY, activeCategory);
+        } catch {
+            /* ignore */
+        }
+    }, [activeCategory]);
+
+    const filteredItems = useMemo(() => {
+        const known = activeCategory === 'All' || items.some((item) => item.category === activeCategory);
+        const tab = known ? activeCategory : 'All';
+        return items.filter((item) => {
             const matchesSearch = itemMatchesSearch(item, searchQuery, language);
-            const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+            const matchesCategory = tab === 'All' || item.category === tab;
             return matchesSearch && matchesCategory;
         });
-        setFilteredItems(filtered);
     }, [searchQuery, activeCategory, items, language]);
 
     const recentItems = useMemo(() => {
@@ -1284,6 +1312,8 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                             <button
                                 key={cat.id}
                                 type="button"
+                                data-identify-cat={cat.id}
+                                data-selected={activeCategory === cat.id ? '1' : '0'}
                                 onClick={() => setActiveCategory(cat.id)}
                                 className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-center text-[11px] font-bold shadow-sm transition-all active:scale-95 sm:text-xs ${
                                     language === 'bn' ? 'font-bengali' : ''
@@ -1347,6 +1377,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     return record;
                                 });
                             }}
+                            onOpenChartPage={openChartFromPractice}
                             onIdentifySubmitResult={(result) => {
                                 if (result?.ok) {
                                     setIdentifyStatus((prev) => ({
@@ -1399,7 +1430,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     }>
                                         {hasIdentifyChartPage(item.id) ? (
                                             <IdentifyChartThumb
-                                                name={item.name_bn}
+                                                name={chartEnglishDigits(item.name_bn)}
                                                 language={language}
                                                 compact
                                             />
@@ -1436,7 +1467,7 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                 }>
                                     {isChart ? (
                                         <IdentifyChartThumb
-                                            name={item.name_bn}
+                                            name={chartEnglishDigits(item.name_bn)}
                                             language={language}
                                         />
                                     ) : (
@@ -1489,9 +1520,9 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     </span>
                                     <h2
                                         className={`min-w-0 flex-1 truncate text-left text-[13px] font-bold leading-snug tracking-tight text-slate-900 sm:text-sm ${language === 'bn' ? 'font-bengali' : ''}`}
-                                        title={selectedItem.name_bn}
+                                        title={selectedChartPage ? chartEnglishDigits(selectedItem.name_bn) : selectedItem.name_bn}
                                     >
-                                        {selectedItem.name_bn}
+                                        {selectedChartPage ? chartEnglishDigits(selectedItem.name_bn) : selectedItem.name_bn}
                                     </h2>
                                 </div>
                                 <button
@@ -1531,14 +1562,14 @@ export default function SafetyLibrary({ language, setCurrentView, embedded = fal
                                     <IdentifyChartPage
                                         page={selectedChartPage}
                                         language={language}
-                                        title={selectedItem.name_bn}
+                                        title={chartEnglishDigits(selectedItem.name_bn)}
                                         chartId={selectedItem.id}
                                     />
                                 ) : (
                                 <div className="flex min-h-0 flex-col sm:h-full sm:flex-row sm:items-start">
-                                <div className="flex shrink-0 justify-center bg-white px-3 py-2.5 sm:w-[min(42%,280px)] sm:shrink-0 sm:border-r sm:border-slate-200/80 sm:px-4 sm:py-4">
+                                <div className="flex shrink-0 justify-center bg-white px-3 py-1.5 sm:w-[min(42%,280px)] sm:shrink-0 sm:border-r sm:border-slate-200/80 sm:px-4 sm:py-4">
                                     <div
-                                        className={`group/modal-img relative aspect-square w-[min(52vw,220px)] sm:w-full sm:max-w-[240px] ${selectedItem.images?.length ? 'cursor-zoom-in' : ''}`}
+                                        className={`group/modal-img relative aspect-square w-[min(42vw,168px)] sm:w-full sm:max-w-[240px] ${selectedItem.images?.length ? 'cursor-zoom-in' : ''}`}
                                         onClick={(e) => {
                                             if (!selectedItem.images?.length) return;
                                             if (e.target instanceof Element && e.target.closest('button')) return;
